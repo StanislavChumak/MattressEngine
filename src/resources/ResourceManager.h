@@ -1,63 +1,59 @@
-#ifndef H_RESOURCEMANADER
-#define H_RESOURCEMANADER
+#ifndef RESOURCE_MANAGER_H
+#define RESOURCE_MANAGER_H
 
-#include <string>
+#include <glm/fwd.hpp>
+
 #include <vector>
-#include <memory>
 #include <map>
 
-#include <glm/vec3.hpp>
+#include "../system/String.h"
+#include "../system/Soloptr.h"
 
-namespace Render
+namespace RenderEngine
 {
     class ShaderProgram;
     class Texture2D;
     class Sprite2D;
 }
+class Sound;
 
 class ResourceManager
 {
 public:
-    static ResourceManager *getResourceManager(const std::string &executablePath);
+    ResourceManager(const char *executablePath);
     ~ResourceManager();
+    void clear();
 
-    std::shared_ptr<Render::ShaderProgram> loadShaders(const std::string &shaderName, const std::string &vertexPath, const std::string &fragmentPath);
-    std::shared_ptr<Render::ShaderProgram> getShaderProgram(const std::string &shaderName);
+    RenderEngine::ShaderProgram *load_shaders(const sys::Str &shaderName, const sys::Str &vertexPath, const sys::Str &fragmentPath);
+    static RenderEngine::ShaderProgram *get_shader_program(const sys::Str &shaderName);
 
-    std::shared_ptr<Render::Texture2D> loadTexture2D(const std::string &textureName, const std::string &texturePath, const unsigned char number = 0);
-    std::shared_ptr<Render::Texture2D> getTexture2D(const std::string &textureName);
-    std::shared_ptr<Render::Texture2D> loadTextureAtlas(const std::string &textureName, const std::string &texturePath,
-        const std::vector<std::string> subTextureNames, unsigned int subTextureWidth, unsigned int subTextureHeight);
+    RenderEngine::Texture2D *load_texture2D(const sys::Str &textureName, const sys::Str &texturePath, const unsigned char &textureNumber = 0);
+    static RenderEngine::Texture2D *get_texture2D(const sys::Str &textureName);
+    RenderEngine::Texture2D *load_texture_atlas(const sys::Str &textureName, const sys::Str &texturePath, const std::vector<sys::Str> &subTextureNames,
+                                              const unsigned int &subTextureWidth, const unsigned int &subTextureHeight, const unsigned char &textureNumber = 0);
 
-    std::shared_ptr<Render::Sprite2D> loadSprite2D(const std::string &spriteName, const std::string &shaderName, const std::string &textureName,
-         const std::string &subTextureName = "default", glm::vec3 color = glm::vec3(1.0f));
-    std::shared_ptr<Render::Sprite2D> getSprite2D(const std::string &spriteName);
+    RenderEngine::Sprite2D *load_sprite2D(const sys::Str &spriteName, const sys::Str &shaderName, const sys::Str &textureName,
+                                         const sys::Str &subTextureName, const sys::Str nameUsage, const glm::vec3 &color);
+    static RenderEngine::Sprite2D *get_sprite2D(const sys::Str &spriteName);
 
+    Sound *load_sound(const sys::Str &soundName, const sys::Str &soundPath, const unsigned int &soundFlag);
+    static Sound *get_sound(const sys::Str &soundName);
 
+    bool load_JSON_resources(const sys::Str &JSONPath);
+
+    typedef std::map<const sys::Str, sys::Soloptr<RenderEngine::ShaderProgram>> ShaderProgramsMap;
+    typedef std::map<const sys::Str, sys::Soloptr<RenderEngine::Texture2D>> Textures2DMap;
+    typedef std::map<const sys::Str, sys::Soloptr<RenderEngine::Sprite2D>> Sprites2DMap;
+    typedef std::map<const sys::Str, sys::Soloptr<Sound>> SoundsMap;
 private:
-    static ResourceManager *m_resourceManager;
-    ResourceManager(const std::string &executablePath);
+    sys::Str get_file_string(const sys::Str &relativeFilePath);
 
-    ResourceManager(ResourceManager &) = delete;
-    ResourceManager &operator=(const ResourceManager &) = delete;
-    ResourceManager &operator=(ResourceManager &&resourceManager) noexcept = delete;
-    ResourceManager(ResourceManager &&resourceManager) noexcept = delete;
+    static ShaderProgramsMap _shaderProgramsMap;
+    static Textures2DMap _textures2DMap;
+    static Sprites2DMap _sprites2DMap;
+    static SoundsMap _soundsMap;
 
-
-    typedef std::map<const std::string, std::shared_ptr<Render::ShaderProgram>> ShaderProgramsMap;
-    ShaderProgramsMap m_shaderPrograms;
-
-    typedef std::map<const std::string, std::shared_ptr<Render::Texture2D>> Textures2DMap;
-    Textures2DMap m_textures2D;
-
-    typedef std::map<const std::string, std::shared_ptr<Render::Sprite2D>> Sprites2DMap;
-    Sprites2DMap m_sprites2D;
-
-
-    std::string getFileString(const std::string relativeFilePath) const;
-
-
-    std::string m_path;
+    sys::Str _executablePath;
 };
 
 #endif

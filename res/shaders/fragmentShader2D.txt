@@ -1,0 +1,17 @@
+#version 330 core
+
+in vec3 color;
+in vec2 texturePosition;
+
+out vec4 fragColor;
+
+uniform sampler2D textureData;
+
+void main()
+{
+    fragColor = texture(textureData, texturePosition) * vec4(color, 1.0);
+    if (fragColor.a == 0.0f)
+    {
+        discard;
+    }
+}

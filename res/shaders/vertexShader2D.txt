@@ -1,0 +1,19 @@
+#version 330 core
+
+layout (location = 0) in vec2 aVertexPosition;
+layout (location = 1) in vec2 aTexturePosition;
+layout (location = 2) in vec3 aColor;
+
+out vec3 color;
+out vec2 texturePosition;
+
+uniform mat4 modelMatrix;
+uniform mat4 projectionMatrix;
+uniform float layer;
+
+void main()
+{
+    color = aColor;
+    texturePosition = aTexturePosition;
+    gl_Position = projectionMatrix * modelMatrix * vec4(aVertexPosition, layer, 1.0);
+}
