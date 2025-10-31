@@ -1,58 +1,75 @@
-#include"system/init.h"
+#include "Engine.h"
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "glm/vec2.hpp"
 
-#include "renderer/Renderer.h"
-#include "sound/Sound.h"
-#include "resources/ResourceManager.h"
-#include "game/Game.h"
-#include "game/game_states/GamePlay.h"
+#define BLOCK_SIZE 32
+#define SCALE 2
+#define GAME_WIDTH 12 * BLOCK_SIZE
+#define GAME_HEIGTH 9 * BLOCK_SIZE
 
 
 int main(int argc, char **argv)
 {
-    GLFWwindow *window = nullptr;
-    glm::uvec2 windowSize = glm::uvec2(GAME_WIDTH * SCALE, GAME_HEIGTH * SCALE);
-    
-    if(!init(window, windowSize, "2048"))
-    {
-        return -1;
-    }
-    
-    ResourceManager *resourceManager = new ResourceManager(*argv);
-    resourceManager->load_JSON_resources("res/resources.json");
-    
-    GameState *startScreen = new GamePlay();
-    Game *game = new Game(windowSize, resourceManager, startScreen, window);
-    glfwSetWindowUserPointer(window, game);
-    
-    RenderEngine::Renderer::set_clear_color(0.0f, 0.0f, 0.0f, 1.0f);
-    RenderEngine::Renderer::set_depth_test(true);
+    Engine engine(*argv, "res/resources.json", glm::vec2(GAME_WIDTH,GAME_HEIGTH), "Engine", SCALE);
 
-    double lastTime = glfwGetTime();
+    
 
-    while (!glfwWindowShouldClose(window))
-    {
-        // update
-        glfwPollEvents();
+    
+    
+    
 
-        double delta = glfwGetTime() - lastTime;
-        lastTime = glfwGetTime();
-        game->update(delta);
+    
+
+    // //-----------
+    // EntityID field[9][12];
+    // EntityID cursor;
+
+    // for(int i = 0; i < 12; i++) for(int j = 0; j < 9; j++)
+    // {
+    //     field[j][i] = world.createEntity();
+    //     world.addComponent(field[j][i], Transform{glm::ivec2(i * BLOCK_SIZE, j * BLOCK_SIZE), glm::ivec2(BLOCK_SIZE), 0.f});
+    //     world.addComponent(field[j][i], Sprite2D{"grassland_cell", -1});
+    //     world.addComponent(field[j][i], Animator(*resourceManager.get_sprite2D("grassland_cell")));
+    // }
+
+    // cursor = world.createEntity();
+    // world.addComponent(cursor, Transform{glm::ivec2(BLOCK_SIZE), glm::ivec2(BLOCK_SIZE / 4), 0.f});
+    // world.addComponent(cursor, Sprite2D{"cursor", 1});
+
+    // std::function<void(glm::dvec2)> func = 
+    // [&](glm::dvec2 pos) { world.getComponent<Transform>(cursor)->position = pos - glm::dvec2(0,BLOCK_SIZE / 4); };
+    // inputSystem.cursorSubscribe(func);
+    // // ------
+
+
+
+
+    // double lastTime = glfwGetTime(), currentTime, delta;
+
+    // while (!glfwWindowShouldClose(window.window))
+    // {
+    //     currentTime = glfwGetTime();
+    //     delta = currentTime - lastTime;
+
+
+    //     //----
+    //     glfwPollEvents();
+    //     RenderEngine::lastRenderer::clear();
+
+    //     systemManager.update(world, delta, "");
+
+    //     glfwSwapBuffers(window.window);
+    //     //----
+
         
-        // render
-        RenderEngine::Renderer::clear();
-        game->render();
+    //     lastTime = currentTime;
+    // }
 
-        glfwSwapBuffers(window);
-    }
+    // resourceManager.clear();
 
-    resourceManager->clear();
+    // uninitSoundEngine();
 
-    Sound::uninit_engine();
-
-    glfwTerminate();
+    // glfwTerminate();
 
     return 0;
 }

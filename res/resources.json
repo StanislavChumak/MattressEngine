@@ -8,167 +8,81 @@
 	],
 	"textureAtlases": [
 		{
-			"name"             : "background",
-			"filePath"         : "res/textures/background.png",
-			"subTextureWidth"  : 160,
-			"subTextureHeight" : 192,
-			"subTextures": [
-				"background"
-			]
-		},
-		{
-			"name"             : "menu",
-			"filePath"         : "res/textures/menu.png",
-			"subTextureWidth"  : 16,
-			"subTextureHeight" : 16,
-			"subTextures": [
-				"bot",
-				"player",
-				"win",
-				"exit"
-			]
-		},
-		{
-			"name"             : "numbers",
-			"filePath"         : "res/textures/numbers.png",
+			"name"             : "grassland_cell",
+			"filePath"         : "res/textures/grassland_cell.png",
 			"subTextureWidth"  : 32,
 			"subTextureHeight" : 32,
 			"subTextures": [
-				"2",
-				"4",
-				"8",
-				"16",
-				"32",
-				"64",
-				"128",
-				"256",
-				"512",
-				"1024",
-				"2048",
-				"PoP"
+				"grassland_cell1",
+				"grassland_cell2",
+				"grassland_cell3",
+				"grassland_cell4",
+				"grassland_cell5",
+				"grassland_cell6",
+				"grassland_cell7",
+				"grassland_cell8"
+			]
+		},
+		{
+			"name"             : "cursor",
+			"filePath"         : "res/textures/cursor.png",
+			"subTextureWidth"  : 8,
+			"subTextureHeight" : 8,
+			"subTextures": [
+				"cursor"
 			]
 		}
 	],
 	"sprite": [
 		{
-			"name"              : "background",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "background",
-			"initialSubTexture" : "background",
-			"usage"             : "static"
+			"name": "grassland_cell",
+			"shader": "shaderSprite2D",
+			"textureAtlas": "grassland_cell",
+			"initialSubTexture": "grassland_cell1",
+			"usage"            : "static",
+			"frames": [
+				{
+					"subTexture": "grassland_cell1",
+					"duration"  : 0.1
+				},
+				{
+					"subTexture": "grassland_cell2",
+					"duration"  : 0.1
+				},
+				{
+					"subTexture": "grassland_cell3",
+					"duration"  : 0.1
+				},
+				{
+					"subTexture": "grassland_cell4",
+					"duration"  : 0.1
+				},
+				{
+					"subTexture": "grassland_cell5",
+					"duration"  : 0.1
+				},
+				{
+					"subTexture": "grassland_cell6",
+					"duration"  : 0.1
+				},
+				{
+					"subTexture": "grassland_cell7",
+					"duration"  : 0.1
+				},
+				{
+					"subTexture": "grassland_cell8",
+					"duration"  : 0.1
+				}
+			]
 		},
 		{
-			"name"              : "bot",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "menu",
-			"initialSubTexture" : "bot",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "player",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "menu",
-			"initialSubTexture" : "player",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "win",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "menu",
-			"initialSubTexture" : "win",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "exit",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "menu",
-			"initialSubTexture" : "exit",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "2",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "2",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "4",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "4",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "8",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "8",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "16",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "16",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "32",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "32",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "64",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "64",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "128",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "128",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "256",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "256",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "512",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "512",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "1024",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "1024",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "2048",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "2048",
-			"usage"             : "static"
-		},
-		{
-			"name"              : "PoP",
-			"shader"            : "shaderSprite2D",
-			"textureAtlas"      : "numbers",
-			"initialSubTexture" : "PoP",
-			"usage"             : "static"
+			"name": "cursor",
+			"shader": "shaderSprite2D",
+			"textureAtlas": "cursor",
+			"initialSubTexture": "cursor",
+			"usage"            : "dynamic"
 		}
+		
 	],
 	"sounds": [
 		{
