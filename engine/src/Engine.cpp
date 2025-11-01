@@ -4,12 +4,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "glm/vec2.hpp"
 
+#include "rapidjson/error/en.h"
+
 #include "../include/components/core/Input.h"
 #include "../include/components/core/Game.h"
 #include "../include/components/core/Window.h"
 #include "../include/components/rendering/Camera.h"
+#include "../include/components/audio/AudioEngine.h"
 
-#include "resources/renderer/Renderer.h"
+#include "../include/components/registerComponent.h"
+#include "../include/components/core/Transform.h"
+#include "../include/components/rendering/Sprite.h"
+#include "../include/components/rendering/Animator.h"
 
 #include "systems/rendering/RenderSystem.h"
 #include "systems/rendering/AnimatorSystem.h"
@@ -18,22 +24,21 @@
 #include <iostream>
 #endif
 
+#include "resources/renderer/Renderer.h"
+
 void window_size_callback(GLFWwindow *window, int width, int height);
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void cursorCallback(GLFWwindow *window, double xpos, double ypos);
 
-bool initSoundEngine();
-void uninitSoundEngine();
-
-Engine::Engine(const char *executablePath, const char *JSONPathResorse,
-            glm::uvec2 gameSize, const char *windowName, unsigned int windowScale)
-: _resorce(executablePath)
+Engine::Engine(const char *executablePath, glm::uvec2 gameSize, const char *windowName, unsigned int windowScale)
+: _resource(executablePath)
 {
     _world.addSingleComponent(Input{});
+    _world.addSingleComponent(Camera{});
     _world.addSingleComponent(Game{gameSize});
     Window &window = _world.addSingleComponent(Window{gameSize * windowScale, windowName, windowScale});
-
+    Audio& audio = _world.addSingleComponent(Audio{});
 
     if (!glfwInit())
     {
@@ -82,29 +87,116 @@ Engine::Engine(const char *executablePath, const char *JSONPathResorse,
         
     glfwSetWindowSize(window.window, window.size.x, window.size.y);
 
-    if(initSoundEngine())
+    audio.init();
+    if(!audio.initialized)
     {
         std::cerr << "Failed to init sound engine" << std::endl;
         glfwTerminate();
     }
-
-
-
-    _resorce.load_JSON_resources("res/resources.json");
-
-    _systems.registerSystem<RenderSystem>(SystemPriority::RENDERING ,_resorce);
-    _systems.registerAlwaysRunSystem<RenderSystem>();
-    _systems.registerSystem<AnimatorSystem>(SystemPriority::ANIMATION);
-    _systems.registerAlwaysRunSystem<AnimatorSystem>();
     
-    InputSystem inputSystem;
-    auto userPointer = std::make_pair<InputSystem*, ECSWorld*>(&inputSystem, &_world);
+    auto userPointer = std::make_pair<InputSystem*, ECSWorld*>(&_input, &_world);
     glfwSetWindowUserPointer(window.window, &userPointer);
-    //cursor
+    // cursor
     glfwSetInputMode(window.window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     lastRenderer::set_clear_color(0.0f, 0.0f, 0.0f, 1.0f);
     lastRenderer::set_depth_test(true);
+
+    window_size_callback(window.window, window.size.x, window.size.y);
+}
+
+Engine::~Engine()
+{
+    _resource.clear();
+    _world.getSingleComponent<Audio>().destroy();
+    _world.clearComponentStorage<Sprite2D>();
+    glfwTerminate();
+}
+
+bool Engine::loadJsonComponent(std::string pathJsonComponent)
+{
+    registerComponent<Transform>("Transform");
+    registerComponent<Sprite2D>("Sprite2D");
+    registerComponent<Animator>("Animator");
+
+    std::string JSONstring = _resource.get_file_string(pathJsonComponent);
+
+#   ifndef FLAG_RELEASE
+    if (JSONstring.empty())
+    {
+        std::cerr << "No JSON resorces file!" << std::endl;
+        return false;
+    }
+#   endif
+
+    rapidjson::Document document;
+    rapidjson::ParseResult parseResult = document.Parse(JSONstring.c_str());
+
+#   ifndef FLAG_RELEASE
+    if (!parseResult)
+    {
+        std::cerr << "JSON parse error: " << rapidjson::GetParseError_En(parseResult.Code()) << '(' << parseResult.Offset() << ')' << std::endl;
+        std::cerr << "In JSON file:" << pathJsonComponent << std::endl;
+        return false;
+    }
+#   endif
+
+    auto entitiesIterator = document.FindMember("entities");
+    if (entitiesIterator != document.MemberEnd())
+    {
+        for(const auto &currentEntity : entitiesIterator->value.GetArray())
+        {
+            EntityID id = _world.createEntity();
+            for (auto it = currentEntity.MemberBegin(); it != currentEntity.MemberEnd(); ++it)
+            {
+                const char* name = it->name.GetString();
+                const rapidjson::Value& value = it->value;
+                typeRegistry[name].addComponentFromJson(id, value, _world, _resource);
+            }
+        }
+    }
+
+    return true;
+}
+
+bool Engine::loadJsonSystem(std::string pathJsonSystem)
+{
+    _system.registerSystem<RenderSystem>(SystemPriority::RENDERING);
+    _system.registerAlwaysRunSystem<RenderSystem>();
+    _system.registerSystem<AnimatorSystem>(SystemPriority::ANIMATION);
+    _system.registerAlwaysRunSystem<AnimatorSystem>();
+
+    return true;
+}
+
+bool Engine::loadJsonResource(std::string pathJsonResource)
+{
+    _resource.load_JSON_resources(pathJsonResource);
+
+    return true;
+}
+
+void Engine::lifeCycle()
+{
+    auto window = _world.getSingleComponent<Window>().window;
+
+    double lastTime = glfwGetTime(), currentTime, delta;
+
+    while (!glfwWindowShouldClose(window))
+    {
+        currentTime = glfwGetTime();
+        delta = currentTime - lastTime;
+
+        glfwPollEvents();
+        lastRenderer::clear();
+
+        _system.update(_world, delta, "");
+
+        glfwSwapBuffers(window);
+
+            
+        lastTime = currentTime;
+    }
 }
 
 void window_size_callback(GLFWwindow *window, int width, int height)
@@ -136,7 +228,8 @@ void window_size_callback(GLFWwindow *window, int width, int height)
 
         Camera &camera = world.getSingleComponent<Camera>();
         camera.setOffsetViewport(viewPortWidth, viewPortHeight, viewPortOffsetLeft, viewPortOffsetBottom);
-        camera.projection = glm::ortho(0.f, static_cast<float>(game.size.x), 0.f, static_cast<float>(game.size.y), -100.f, 100.f);
+        glm::mat4 projection = glm::ortho(0.f, static_cast<float>(game.size.x), 0.f, static_cast<float>(game.size.y), -100.f, 100.f);
+        camera.projection = projection;
     }
 }
 
@@ -157,7 +250,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 void cursorCallback(GLFWwindow *window, double xpos, double ypos)
 {
     std::pair<InputSystem*, ECSWorld*> *pair = static_cast<std::pair<InputSystem*, ECSWorld*>*>(glfwGetWindowUserPointer(window));
-    if (pair)
+    if (pair && pair->first && pair->second)
     {
         InputSystem &input = *pair->first;
         ECSWorld &world = *pair->second;

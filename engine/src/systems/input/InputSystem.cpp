@@ -22,9 +22,9 @@ void InputSystem::setMouseButton(ECSWorld &world, int button, Input::Action acti
 void InputSystem::setCursor(ECSWorld &world, glm::uvec2 cursor)
 {
     world.getSingleComponent<Input>().cursor = cursor;
-    for(auto func : _subscribersCursor)
+    //for(auto func : _subscribersCursor)
     {
-        func(cursor);
+        //func(cursor);
     }
 }
 

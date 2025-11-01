@@ -16,4 +16,5 @@ struct Window {
     :size(size), name(name), scale(scale) {}
 };
 
+
 #endif

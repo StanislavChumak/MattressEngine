@@ -1,6 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include "rapidjson/document.h"
 #include "glad/glad.h"
 #include <glm/vec2.hpp>
 

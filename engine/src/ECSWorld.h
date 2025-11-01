@@ -1,5 +1,5 @@
-#ifndef ECS_H
-#define ECS_H
+#ifndef COMPONENT_MANAGER_H
+#define COMPONENT_MANAGER_H
 
 #include "SparseSet.h"
 #include "View.h"
@@ -135,12 +135,17 @@ public:
 
     //------------------------------
 
-    template<typename... ComponentTypes>
-    View<ComponentTypes...> view() {
-        return View<ComponentTypes...>(getComponentStorage<ComponentTypes>()...);
+    template<typename Component>
+    void clearComponentStorage()
+    {
+        auto &storage = getComponentStorage<Component>();
+        storage.clear();
     }
 
-    
+    template<typename... Component>
+    View<Component...> view() {
+        return View<Component...>(getComponentStorage<Component>()...);
+    }
 };
 
 #endif

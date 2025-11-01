@@ -92,7 +92,7 @@ ShaderProgram *ResourceManager::load_shaders(const std::string &shaderName, cons
     return newShader;
 }
 
-ShaderProgram *ResourceManager::get_shader_program(const std::string &shaderName)
+ShaderProgram *ResourceManager::get_shader_program(const std::string &shaderName) const
 {
     ShaderProgramsMap::const_iterator iter = _shaderProgramsMap.find(shaderName);
 
@@ -128,7 +128,7 @@ Texture2D *ResourceManager::load_texture2D(const std::string &textureName, const
     return newTexture2D;
 }
 
-Texture2D *ResourceManager::get_texture2D(const std::string &textureName)
+Texture2D *ResourceManager::get_texture2D(const std::string &textureName) const
 {
     Textures2DMap::const_iterator iter = _textures2DMap.find(textureName);
 
@@ -171,51 +171,13 @@ Texture2D *ResourceManager::load_texture_atlas(const std::string &textureName, c
     return texture;
 }
 
-// Sprite2D *ResourceManager::load_sprite2D(const std::string &spriteName, const std::string &shaderName, const std::string &textureName, const std::string &subTextureName, const std::string nameUsage, const glm::vec3 &color)
-// {
-//     auto shader = get_shader_program(shaderName);
-//     auto texture = get_texture2D(textureName);
-
-// #   ifndef FLAG_RELEASE
-//     if (!shader)
-//     {
-//         std::cerr << "Can't find the shaderProgram: " << shaderName << " for the sprite: " << spriteName << std::endl;
-//         return nullptr;
-//     }
-//     if (!texture)
-//     {
-//         std::cerr << "Can't find the texture2D: " << textureName << " for the sprite: " << spriteName << std::endl;
-//         return nullptr;
-//     }
-// #   endif
-
-//     RenderEngine::Sprite2D *newSprite2D = _sprites2DMap.emplace(spriteName, utl::make_soloptr<RenderEngine::Sprite2D>(shader, texture, subTextureName, nameUsage, color)).first->second.get();
-
-//     return newSprite2D;
-// }
-
-// Sprite2D *ResourceManager::get_sprite2D(const std::string &spriteName)
-// {
-//     Sprites2DMap::const_iterator iter = _sprites2DMap.find(spriteName);
-
-// #   ifndef FLAG_RELEASE
-//     if (iter == _sprites2DMap.end())
-//     {
-//         std::cerr << "Can't find the sprite2D: " << spriteName << std::endl;
-//         return nullptr;
-//     }
-// #   endif
-
-//     return iter->second.get();
-// }
-
-Sound *ResourceManager::load_sound(const std::string &soundName, const std::string &soundPath, const unsigned int &soundFlag)
+Sound *ResourceManager::load_sound(const std::string &soundName, ma_engine &engine, const std::string &soundPath, const unsigned int &soundFlag)
 {
-    Sound *newSound= _soundsMap.emplace(soundName, std::make_unique<Sound>((_executablePath + soundPath).c_str(), soundFlag)).first->second.get();
+    Sound *newSound= _soundsMap.emplace(soundName, std::make_unique<Sound>(engine, (_executablePath + soundPath).c_str(), soundFlag)).first->second.get();
     return newSound;
 }
 
-Sound *ResourceManager::get_sound(const std::string &soundName)
+Sound *ResourceManager::get_sound(const std::string &soundName) const
 {
     SoundsMap::const_iterator iter = _soundsMap.find(soundName);
 
@@ -348,26 +310,28 @@ bool ResourceManager::load_JSON_resources(const std::string &JSONPath)
     //     }
     // }
 
-    auto soundIterator = document.FindMember("sounds");
-    if (soundIterator != document.MemberEnd())
-    {
-        for (const auto &currentSound : soundIterator->value.GetArray())
-        {
-            const std::string name = currentSound["name"].GetString();
-            const std::string soundPath = currentSound["soundPath"].GetString();
 
-            unsigned int flag = 0;
 
-            auto currentFlag = currentSound["flag"].GetObject();
+    // auto soundIterator = document.FindMember("sounds");
+    // if (soundIterator != document.MemberEnd())
+    // {
+    //     for (const auto &currentSound : soundIterator->value.GetArray())
+    //     {
+    //         const std::string name = currentSound["name"].GetString();
+    //         const std::string soundPath = currentSound["soundPath"].GetString();
 
-            if(currentFlag["NONE"].GetBool()) flag |= Sound::Flag::NONE;
-            if(currentFlag["STREAM"].GetBool()) flag |= Sound::Flag::STREAM;
-            if(currentFlag["LOOP"].GetBool()) flag |= Sound::Flag::LOOP;
-            if(currentFlag["NO_SPATIALIZATION"].GetBool()) flag |= Sound::Flag::NO_SPATIALIZATION;
+    //         unsigned int flag = 0;
 
-            auto sound = load_sound(name, soundPath, flag);
-        }
-    }
+    //         auto currentFlag = currentSound["flag"].GetObject();
+
+    //         if(currentFlag["NONE"].GetBool()) flag |= Sound::Flag::NONE;
+    //         if(currentFlag["STREAM"].GetBool()) flag |= Sound::Flag::STREAM;
+    //         if(currentFlag["LOOP"].GetBool()) flag |= Sound::Flag::LOOP;
+    //         if(currentFlag["NO_SPATIALIZATION"].GetBool()) flag |= Sound::Flag::NO_SPATIALIZATION;
+
+    //         auto sound = load_sound(name, soundPath, flag);
+    //     }
+    // }
 
     return true;
 }

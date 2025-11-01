@@ -2,15 +2,13 @@
 #define RENDER_SYSTEM_H
 
 #include "SystemBase.h"
-#include "../../resources/ResourceManager.h"
 
 class RenderSystem : public SystemBase
 {
-    ResourceManager &resorce;
 public:
-    RenderSystem(ResourceManager &resorce);
+    RenderSystem() = default;
 
-    void update(ECSWorld &world, const double &delta) override;
+    void update(ECSWorld &component, const double &delta) override;
 };
 
 #endif

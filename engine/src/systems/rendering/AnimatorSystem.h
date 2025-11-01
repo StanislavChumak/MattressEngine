@@ -6,9 +6,9 @@
 class AnimatorSystem : public SystemBase
 {
 public:
-    AnimatorSystem();
+    AnimatorSystem() = default;
 
-    void update(ECSWorld &world, const double &delta) override;
+    void update(ECSWorld &component, const double &delta) override;
 };
 
 #endif

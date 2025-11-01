@@ -20,7 +20,7 @@ external/miniaudio.h
 
 include/Engine.h
 src/Engine.cpp
-src/ECS.h
+src/ECSWorld.h
 src/View.h
 src/SparseSet.h
 
@@ -36,6 +36,8 @@ src/systems/rendering/RenderSystem.cpp
 src/systems/rendering/AnimatorSystem.h
 src/systems/rendering/AnimatorSystem.cpp
 
+
+include/components/registerComponent.h
 
 include/components/core/Transform.h
 include/components/core/Input.h

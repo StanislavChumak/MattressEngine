@@ -1,17 +1,10 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-
-
 typedef struct ma_engine ma_engine;
 typedef struct ma_sound ma_sound;
 
 typedef unsigned int ma_uint32;
-
-
-bool initSoundEngine();
-void uninitSoundEngine();
-
 
 class Sound
 {
@@ -24,7 +17,7 @@ public:
         NO_SPATIALIZATION  = 0b100000000000000
     };
 
-    Sound(const char *path, ma_uint32 flag);
+    Sound(ma_engine &engine, const char *path, ma_uint32 flag);
     ~Sound();
 
     void play();

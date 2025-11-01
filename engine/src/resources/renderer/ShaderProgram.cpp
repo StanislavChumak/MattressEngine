@@ -118,3 +118,7 @@ void ShaderProgram::set_matrix4(const char *name, const glm::mat4 &matrix) const
 {
     glUniformMatrix4fv(glGetUniformLocation(_ID, name), 1, GL_FALSE, glm::value_ptr(matrix));
 }
+
+bool ShaderProgram::hasUniform(const char *name) const {
+    return glGetUniformLocation(_ID, name) != -1;
+}

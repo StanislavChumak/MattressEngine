@@ -19,6 +19,7 @@ public:
     void set_int(const char* name, const int &value) const;
     void set_float(const char *name, const float &value) const;
     void set_matrix4(const char* name,  const glm::mat4 &matrix) const;
+    bool hasUniform(const char *name) const;
 
 private:
     bool create_shader(const char *sourse, const unsigned int &shaderType, unsigned int &shaderID);

@@ -29,6 +29,7 @@ Texture2D::Texture2D(const unsigned int &width, const unsigned int &height,
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
+
 Texture2D &Texture2D::operator=(Texture2D &&texture2D)
 {
     glDeleteTextures(1, &_ID);

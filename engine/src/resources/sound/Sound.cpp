@@ -9,23 +9,10 @@
 #include <iostream>
 #endif
 
-
-static ma_engine _maEngine;
-
-bool initSoundEngine()
-{
-    return ma_engine_init(NULL, &_maEngine) != MA_SUCCESS;
-}
-
-void uninitSoundEngine()
-{
-    ma_engine_uninit(&_maEngine);
-}
-
-Sound::Sound(const char *path, ma_uint32 flag)
+Sound::Sound(ma_engine &engine, const char *path, ma_uint32 flag)
 : _thisSound(new ma_sound)
 {
-    if(ma_sound_init_from_file(&_maEngine, path, flag, nullptr, nullptr, _thisSound) != MA_SUCCESS)
+    if(ma_sound_init_from_file(&engine, path, flag, nullptr, nullptr, _thisSound) != MA_SUCCESS)
     {
 #ifndef FLAG_RELEASE
         std::cerr << "Failed init sould to path " << path << std::endl;
