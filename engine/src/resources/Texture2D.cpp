@@ -10,7 +10,7 @@
 #include <iostream>
 #endif
 
-void Texture2D::fromJson(simdjson::ondemand::object obj)
+void Texture2D::fromJson(simdjson::ondemand::object obj, ResourceManager &resource)
 {
     stbi_set_flip_vertically_on_load(true);
 
@@ -49,11 +49,6 @@ void Texture2D::fromJson(simdjson::ondemand::object obj)
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    size_t count = getVarJSON<int64_t>(obj["subCount"]);
-    unsigned int subTextureWidth = getVarJSON<int64_t>(obj["subWidth"]);
-    unsigned int subTextureHeight = getVarJSON<int64_t>(obj["subHeight"]);
-    loadAtlas(count, subTextureWidth, subTextureHeight);
 }
 
 Texture2D::Texture2D(Texture2D &&other) noexcept
@@ -84,37 +79,6 @@ Texture2D &Texture2D::operator=(Texture2D &&other) noexcept
 Texture2D::~Texture2D()
 {
     glDeleteTextures(1, &_ID);
-}
-
-void Texture2D::loadAtlas(const size_t count, const unsigned int &subTextureWidth, const unsigned int &subTextureHeight)
-{
-    unsigned int currentTextureOffsetX = 0;
-    unsigned int currentTextureOffsetY = _height;
-    _atlas.clear();
-    for(size_t i = 0; i < count; i++)
-    {
-        glm::vec2 leftBottom(static_cast<float>(currentTextureOffsetX + 0.01f) / _width, static_cast<float>(currentTextureOffsetY - subTextureHeight + 0.01f) / _height);
-        glm::vec2 rigthTop(static_cast<float>(currentTextureOffsetX + subTextureWidth - 0.01f) / _width, static_cast<float>(currentTextureOffsetY - 0.01f) / _height);
-
-        _atlas.push_back(SubTexture2D{leftBottom, rigthTop});
-
-        currentTextureOffsetX += subTextureWidth;
-        if (currentTextureOffsetX >= _width)
-        {
-            currentTextureOffsetX = 0;
-            currentTextureOffsetY -= subTextureHeight;
-        }
-    }
-}
-
-const Texture2D::SubTexture2D &Texture2D::getSubTexture(const size_t index) const
-{
-    if (index >= _atlas.size())
-    {
-        std::cerr << "Fatal find subTexture \"" << index << "\"\n";
-        return _atlas[0];
-    }
-    return _atlas[index];
 }
 
 void Texture2D::bind() const

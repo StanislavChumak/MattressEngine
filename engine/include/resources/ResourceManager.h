@@ -12,8 +12,6 @@ class ResourceManager
 {
 private:
     std::unordered_map<std::string, std::shared_ptr<simdjson::padded_string>> _jsonCache;
-    simdjson::ondemand::parser _resourceParser;
-    simdjson::ondemand::parser _parser;
 
     std::vector<std::function<void()>> _garbageCollectors;
 
@@ -46,11 +44,11 @@ public:
 
     void garbageCollector();
 
-    simdjson::simdjson_result<simdjson::ondemand::document> getJSON(const std::string& path, bool isResource = false);
+    std::shared_ptr<simdjson::padded_string> getJSON(const std::string& path);
 
     template<typename Resource>
     std::shared_ptr<Resource> getResource(const std::string &resourceName,
-                                        const std::string& json,
+                                        const std::string& patch,
                                         const std::string& arrayKey)
     {
         auto &cache = getCache<Resource>();
@@ -58,10 +56,9 @@ public:
         if(it != cache.end())
             if(auto existing = it->second.lock())
                 return std::static_pointer_cast<Resource>(existing);
-        auto resultDocument = getJSON(json, true);
-        if(resultDocument.error())
-            throw std::runtime_error("Failed to parse JSON");
-        simdjson::ondemand::document doc = std::move(resultDocument.value());
+        std::shared_ptr<simdjson::padded_string> json = getJSON(patch);
+        simdjson::ondemand::parser parser;
+        simdjson::ondemand::document doc = parser.iterate(*json);
 
         for(simdjson::ondemand::object obj : getVarJSON<simdjson::ondemand::array>(doc[arrayKey]))
         {
@@ -69,7 +66,7 @@ public:
             if(name == resourceName)
             {
                 std::shared_ptr<Resource> resource = std::make_shared<Resource>();
-                resource->fromJson(obj);
+                resource->fromJson(obj, *this);
                 cache[resourceName] = resource;
                 return resource;
             }

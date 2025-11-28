@@ -15,14 +15,18 @@
 	"textures": [
 		{
 			"name"      : "cursor",
-			"filePath"  : "res/textures/cursor.png",
-			"subWidth"  : "BLOCK_SIZE / 4",
-			"subHeight" : "BLOCK_SIZE / 4",
-			"subCount"  : 1
+			"filePath"  : "res/textures/cursor.png"
 		},
 		{
 			"name"      : "grassland_cell",
-			"filePath"  : "res/textures/grassland_cell.png",
+			"filePath"  : "res/textures/grassland_cell.png"
+		}
+	],
+	"atlases" : [
+		{
+			"name" : "grassland_cell",
+			"textureName" : "grassland_cell",
+            "textureJSON" : "res/resources.json",
 			"subWidth"  : "BLOCK_SIZE",
 			"subHeight" : "BLOCK_SIZE",
 			"subCount"  : 8

@@ -31,20 +31,21 @@ struct InstanceData
 
 class SpriteBatch
 {
+    friend class RenderContext;
 private:
-    std::vector<InstanceData> _instances;
-    BufferObject _vbo;
-    VertexArrayObject _vao;
-    std::shared_ptr<RenderContext> _context;
+    static constexpr u_char BUFFER_COUNT = 3;
 
+    std::vector<InstanceData> _instances;
+    VertexArrayObject _vao;
+
+    BufferObject _instanceVBO[BUFFER_COUNT];
+    u_char _currentBufferIndex = 0;
+    
     std::shared_ptr<ShaderProgram> _shader;
     std::shared_ptr<Texture2D> _texture;
-
-    size_t _cacheCout = 0UL;
-
+    
 public:
-    SpriteBatch() = delete;
-    SpriteBatch(std::shared_ptr<RenderContext> context, std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Texture2D> texture);
+    SpriteBatch() = default;
     SpriteBatch(const SpriteBatch&) = delete;
     SpriteBatch &operator=(const SpriteBatch&) = delete;
     SpriteBatch(SpriteBatch &&other) noexcept;
@@ -52,7 +53,7 @@ public:
     ~SpriteBatch() noexcept;
 
     void beginBatch();
-    void submit(Sprite2D *sprite, Transform *transform);
+    void submit(Transform *transform, Sprite2D *sprite);
     void endBatch();
     void flush();
 };

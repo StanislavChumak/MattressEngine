@@ -6,9 +6,15 @@
 #include <iostream>
 #endif
 
+BufferObject::BufferObject()
+{
+    glCreateBuffers(1, &_id);
+}
+
 BufferObject::~BufferObject() noexcept
 {
     if(_id) glDeleteBuffers(1, &_id);
+    _id = 0;
 }
 
 BufferObject &BufferObject::operator=(BufferObject &&other) noexcept
@@ -32,15 +38,13 @@ BufferObject::BufferObject(BufferObject &&other) noexcept
     other._mode = 0;
 }
 
-void BufferObject::init(const unsigned int &mode, const void *data, unsigned int size, unsigned int usage)
+void BufferObject::init(const GLenum &mode, const void *data, const GLsizeiptr size, const GLenum usage)
 {
     _mode = mode;
-    glGenBuffers(1, &_id);
-    glBindBuffer(_mode, _id);
-    glBufferData(_mode, size, data, usage);
+    glNamedBufferData(_id, size, data, usage);
 }
 
-void BufferObject::update(const void *data, const unsigned int size, const unsigned int offset) const
+void BufferObject::update(const void *data, const GLsizeiptr size, const GLintptr offset) const
 {
 #ifndef FLAG_RELEASE
     if (_id == 0) {
@@ -48,8 +52,7 @@ void BufferObject::update(const void *data, const unsigned int size, const unsig
         return;
     }
 #endif
-    glBindBuffer(_mode, _id);
-    glBufferSubData(_mode, offset, size, data);
+    glNamedBufferSubData(_id, offset, size, data);
 }
 
 void BufferObject::bind() const
@@ -63,7 +66,7 @@ void BufferObject::bind() const
     glBindBuffer(_mode, _id);
 }
 
-void BufferObject::bindBase(unsigned int index)
+void BufferObject::bindBase(const GLuint index)
 {
 #ifndef FLAG_RELEASE
     if (_id == 0) {

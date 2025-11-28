@@ -10,10 +10,6 @@
 
 #include "resources/BufferObject.h"
 
-#ifndef FLAG_RELEASE
-#include <iostream>
-#endif
-
 struct Camera
 {
     glm::vec2 pixelSize = glm::vec2(0);
@@ -67,7 +63,7 @@ struct Camera
 
     void updateUBO()
     {
-        UBO.update(&matrices, sizeof(matrices));
+        UBO.update(&matrices, sizeof(matrices), 0);
     }
 
     void updateProjectionMatrix()

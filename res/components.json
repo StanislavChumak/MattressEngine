@@ -28,6 +28,8 @@
                 "shaderJSON" : "res/resources.json",
                 "textureName" : "grassland_cell",
                 "textureJSON" : "res/resources.json",
+                "atlasName" : "grassland_cell",
+                "atlasJSON" : "res/resources.json",
                 "size_x" : "BLOCK_SIZE",
                 "size_y" : "BLOCK_SIZE",
                 "layer" : 0.0
@@ -40,6 +42,8 @@
                 "shaderJSON" : "res/resources.json",
                 "textureName" : "grassland_cell",
                 "textureJSON" : "res/resources.json",
+                "atlasName" : "grassland_cell",
+                "atlasJSON" : "res/resources.json",
                 "size_x" : "BLOCK_SIZE",
                 "size_y" : "BLOCK_SIZE",
                 "layer" : 0.0
@@ -55,6 +59,8 @@
                 "shaderJSON" : "res/resources.json",
                 "textureName" : "grassland_cell",
                 "textureJSON" : "res/resources.json",
+                "atlasName" : "grassland_cell",
+                "atlasJSON" : "res/resources.json",
                 "size_x" : "BLOCK_SIZE",
                 "size_y" : "BLOCK_SIZE",
                 "layer" : 0.0

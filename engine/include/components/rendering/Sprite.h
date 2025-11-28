@@ -7,6 +7,7 @@
 #include "resources/RenderContext.h"
 #include "resources/ShaderProgram.h"
 #include "resources/Texture2D.h"
+#include "resources/TextureAtlas.h"
 #include "resources/VertexArrayObject.h"
 #include "resources/BufferObject.h"
 
@@ -17,10 +18,11 @@ class ECSWorld;
 
 struct Sprite2D
 {
-    std::shared_ptr<Texture2D> texture;
     std::shared_ptr<ShaderProgram> shader;
+    std::shared_ptr<Texture2D> texture;
+    std::shared_ptr<TextureAtlas> atlas;
 
-    Texture2D::SubTexture2D subTexture;
+    TextureAtlas::SubTexture2D subTexture;
     glm::tvec4<uint8_t, glm::precision::highp> color{255, 255, 255, 255};
     glm::vec2 size;
     float layer = 0.f;
@@ -29,10 +31,27 @@ struct Sprite2D
 
     void fromJson(simdjson::ondemand::object obj, EntityID id, ECSWorld &world, ResourceManager &resource)
     {
-        std::string shaderName = std::string(getVarJSON<std::string_view>(obj["shaderName"]));
-        std::string shaderJSON = std::string(getVarJSON<std::string_view>(obj["shaderJSON"]));
-        std::string textureName = std::string(getVarJSON<std::string_view>(obj["textureName"]));
-        std::string textureJSON = std::string(getVarJSON<std::string_view>(obj["textureJSON"]));
+        std::string_view name = getVarJSON<std::string_view>(obj["shaderName"]);
+        std::string_view json = getVarJSON<std::string_view>(obj["shaderJSON"]);
+        shader = resource.getResource<ShaderProgram>(std::string(name), std::string(json), "shaders");
+
+        name = getVarJSON<std::string_view>(obj["textureName"]);
+        json = getVarJSON<std::string_view>(obj["textureJSON"]);
+        texture = resource.getResource<Texture2D>(std::string(name), std::string(json), "textures");
+
+        std::shared_ptr<RenderContext> context = resource.getCache<RenderContext>()["context"].lock();
+        context->createSpriteBatch(shader, texture);
+
+        if(setVarJSON(name, obj["atlasName"]) && setVarJSON(json, obj["atlasJSON"]))
+        {
+            atlas = resource.getResource<TextureAtlas>(std::string(name), std::string(json), "atlases");
+            subTexture = atlas->getSubTexture(0);
+        }
+        else
+        {
+            atlas = nullptr;
+            subTexture = TextureAtlas::SubTexture2D{glm::vec2(0.001f), glm::vec2(0.999f)};
+        }
 
         layer = getVarJSON<double>(obj["layer"]);
 
@@ -51,18 +70,7 @@ struct Sprite2D
             color.g = bufferColor[1];
             color.b = bufferColor[2];
             color.a = bufferColor[3];
-        }
-        shader = resource.getResource<ShaderProgram>(shaderName, shaderJSON, "shaders");
-        texture = resource.getResource<Texture2D>(textureName, textureJSON, "textures");
-
-        subTexture = texture->getSubTexture(0);
-
-        std::shared_ptr<RenderContext> context = resource.getCache<RenderContext>()["context"].lock();
-        u_int64_t batcheId = shader->id() | u_int64_t(texture->id()) << 32;
-        if (context->batches.find(batcheId) == context->batches.end())
-        {
-            context->batches.emplace(batcheId, SpriteBatch(context, shader, texture));
-        }
+        }        
     }
 };
 

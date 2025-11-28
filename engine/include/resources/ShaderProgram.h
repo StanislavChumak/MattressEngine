@@ -5,11 +5,13 @@
 
 #include "../external/jsonUtils.h"
 
+class ResourceManager;
+
 class ShaderProgram
 {
 public:
+    void fromJson(simdjson::ondemand::object obj, ResourceManager &resource);
     ShaderProgram() = default;
-    void fromJson(simdjson::ondemand::object obj);
     ShaderProgram(const ShaderProgram &) = delete;
     ShaderProgram &operator=(const ShaderProgram &) = delete;
     ShaderProgram(ShaderProgram &&other) noexcept;

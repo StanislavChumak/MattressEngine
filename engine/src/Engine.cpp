@@ -117,7 +117,9 @@ bool Core::init(const Config& config)
 
 void Core::loadJsonComponent(std::string pathJsonComponent)
 {
-    simdjson::ondemand::document doc = resources.getJSON(pathJsonComponent);
+    std::shared_ptr<simdjson::padded_string> json = resources.getJSON(pathJsonComponent);
+    simdjson::ondemand::parser parser;
+    simdjson::ondemand::document doc = parser.iterate(*json);
     for(simdjson::ondemand::object entity : getVarJSON<simdjson::ondemand::array>(doc["entities"]))
     {
         EntityID id = world.createEntity();

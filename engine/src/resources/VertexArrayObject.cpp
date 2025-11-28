@@ -5,12 +5,12 @@
 
 VertexArrayObject::VertexArrayObject()
 {
-    glGenVertexArrays(1, &_id);
+    glCreateVertexArrays(1, &_id);
 }
 
 VertexArrayObject::~VertexArrayObject() noexcept
 {
-    glDeleteVertexArrays(1, &_id);
+    if (_id != 0) glDeleteVertexArrays(1, &_id);
     _id = 0;
 }
 
@@ -24,26 +24,32 @@ VertexArrayObject &VertexArrayObject::operator=(VertexArrayObject &&other) noexc
 {
     if(this != &other)
     {
+        if (_id != 0) glDeleteVertexArrays(1, &_id);
+
         _id = other._id;
         other._id = 0;
     }
     return *this;
 }
 
-void VertexArrayObject::addBufferFloat(cuint index, const BufferObject &buffer, cuint size, cuint stride, cuint offset)
+void VertexArrayObject::addBufferFloat(GLuint index, const BufferObject &buffer,
+                                             GLint size, GLsizei stride, GLintptr offset)
 {
-    bind();
-    buffer.bind();
-    glEnableVertexAttribArray(index);
-    glVertexAttribPointer(index, static_cast<GLint>(size), GL_FLOAT, GL_FALSE, stride, (GLvoid *)offset);
+    glVertexArrayVertexBuffer(_id, index, buffer.id(), offset, stride);
+
+    glEnableVertexArrayAttrib(_id, index);
+    glVertexArrayAttribBinding(_id, index, index);
+    glVertexArrayAttribFormat(_id, index, size, GL_FLOAT, GL_FALSE, 0);
 }
 
-void VertexArrayObject::addBufferByte(cuint index, const BufferObject &buffer, cuint size, cuint stride, cuint offset)
+void VertexArrayObject::addBufferByteN(GLuint index, const BufferObject &buffer,
+                                             GLint size, GLsizei stride, GLintptr offset)
 {
-    bind();
-    buffer.bind();
-    glEnableVertexAttribArray(index);
-    glVertexAttribPointer(index, static_cast<GLint>(size), GL_UNSIGNED_BYTE, GL_TRUE, stride, (GLvoid *)offset);
+    glVertexArrayVertexBuffer(_id, index, buffer.id(), offset, stride);
+
+    glEnableVertexArrayAttrib(_id, index);
+    glVertexArrayAttribBinding(_id, index, index);
+    glVertexArrayAttribFormat(_id, index, size, GL_UNSIGNED_BYTE, GL_TRUE, 0);
 }
 
 void VertexArrayObject::bind() const

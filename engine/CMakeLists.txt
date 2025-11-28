@@ -37,6 +37,7 @@ src/resources/RenderContext.cpp
 src/resources/SpriteBatch.cpp
 src/resources/ShaderProgram.cpp
 src/resources/Texture2D.cpp
+src/resources/TextureAtlas.cpp
 src/resources/BufferObject.cpp
 src/resources/VertexArrayObject.cpp
 

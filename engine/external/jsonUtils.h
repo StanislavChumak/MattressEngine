@@ -16,8 +16,8 @@ template<typename T1, typename T2>
 bool setVarJSON(T1 &dest, T2 var)
 {
     auto result = var.template get<T1>();
-    if(!result.error()) var = result.value();
-    return result.error();
+    if(!result.error()) dest = std::move(result.value());
+    return !result.error();
 }
 
 template<typename T1, typename T2>

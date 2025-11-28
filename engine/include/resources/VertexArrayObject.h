@@ -5,26 +5,26 @@
 
 class BufferObject;
 
-typedef const unsigned int cuint;
-
 class VertexArrayObject
 {
+private:
+    GLuint _id = 0;
 public:
     VertexArrayObject();
-    ~VertexArrayObject();
+    ~VertexArrayObject() noexcept;
 
     VertexArrayObject(const VertexArrayObject &) = delete;
     VertexArrayObject &operator=(const VertexArrayObject &) = delete;
     VertexArrayObject(VertexArrayObject &&other) noexcept;
     VertexArrayObject &operator=(VertexArrayObject &&other) noexcept;
 
-    void addBufferFloat(cuint index, const BufferObject &buffer, cuint size, cuint stride, cuint offset);
-    void addBufferByte(cuint index, const BufferObject &buffer, cuint size, cuint stride, cuint offset);
+    GLuint id() const noexcept { return _id; }
+
+    void addBufferFloat(GLuint index, const BufferObject &buffer, GLint size, GLsizei stride, GLintptr offset);
+    void addBufferByteN(GLuint index, const BufferObject &buffer, GLint size, GLsizei stride, GLintptr offset);
+
     void bind() const;
     void unbind() const;
-
-private:
-    GLuint _id = 0;
 };
 
 

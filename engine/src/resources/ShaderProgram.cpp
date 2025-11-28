@@ -33,7 +33,7 @@ std::string getFileString(const std::string &relativeFilePath)
     return std::string(buffer);
 }
 
-void ShaderProgram::fromJson(simdjson::ondemand::object obj)
+void ShaderProgram::fromJson(simdjson::ondemand::object obj, ResourceManager &resource)
 {
     std::string vertexShaderCode = getFileString(std::string(obj["pathVertexFile"].get_string().value()));
     std::string fragmentShaderCode = getFileString(std::string(obj["pathFragmentFile"].get_string().value()));

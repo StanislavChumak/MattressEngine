@@ -22,7 +22,7 @@ void AnimatorSystem::update(ECSWorld &world, const double &delta)
                 animator->currentFrame = animator->offset;
             }
 
-            sprite->subTexture = sprite->texture->getSubTexture(animator->currentFrame);
+            sprite->subTexture = sprite->atlas->getSubTexture(animator->currentFrame);
         }
     }
 }
