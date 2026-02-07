@@ -94,7 +94,7 @@ void RenderContext::begin_batches()
     }
 }
 
-void RenderContext::submit_batch(u_int64_t id, InstanceData date)
+void RenderContext::submit_batch(uint64_t id, InstanceData date)
 {
     _batches.at(id).submit(std::move(date));
 }
