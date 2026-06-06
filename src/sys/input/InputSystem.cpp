@@ -1,10 +1,15 @@
-#include "sys/input/InputSystem.h"
+#include "sys/input/InputSystem.hpp"
 
-#include "comp/single/Cursor.h"
+#include "comp/ECSWorld.hpp"
+#include "comp/single/Input.hpp"
+#include "comp/single/Cursor.hpp"
 
-InputSystem::InputSystem(Input &input):input(input){}
+namespace mtrs::sys
+{
 
-void InputSystem::setKey(ECSWorld &world, int key, bool action)
+InputSystem::InputSystem(comp::Input &input):input(input){}
+
+void InputSystem::setKey(comp::ECSWorld &world, int key, bool action)
 {
     input.keys[key] = action;
     // for(auto func : _subscribersKey[key][action])
@@ -13,18 +18,18 @@ void InputSystem::setKey(ECSWorld &world, int key, bool action)
     // }
 }
 
-void InputSystem::setMouseButton(ECSWorld &world, int button, bool action)
+void InputSystem::setMouseButton(comp::ECSWorld &world, int button, bool action)
 {
-    input.mouseButtons[button] = action;
+    input.mouse_buttons[button] = action;
     // for(auto func : _subscribersMouseButton[button][action])
     // {
     //     func();
     // }
 }
 
-void InputSystem::setCursor(ECSWorld &world, glm::dvec2 pos)
+void InputSystem::setCursor(comp::ECSWorld &world, glm::dvec2 pos)
 {
-    Cursor *cursor = world.get_single_comp<Cursor>();
+    comp::Cursor *cursor = world.get_single_comp<comp::Cursor>();
     if(!cursor) return;
     cursor->pos = pos;
     // for(auto func : _subscribersCursor)
@@ -51,7 +56,9 @@ void InputSystem::setCursor(ECSWorld &world, glm::dvec2 pos)
 void InputSystem::updateLastInput()
 {
     for(int i = 0; i < 349; i++)
-        input.lastKeys[i] = input.keys[i];
+        input.last_keys[i] = input.keys[i];
     for(int i = 0; i < 8; i++)
-        input.lastMouseButtons[i] = input.mouseButtons[i];
+        input.last_mouse_buttons[i] = input.mouse_buttons[i];
+}
+
 }

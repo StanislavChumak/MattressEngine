@@ -1,22 +1,27 @@
-#include "sys/rendering/StateAnimatorSystem.h"
+#include "sys/rendering/StateAnimatorSystem.hpp"
 
-#include "comp/ECSWorld.h"
-#include "comp/rendering/Animator.h"
-#include "comp/rendering/StateAnimator.h"
+#include "comp/ECSWorld.hpp"
+#include "comp/rendering/Animator.hpp"
+#include "comp/rendering/StateAnimator.hpp"
 
-void StateAnimatorSystem::update(ECSWorld &world, const double &delta)
+namespace mtrs::sys
 {
-    for(auto [entity, animator, state] : world.view<Animator, StateAnimator>())
+
+void StateAnimatorSystem::update(comp::ECSWorld &world, const double &delta)
+{
+    for(auto [entity, animator, state] : world.view<comp::Animator, comp::StateAnimator>())
     {
         if(!state->dirty) continue;
 
-        auto it = state->states.find(state->currentState);
+        auto it = state->states.find(state->current_state);
         if(it != state->states.end())
         {
-            animator->currentFrame = animator->offset = it->second.first;
-            animator->countFrame = it->second.second;
-            animator->currentAnimationTime = 0;
+            animator->current_frame = animator->offset = it->second.offset;
+            animator->count_frame = it->second.count;
+            animator->current_animation_time = 0;
         }
         state->dirty = false;
     }
+}
+
 }

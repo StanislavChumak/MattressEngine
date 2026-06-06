@@ -1,15 +1,20 @@
-#include "sys/rendering/CameraSystem.h"
+#include "sys/rendering/CameraSystem.hpp"
 
-#include "comp/ECSWorld.h"
-#include "comp/single/Camera.h"
-#include "comp/core/Transform.h"
+#include "comp/ECSWorld.hpp"
+#include "comp/single/Camera.hpp"
+#include "comp/core/Transform.hpp"
 
-void CameraSystem::update(ECSWorld &world, const double &delta)
+namespace mtrs::sys
 {
-    Camera *camera = world.get_single_comp<Camera>();
+
+void CameraSystem::update(comp::ECSWorld &world, const double &delta)
+{
+    comp::Camera *camera = world.get_single_comp<comp::Camera>();
     if(!camera || camera->target == NULL_ENTITY) return;
-    Transform *transform = world.get_comp<Transform>(camera->target);
+    comp::Transform *transform = world.get_comp<comp::Transform>(camera->target);
     if(!transform) return;
  
-    camera->update_view_matrix(glm::inverse(transform->globalMatrix));
+    camera->update_view_matrix(glm::inverse(transform->global_matrix));
+}
+
 }

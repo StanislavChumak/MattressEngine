@@ -1,12 +1,13 @@
-#include "util/get_files_from_folder.h"
+#include "util/get_files_from_folder.hpp"
+
+#include "util/mtrs_message.hpp"
 
 #include <filesystem>
 
-#ifdef FLAG_DEBUG
-#include <iostream>
-#endif
-
 namespace fs = std::filesystem;
+
+namespace mtrs::util
+{
 
 std::unordered_set<std::string> get_files_from_folder(const std::string &dirPath, const std::string &extension)
 {
@@ -28,9 +29,9 @@ std::unordered_set<std::string> get_files_from_folder(const std::string &dirPath
     }
     catch (const fs::filesystem_error& e)
     {
-#ifdef FLAG_DEBUG
-        std::cerr << "Error: " << e.what() << std::endl;
-#endif
+        util::mtrs_message(TipeMessage::ERROR, e.what());
     }
     return files;
+}
+
 }

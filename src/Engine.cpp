@@ -1,142 +1,127 @@
-#include "Engine.h"
+#include "Engine.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "comp/single/Window.h"
-#include "comp/single/States.h"
-#include "comp/single/Camera.h"
-#include "comp/single/Audio.h"
-#include "comp/single/Cursor.h"
+#include "comp/single/Window.hpp"
+#include "comp/single/Input.hpp"
+#include "comp/single/States.hpp"
+#include "comp/single/Camera.hpp"
+#include "comp/single/Audio.hpp"
+#include "comp/single/Cursor.hpp"
 
-#include "comp/registerComponent.h"
+#include "comp/registerComponent.hpp"
 
-#include "res/RenderContext.h"
-#include "sys/rendering/SpriteRenderSystem.h"
+#include "res/render/RenderContext.hpp"
+#include "sys/rendering/SpriteRenderSystem.hpp"
 
-#ifdef FLAG_DEBUG
-#include <iostream>
-#endif
+#include "util/mtrs_message.hpp"
 
-using namespace engine;
+void window_size_callback(GLFWwindow *window, int width, int height);
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void cursor_callback(GLFWwindow *window, double xpos, double ypos);
 
-void windowSizeCallback(GLFWwindow *window, int width, int height);
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode);
-void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-void cursorCallback(GLFWwindow *window, double xpos, double ypos);
-
-Core::Core():inputSystem(world.add_single_comp(Input{})){}
-
-bool Core::init(const Config& config)
+namespace mtrs::engine
 {
-    window = &world.add_single_comp(Window(config.pixelSize * config.pixelScale, config.nameWindow.c_str(), config.pixelScale));
-    states = &world.add_single_comp(States{config.initState});
 
-    world.add_single_comp(Cursor{});
+Core::Core(const Config& config)
+: resources(config.executable_path, config.resurce_path),
+world(config.executable_path, config.scenes_path),
+input_system(world.add_single_comp(comp::Input{}))
+{
+    window = &world.add_single_comp(comp::Window(config.pixel_size * config.pixel_scale,
+        config.name_window.c_str(), config.pixel_scale));
+    states = &world.add_single_comp(comp::States{config.init_state});
+
+    world.add_single_comp(comp::Cursor{});
 
     if (!glfwInit())
     {
-#ifdef FLAG_DEBUG
-        std::cerr << "Failed GLFW" << std::endl;
-        return false;
-#endif
+        util::mtrs_message(util::TipeMessage::ERROR, "Failed GLFW init");
+        _is_init = false;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window->poiter = glfwCreateWindow(window->size.x, window->size.y, window->name, nullptr, nullptr);
-#ifdef FLAG_DEBUG
+
     if (!window->poiter)
     {
-        std::cerr << "Failed to create GLFW window" << std::endl;
         const char *description;
         int code = glfwGetError(&description);
 
-        if (description) std::cerr << code << description;
+        if (description)
+        {
+            util::mtrs_message(util::TipeMessage::ERROR, "Failed to create GLFW window: ", code);
+        }
         
         glfwTerminate();
-        return false;
+        _is_init = false;
     }
-#endif
     glfwMakeContextCurrent(window->poiter);
 
-    glfwSetFramebufferSizeCallback(window->poiter, windowSizeCallback);
-    glfwSetKeyCallback(window->poiter, keyCallback);
-    glfwSetMouseButtonCallback(window->poiter, mouseButtonCallback);
-    glfwSetCursorPosCallback(window->poiter, cursorCallback);
+    glfwSetFramebufferSizeCallback(window->poiter, window_size_callback);
+    glfwSetKeyCallback(window->poiter, key_callback);
+    glfwSetMouseButtonCallback(window->poiter, mouse_button_callback);
+    glfwSetCursorPosCallback(window->poiter, cursor_callback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-#ifdef FLAG_DEBUG
-        std::cerr << "Couidn't load opengl" << std::endl;
+        util::mtrs_message(util::TipeMessage::ERROR, "Couidn't load opengl");
         glfwTerminate();
-        return false;
-#endif
+        _is_init = false;
     }
 
     glfwSwapInterval(0);
 
-#ifdef FLAG_DEBUG
-    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-#endif
+    util::mtrs_message(util::TipeMessage::LOG, "Renderer: ", glGetString(GL_RENDERER));
+    util::mtrs_message(util::TipeMessage::LOG, "OpenGL version: ", glGetString(GL_VERSION));
+    util::mtrs_message(util::TipeMessage::LOG, "GLSL Version: ",
+        glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-    Camera &camera = world.add_single_comp(Camera(config.pixelSize));
+    comp::Camera &camera = world.add_single_comp(comp::Camera(config.pixel_size));
 
-    Audio *audio = world.get_single_comp<Audio>();
+    comp::Audio *audio = world.get_single_comp<comp::Audio>();
     if(audio)
     {
-        audio->soundScale = config.SaundLocationScale;
+        audio->sound_scale = config.saund_location_scale;
         audio->init();
-#ifdef FLAG_DEBUG
         if(!audio->initialized)
         {
-            std::cerr << "Failed to init sound engine" << std::endl;
+            util::mtrs_message(util::TipeMessage::ERROR, "Failed to init sound engine");
             glfwTerminate();
-            return false;
+            _is_init = false;
         }
-#endif
     }
     
     glfwSetWindowUserPointer(window->poiter, this);
 
-    if(!config.displayCursor) glfwSetInputMode(window->poiter, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    if(!config.display_cursor) glfwSetInputMode(window->poiter, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-    glClearColor(config.clearColor[0], config.clearColor[1], config.clearColor[2], config.clearColor[3]);
+    glClearColor(config.clear_color[0], config.clear_color[1], config.clear_color[2], config.clear_color[3]);
     
     if(config.depth) glEnable(GL_DEPTH_TEST);
 
     glfwSetWindowSize(window->poiter, window->size.x, window->size.y);
-    windowSizeCallback(window->poiter, window->size.x, window->size.y);
+    window_size_callback(window->poiter, window->size.x, window->size.y);
 
-    std::shared_ptr<RenderContext> context = std::make_shared<RenderContext>();
-    resources.get_cache<RenderContext>()["context"] = context;
-    SpriteRenderSystem::context = std::move(context);
+    std::shared_ptr<res::RenderContext> context = std::make_shared<res::RenderContext>();
+    resources.get_cache<res::RenderContext>()["context"] = context;
+    sys::SpriteRenderSystem::context = std::move(context);
     
-    return true;
+    _is_init = true;
 }
 
-void Core::load_component(std::string pathJsonComponent)
+void Core::garbage_collection()
 {
-    std::shared_ptr<simdjson::padded_string> json = resources.get_json(pathJsonComponent);
-    simdjson::ondemand::parser parser;
-    simdjson::ondemand::document doc = parser.iterate(*json);
-    for(simdjson::ondemand::object entity : get_var_json<simdjson::ondemand::array>(doc["entities"]))
-    {
-        EntityID id = world.create_entity();
-        for(auto field : entity)
-        {
-            std::string_view name = get_result_json<std::string_view>(field.unescaped_key());
-            simdjson::ondemand::object obj = get_var_json<simdjson::ondemand::object>(field.value());
-            typeRegistry[std::string(name)].addComponentFromJson(id, obj, world, resources);
-        }
-    }
+    world.remove_marked();
+    resources.garbage_collector();
 }
 
-void Core::pred_upate()
+void Core::pre_update()
 {
-    windowSizeCallback(window->poiter, window->size.x, window->size.y);
+    window_size_callback(window->poiter, window->size.x, window->size.y);
 }
 
 void Core::update(float delta)
@@ -144,20 +129,18 @@ void Core::update(float delta)
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    systems.update(world, delta, states->currentSystemState);
+    systems.update(world, delta, states->current_system_state);
 
-    inputSystem.updateLastInput();
+    input_system.updateLastInput();
     world.remove_marked();
 
     glfwSwapBuffers(window->poiter);
-    resources.garbage_collector();
 }
 
 void Core::shutdown()
 {
-    SpriteRenderSystem::context.reset();
-    world.clear_sets();
-    world.clear_singletons();
+    sys::SpriteRenderSystem::context.reset();
+    world.~ECSWorld();
     resources.garbage_collector();
     glfwTerminate();
 }
@@ -167,67 +150,68 @@ bool Core::is_close_window()
     return glfwWindowShouldClose(window->poiter);
 }
 
+}
 
-void windowSizeCallback(GLFWwindow *window, int width, int height)
+void window_size_callback(GLFWwindow *window, int width, int height)
 {
-    Core *core = static_cast<Core*>(glfwGetWindowUserPointer(window));
+    mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
     if (core)
     {
-        glm::uvec2 windowSize = glm::uvec2(width, height);
-        core->world.get_single_comp<Window>()->size = windowSize;
-        Camera *camera = core->world.get_single_comp<Camera>();
+        glm::uvec2 window_size = glm::uvec2(width, height);
+        core->world.get_single_comp<mtrs::comp::Window>()->size = window_size;
+        mtrs::comp::Camera *camera = core->world.get_single_comp<mtrs::comp::Camera>();
 
-        const float aspectRatio = static_cast<float>(camera->pixelSize.x) / camera->pixelSize.y;
-        unsigned int viewPortWidth = windowSize.x;
-        unsigned int viewPortHeight = windowSize.y;
-        unsigned int viewPortOffsetLeft = 0;
-        unsigned int viewPortOffsetBottom = 0;
-        if (static_cast<float>(windowSize.x) / windowSize.y > aspectRatio)
+        const float aspect_ratio = static_cast<float>(camera->pixel_size.x) / camera->pixel_size.y;
+        uint32_t view_width = window_size.x;
+        uint32_t view_height = window_size.y;
+        uint32_t view_offset_left = 0;
+        uint32_t view_offset_bottom = 0;
+        if (static_cast<float>(window_size.x) / window_size.y > aspect_ratio)
         {
-            viewPortWidth = static_cast<unsigned int>(windowSize.y * aspectRatio);
-            viewPortOffsetLeft = (windowSize.x - viewPortWidth) / 2;
+            view_width = static_cast<uint32_t>(window_size.y * aspect_ratio);
+            view_offset_left = (window_size.x - view_width) / 2;
         }
         else
         {
-            viewPortHeight = static_cast<unsigned int>(windowSize.x / aspectRatio);
-            viewPortOffsetBottom = (windowSize.y - viewPortHeight) / 2;
+            view_height = static_cast<uint32_t>(window_size.x / aspect_ratio);
+            view_offset_bottom = (window_size.y - view_height) / 2;
         }
 
-        camera->set_offset_viewport(viewPortWidth, viewPortHeight, viewPortOffsetLeft, viewPortOffsetBottom);
+        camera->set_offset_viewport(view_width, view_height, view_offset_left, view_offset_bottom);
         camera->update_proj_matrix();
     }
 }
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mode)
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-    Core *core = static_cast<Core*>(glfwGetWindowUserPointer(window));
+    mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
     if (core)
-        core->inputSystem.setKey(core->world, key, action);
+        core->input_system.setKey(core->world, key, action);
 }
 
-void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-    Core *core = static_cast<Core*>(glfwGetWindowUserPointer(window));
+    mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
     if (core)
-        core->inputSystem.setMouseButton(core->world, button, action);
+        core->input_system.setMouseButton(core->world, button, action);
 }
 
-void cursorCallback(GLFWwindow *window, double xpos, double ypos)
+void cursor_callback(GLFWwindow *window, double xpos, double ypos)
 {
-    Core *core = static_cast<Core*>(glfwGetWindowUserPointer(window));
+    mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
     if (core)
     {
-        Camera *camera = core->world.get_single_comp<Camera>();
-        Window *window = core->world.get_single_comp<Window>();
-        glm::dvec2 offset(camera->offsetViewport);
+        mtrs::comp::Camera *camera = core->world.get_single_comp<mtrs::comp::Camera>();
+        mtrs::comp::Window *window = core->world.get_single_comp<mtrs::comp::Window>();
+        glm::dvec2 offset(camera->offset_viewport);
         glm::dvec2 pos(xpos, ypos);
         pos -= offset;
-        unsigned int pixelHeight = camera->pixelSize.y;
-        double ratio = (static_cast<double>(window->size.y - offset.y * 2) / window->scale) / pixelHeight;
+        uint32_t pixel_height = camera->pixel_size.y;
+        double ratio = (static_cast<double>(window->size.y - offset.y * 2) / window->scale) / pixel_height;
         pos /= window->scale * ratio;
-        pos.y = pixelHeight - pos.y;
+        pos.y = pixel_height - pos.y;
 
-        core->inputSystem.setCursor(core->world, pos);
+        core->input_system.setCursor(core->world, pos);
     }
 }
 

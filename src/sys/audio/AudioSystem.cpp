@@ -1,45 +1,50 @@
-#include "sys/audio/AudioSystem.h"
+#include "sys/audio/AudioSystem.hpp"
 
 #define MINIAUDIO_IMPLEMENTATION
 
-#include "comp/ECSWorld.h"
-#include "comp/audio/Sound.h"
-#include "comp/audio/Music.h"
+#include "comp/ECSWorld.hpp"
+#include "comp/audio/Sound.hpp"
+#include "comp/audio/Music.hpp"
 
-void AudioSystem::update(ECSWorld &world, const double &delta)
+namespace mtrs::sys
 {
-    Audio *audio = world.get_single_comp<Audio>();
+
+void AudioSystem::update(comp::ECSWorld &world, const double &delta)
+{
+    comp::Audio *audio = world.get_single_comp<comp::Audio>();
     if(!audio) return;
-    for(auto [entity, sound] : world.view<Sound>())
+    for(auto [entity, sound] : world.view<comp::Sound>())
     {
-        if(sound->isPlay)
+        if(sound->is_play)
         {
             auto ptrSound = sound->getFreeSound();
             if(ptrSound)
                 ma_sound_start(ptrSound);
-            sound->isPlay = false;
+            sound->is_play = false;
         }
 
-        if(sound->isStop)
+        if(sound->is_stop)
         {
             for(auto ptrSound : sound->instances)
                 ma_sound_stop(ptrSound);
-            sound->isStop;
+            sound->is_stop;
         }
 
-        if(audio->cacheVolumeDirty)
-            sound->setVolume(audio->soundVolume);
+        if(audio->cache_volume_dirty)
+            sound->setVolume(audio->sound_volume);
     }
 
-    for(auto [entity, music] : world.view<Music>())
+    for(auto [entity, music] : world.view<comp::Music>())
     {
-        if(music->isPlay)
+        if(music->is_play)
             ma_sound_start(music->music);
 
-        if(music->isStop)
+        if(music->is_stop)
             ma_sound_stop(music->music);
 
-        if(audio->cacheVolumeDirty)
-            music->setVolume(audio->musicVolume);
+        if(audio->cache_volume_dirty)
+            music->setVolume(audio->music_volume);
     }
+}
+
 }

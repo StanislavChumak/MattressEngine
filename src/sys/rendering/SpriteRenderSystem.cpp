@@ -1,16 +1,18 @@
-#include "sys/rendering/SpriteRenderSystem.h"
+#include "sys/rendering/SpriteRenderSystem.hpp"
 
-#include "comp/ECSWorld.h"
-#include "comp/core/Transform.h"
-#include "comp/single/Camera.h"
-#include "comp/rendering/Sprite.h"
+#include "res/render/RenderContext.hpp"
+#include "res/asset/ShaderProgram.hpp"
+#include "res/asset/Texture.hpp"
 
-std::shared_ptr<RenderContext> SpriteRenderSystem::context;
+#include "comp/ECSWorld.hpp"
+#include "comp/core/Transform.hpp"
+#include "comp/single/Camera.hpp"
+#include "comp/rendering/Sprite.hpp"
 
-InstanceData sprite_to_instance(Transform *transform, Sprite *sprite)
+mtrs::res::InstanceData sprite_to_instance(mtrs::comp::Transform *transform, mtrs::comp::Sprite *sprite)
 {
-    InstanceData date;
-    glm::mat4 glob = transform->globalMatrix;
+    mtrs::res::InstanceData date;
+    glm::mat4 glob = transform->global_matrix;
 
     date.position = glm::vec2(glob[3].x, glob[3].y);
 
@@ -21,19 +23,24 @@ InstanceData sprite_to_instance(Transform *transform, Sprite *sprite)
 
     date.rotation = std::atan2(glob[0].y, glob[0].x);
 
-    date.lbUV = sprite->subTexture.lbVertex;
-    date.rtUV = sprite->subTexture.rtVertex;
+    date.lb_uv = sprite->sub_texture.lb_vertex;
+    date.rt_uv = sprite->sub_texture.rt_vertex;
     date.color = sprite->color;
     date.layer = sprite->layer;
 
     return std::move(date);
 }
 
-void SpriteRenderSystem::update(ECSWorld &world, const double &delta)
+namespace mtrs::sys
+{
+
+std::shared_ptr<res::RenderContext> SpriteRenderSystem::context;
+
+void SpriteRenderSystem::update(comp::ECSWorld &world, const double &delta)
 {
     context->begin_batches();
 
-    for(auto [entity, transform, sprite] : world.view<Transform, Sprite>())
+    for(auto [entity, transform, sprite] : world.view<comp::Transform, comp::Sprite>())
     {
         if(!sprite->visibility) continue;
 
@@ -42,4 +49,6 @@ void SpriteRenderSystem::update(ECSWorld &world, const double &delta)
     }
 
     context->end_batches();
+}
+
 }

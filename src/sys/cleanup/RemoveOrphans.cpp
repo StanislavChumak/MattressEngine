@@ -1,8 +1,13 @@
-#include "sys/cleanup/RemoveOrphans.h"
+#include "sys/cleanup/RemoveOrphans.hpp"
 
-#include "comp/core/ParentChildren.h"
+#include "comp/core/ParentChildren.hpp"
 
-void RemoveOrphans::update(ECSWorld &world, const double &delta)
+namespace mtrs::sys
 {
+
+void RemoveOrphans::update(comp::ECSWorld &world, const double &delta)
+{
+
+}
 
 }

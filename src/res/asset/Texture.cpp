@@ -1,4 +1,4 @@
-#include "res/asset/Texture.h"
+#include "res/asset/Texture.hpp"
 
 #include "glad/glad.h"
 
@@ -6,17 +6,13 @@
 #define STBI_ONLY_PNG
 #include "stb_image.h"
 
-#include "util/get_from_file_mtrs.h"
+#include "util/get_from_file_mtrs.hpp"
+#include "util/mtrs_message.hpp"
 
 #include "mtrsstruct/dynamic_field.def"
 #include "mtrsstruct/res_struct/Texture.struct"
 
 #include <fstream>
-
-#ifndef FLAG_RELEASE
-#include <iostream>
-#endif
-
 
 namespace mtrs::res
 {
@@ -25,7 +21,7 @@ Texture::Texture(std::ifstream &file)
 {
     Texture_rs texture;
     file.read(reinterpret_cast<char*>(&texture), sizeof(texture));
-    std::string path = get_string_from_mtformat(file, texture.pathOffset, texture.pathSize);
+    std::string path = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(texture, path));
 
     // auto resultInt = obj["number"].get_int64();
     // if(!resultInt.error())
@@ -36,12 +32,11 @@ Texture::Texture(std::ifstream &file)
     int channels = 0;
     unsigned char *pixels = stbi_load(path.c_str(), &_width, &_height, &channels, 0);
 
-#ifndef FLAG_RELEASE
-    if (!pixels) {
-        std::cerr << "Failed to load texture: " << path << std::endl;
+    if (!pixels)
+    {
+        util::mtrs_message(util::TipeMessage::ERROR, "Failed to load texture: ", path);
         return;
     }
-#endif
     
     switch (channels)
     {
@@ -94,12 +89,12 @@ Texture::~Texture()
     glDeleteTextures(1, &_ID);
 }
 
-std::string Texture::get_type_name()
+std::string Texture::get_type_name() noexcept
 {
     return "textures";
 }
 
-uint32_t Texture::get_type_size()
+uint32_t Texture::get_type_size() noexcept
 {
     return sizeof(Texture_rs);
 }
@@ -114,7 +109,7 @@ void Texture::active() const
     glActiveTexture(GL_TEXTURE0 + _number);
 }
 
-unsigned int Texture::id() const noexcept
+uint32_t Texture::id() const noexcept
 {
     return _ID;
 }

@@ -1,19 +1,16 @@
-#include "res/asset/ShaderProgram.h"
+#include "res/asset/ShaderProgram.hpp"
 
 #include "glad/glad.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "util/get_from_file_mtrs.h"
+#include "util/get_from_file_mtrs.hpp"
+#include "util/mtrs_message.hpp"
 
 #include "mtrsstruct/dynamic_field.def"
 #include "mtrsstruct/res_struct/Shader.struct"
 
 #include <fstream>
-
-#ifndef FLAG_RELEASE
-#include <iostream>
-#endif
 
 namespace mtrs::res
 {
@@ -23,92 +20,82 @@ ShaderProgram::ShaderProgram(std::ifstream &file)
     Shader_rs shader;
     file.read(reinterpret_cast<char*>(&shader), sizeof(shader));
 
-    std::string vertexShaderCode  = get_string_from_mtformat(file, shader.vertexOffset, shader.vertexSize);
-    std::string fragmentShaderCode = get_string_from_mtformat(file, shader.fragmentOffset, shader.fragmentSize);
+    std::string vertex_shader_code, fragment_shader_code;
+    vertex_shader_code = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(shader, vertex));
+    fragment_shader_code = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(shader, fragment));
 
-#   ifndef FLAG_RELEASE
-    if (vertexShaderCode.empty())
+    if (vertex_shader_code.empty())
     {
-        std::cerr << "No vertex shader !" << std::endl;
+        util::mtrs_message(util::TipeMessage::ERROR, "Vertex shader no code");
         return;
     }
     
-    if (fragmentShaderCode.empty())
+    if (fragment_shader_code.empty())
     {
-        std::cerr << "No fragment shader !" << std::endl;
+        util::mtrs_message(util::TipeMessage::ERROR, "Fragment shader no code");
         return;
     }
-#   endif
 
-    GLuint vertexShaderID = 0;
-    GLuint fragmentShaderID = 0;
-    if(!createShader(std::move(vertexShaderCode).c_str(), GL_VERTEX_SHADER, vertexShaderID))
+    GLuint vertex_id = 0;
+    GLuint fragment_id = 0;
+    if(!createShader(std::move(vertex_shader_code).c_str(), GL_VERTEX_SHADER, vertex_id))
     {
-#ifndef FLAG_RELEASE
-        std::cerr << "ERROR::VERTEX::SHADER::COMPILATION_FAILED" << std::endl;
+        util::mtrs_message(util::TipeMessage::ERROR, "Vertex shader compilation failed");
         return;
-#endif
     }
 
-    if(!createShader(std::move(fragmentShaderCode).c_str(), GL_FRAGMENT_SHADER, fragmentShaderID))
+    if(!createShader(std::move(fragment_shader_code).c_str(), GL_FRAGMENT_SHADER, fragment_id))
     {
-#ifndef FLAG_RELEASE
-        std::cerr << "ERROR::FRAGMENT::SHADER::COMPILATION_FAILED" << std::endl;
-        glDeleteShader(vertexShaderID);
+        util::mtrs_message(util::TipeMessage::ERROR, "Fragment shader compilation failed");
+        glDeleteShader(vertex_id);
         return;
-#endif
     }
 
     _ID = glCreateProgram();
-    glAttachShader(_ID, vertexShaderID);
-    glAttachShader(_ID, fragmentShaderID);
+    glAttachShader(_ID, vertex_id);
+    glAttachShader(_ID, fragment_id);
     glLinkProgram(_ID);
-#ifndef FLAG_RELEASE
     GLint success = 0;
     glGetProgramiv(_ID, GL_LINK_STATUS, &success);
     if (!success)
     {
-        GLchar infoLog[1024];
-        glGetProgramInfoLog(_ID, 1024, nullptr, infoLog);
-        std::cerr << "ERROR::PROGRAM::LINKING_FAILED: \n"
-                    << infoLog << std::endl;
-        _isCompiled = false;
+        GLchar info_log[1024];
+        glGetProgramInfoLog(_ID, 1024, nullptr, info_log);
+        util::mtrs_message(util::TipeMessage::ERROR, "Program linking failed:\n", info_log);
+        _is_compiled = false;
     }
     else
-#endif
     {
-        _isCompiled = true;
+        _is_compiled = true;
     }
-    glDeleteShader(vertexShaderID);
-    glDeleteShader(fragmentShaderID);
+    glDeleteShader(vertex_id);
+    glDeleteShader(fragment_id);
 }
 
-bool ShaderProgram::createShader(const char *sourse, const unsigned int &shaderType, unsigned int &shaderID)
+bool ShaderProgram::createShader(const char *sourse,const uint32_t &shader_type,uint32_t &shader_id)
 {
-    shaderID = glCreateShader(shaderType);
-    glShaderSource(shaderID, 1, &sourse, nullptr);
-    glCompileShader(shaderID);
-#ifndef FLAG_RELEASE
+    shader_id = glCreateShader(shader_type);
+    glShaderSource(shader_id, 1, &sourse, nullptr);
+    glCompileShader(shader_id);
     GLint success = 0;
-    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        GLchar infoLog[1024];
-        glGetShaderInfoLog(shaderID, 1024, nullptr, infoLog);
-        std::cerr << "ERROR::SHADER::COMPILATION_FAILED (shader type " << shaderType << "):\n"
-                    << infoLog << std::endl;
+        GLchar info_log[1024];
+        glGetShaderInfoLog(shader_id, 1024, nullptr, info_log);
+        util::mtrs_message(util::TipeMessage::ERROR, "Shader (type: ", shader_type,
+            ") compilation failed:\n", info_log);
         return false;
     }
-#endif
     return true;
 }
 
 ShaderProgram::ShaderProgram(ShaderProgram &&other) noexcept
 {
     _ID = other._ID;
-    _isCompiled = other._isCompiled;
+    _is_compiled = other._is_compiled;
     other._ID = 0;
-    other._isCompiled = false;
+    other._is_compiled = false;
 }
 
 ShaderProgram &ShaderProgram::operator=(ShaderProgram &&other) noexcept
@@ -117,26 +104,31 @@ ShaderProgram &ShaderProgram::operator=(ShaderProgram &&other) noexcept
     {
         glDeleteProgram(_ID);
         _ID = other._ID;
-        _isCompiled = other._isCompiled;
+        _is_compiled = other._is_compiled;
         other._ID = 0;
-        other._isCompiled = false;
+        other._is_compiled = false;
     }
     return *this;
-}
-
-std::string get_type_name()
-{
-    return "shaders";
-}
-
-uint32_t get_type_size()
-{
-    return sizeof(Shader_rs);
 }
 
 ShaderProgram::~ShaderProgram()
 {
     glDeleteProgram(_ID);
+}
+
+std::string ShaderProgram::get_type_name() noexcept
+{
+    return "shaders";
+}
+
+uint32_t ShaderProgram::get_type_size() noexcept
+{
+    return sizeof(Shader_rs);
+}
+
+bool ShaderProgram::is_compiled() const noexcept
+{
+    return _is_compiled;
 }
 
 void ShaderProgram::use() const
@@ -163,7 +155,7 @@ bool ShaderProgram::has_uniform(const char *name) const {
     return glGetUniformLocation(_ID, name) != -1;
 }
 
-unsigned int ShaderProgram::id() const noexcept
+uint32_t ShaderProgram::id() const noexcept
 {
     return _ID;
 }

@@ -16,6 +16,7 @@ src/Engine.cpp
 
 src/util/get_files_from_folder.cpp
 src/util/get_from_file_mtrs.cpp
+src/util/mtrs_message.cpp
 
 # Systems
 src/sys/SystemManager.cpp
@@ -48,6 +49,16 @@ src/res/render/BufferObject.cpp
 src/res/render/VertexArrayObject.cpp
 
 # Components
+
+src/comp/ECSWorld.cpp
+
+src/comp/core/Transform.cpp
+
+src/comp/rendering/Sprite.cpp
+src/comp/rendering/Animator.cpp
+src/comp/rendering/StateAnimator.cpp
+
+src/comp/ui/CursorFollower.cpp
 
 )
 

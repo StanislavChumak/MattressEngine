@@ -1,9 +1,9 @@
-#include "res/render/SpriteBatch.h"
+#include "res/render/SpriteBatch.hpp"
 
 #include "glad/glad.h"
 
-#include "res/asset/ShaderProgram.h"
-#include "res/asset/Texture.h"
+#include "res/asset/ShaderProgram.hpp"
+#include "res/asset/Texture.hpp"
 
 #include <cstring>
 
@@ -16,10 +16,10 @@ SpriteBatch::SpriteBatch(SpriteBatch &&other) noexcept
     _instances = std::move(other._instances);
     for(u_char i = 0; i < BUFFER_COUNT; i++)
     {
-        _instanceVBO[i] = std::move(other._instanceVBO[i]);
-        _mappedBuffers[i] = other._mappedBuffers[i];
+        _instance_vbo[i] = std::move(other._instance_vbo[i]);
+        _mapped_buffers[i] = other._mapped_buffers[i];
         _fences[i] = other._fences[i];
-        other._mappedBuffers[i] = nullptr;
+        other._mapped_buffers[i] = nullptr;
         other._fences[i] = 0;
     }
     _shader = std::move(other._shader);
@@ -34,10 +34,10 @@ SpriteBatch &SpriteBatch::operator=(SpriteBatch &&other) noexcept
         _instances = std::move(other._instances);
         for(u_char i = 0; i < BUFFER_COUNT; i++)
         {
-            _instanceVBO[i] = std::move(other._instanceVBO[i]);
-            _mappedBuffers[i] = other._mappedBuffers[i];
+            _instance_vbo[i] = std::move(other._instance_vbo[i]);
+            _mapped_buffers[i] = other._mapped_buffers[i];
             _fences[i] = other._fences[i];
-            other._mappedBuffers[i] = nullptr;
+            other._mapped_buffers[i] = nullptr;
             other._fences[i] = 0;
         }
         _shader = std::move(other._shader);
@@ -67,31 +67,32 @@ void SpriteBatch::end_batch()
 {
     if(_instances.empty()) return;
 
-    ++_currentBufferIndex %= BUFFER_COUNT;
+    _current_buffer_index++;
+    _current_buffer_index %= BUFFER_COUNT;
 
-    if(_fences[_currentBufferIndex])
+    if(_fences[_current_buffer_index])
     {
-        GLenum result = glClientWaitSync(_fences[_currentBufferIndex], GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000);
+        GLenum result = glClientWaitSync(_fences[_current_buffer_index], GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000);
         if (result != GL_ALREADY_SIGNALED && result != GL_CONDITION_SATISFIED)
         {
-            glWaitSync(_fences[_currentBufferIndex], 0, GL_TIMEOUT_IGNORED);
+            glWaitSync(_fences[_current_buffer_index], 0, GL_TIMEOUT_IGNORED);
         }
-        glDeleteSync(_fences[_currentBufferIndex]);
-        _fences[_currentBufferIndex] = 0;
+        glDeleteSync(_fences[_current_buffer_index]);
+        _fences[_current_buffer_index] = 0;
     }
 
-    InstanceData *ptrVbo = _mappedBuffers[_currentBufferIndex];
-    std::memcpy(ptrVbo, _instances.data(), _instances.size() * sizeof(InstanceData));
+    InstanceData *ptr_vbo = _mapped_buffers[_current_buffer_index];
+    std::memcpy(ptr_vbo, _instances.data(), _instances.size() * sizeof(InstanceData));
     
     _vao.bind();
-    _instanceVBO[_currentBufferIndex].bind();
+    _instance_vbo[_current_buffer_index].bind();
     
     _shader->use();
     _texture->bind();
     
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (GLsizei)_instances.size());
 
-    _fences[_currentBufferIndex] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    _fences[_current_buffer_index] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 }
 
 void SpriteBatch::flush()

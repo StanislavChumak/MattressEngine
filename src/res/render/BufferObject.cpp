@@ -1,10 +1,8 @@
-#include "res/render/BufferObject.h"
+#include "res/render/BufferObject.hpp"
 
 #include "glad/glad.h"
 
-#ifndef FLAG_RELEASE
-#include <iostream>
-#endif
+#include "util/mtrs_message.hpp"
 
 namespace mtrs::res
 {
@@ -41,7 +39,8 @@ BufferObject::BufferObject(BufferObject &&other) noexcept
     other._mode = 0;
 }
 
-void BufferObject::init(const GLenum &mode, const void *data, const GLsizeiptr size, const GLenum usage)
+void BufferObject::init(const GLenum &mode, const void *data,
+    const GLsizeiptr size, const GLenum usage)
 {
     _mode = mode;
     glNamedBufferData(_id, size, data, usage);
@@ -50,8 +49,9 @@ void BufferObject::init(const GLenum &mode, const void *data, const GLsizeiptr s
 void BufferObject::update(const void *data, const GLsizeiptr size, const GLintptr offset) const
 {
 #ifndef FLAG_RELEASE
-    if (_id == 0) {
-        std::cerr << "ERROR: Attempt to update uninitialized buffer." << std::endl;
+    if (_id == 0)
+    {
+        util::mtrs_message(util::TipeMessage::ERROR, "Attempt to update uninitialized buffer");
         return;
     }
 #endif
@@ -61,8 +61,9 @@ void BufferObject::update(const void *data, const GLsizeiptr size, const GLintpt
 void BufferObject::bind() const
 {
 #ifndef FLAG_RELEASE
-    if (_id == 0) {
-        std::cerr << "ERROR: Attempt to bind uninitialized buffer." << std::endl;
+    if (_id == 0)
+    {
+        util::mtrs_message(util::TipeMessage::ERROR, "Attempt to bind uninitialized buffer");
         return;
     }
 #endif
@@ -72,8 +73,9 @@ void BufferObject::bind() const
 void BufferObject::bind_base(const GLuint index)
 {
 #ifndef FLAG_RELEASE
-    if (_id == 0) {
-        std::cerr << "ERROR: Attempt to update uninitialized buffer." << std::endl;
+    if (_id == 0)
+    {
+        util::mtrs_message(util::TipeMessage::ERROR, "Attempt to update uninitialized buffer");
         return;
     }
 #endif

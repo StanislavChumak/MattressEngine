@@ -1,28 +1,31 @@
-#include "sys/rendering/AnimatorSystem.h"
+#include "sys/rendering/AnimatorSystem.hpp"
 
-#include "comp/ECSWorld.h"
-#include "comp/rendering/Sprite.h"
-#include "comp/rendering/Animator.h"
+#include "comp/ECSWorld.hpp"
+#include "comp/rendering/Sprite.hpp"
+#include "comp/rendering/Animator.hpp"
 
-#include <iostream>
-
-void AnimatorSystem::update(ECSWorld &world, const double &delta)
+namespace mtrs::sys
 {
-    for(auto [entity, sprite, animator] : world.view<Sprite, Animator>())
+
+void AnimatorSystem::update(comp::ECSWorld &world, const double &delta)
+{
+    for(auto [entity, sprite, animator] : world.view<comp::Sprite, comp::Animator>())
     {
-        animator->currentAnimationTime += delta;
+        animator->current_animation_time += delta;
 
-        while (animator->currentAnimationTime >= animator->durations[animator->currentFrame])
+        while (animator->current_animation_time >= animator->durations[animator->current_frame])
         {
-            animator->currentAnimationTime -= animator->durations[animator->currentFrame];
-            animator->currentFrame++;
+            animator->current_animation_time -= animator->durations[animator->current_frame];
+            animator->current_frame++;
 
-            if (animator->currentFrame == animator->countFrame + animator->offset)
+            if (animator->current_frame == animator->count_frame + animator->offset)
             {
-                animator->currentFrame = animator->offset;
+                animator->current_frame = animator->offset;
             }
 
-            sprite->subTexture = sprite->atlas->get_sub_texture(animator->currentFrame);
+            sprite->sub_texture = sprite->atlas->get_sub_texture(animator->current_frame);
         }
     }
+}
+
 }

@@ -1,6 +1,6 @@
-#include "res/render/VertexArrayObject.h"
+#include "res/render/VertexArrayObject.hpp"
 
-#include "res/render/BufferObject.h"
+#include "res/render/BufferObject.hpp"
 
 namespace mtrs::res
 {
@@ -35,7 +35,7 @@ VertexArrayObject &VertexArrayObject::operator=(VertexArrayObject &&other) noexc
 }
 
 void VertexArrayObject::add_buffer_float(GLuint index, const BufferObject &buffer,
-                                             GLint size, GLsizei stride, GLintptr offset)
+    GLint size, GLsizei stride, GLintptr offset)
 {
     glVertexArrayVertexBuffer(_id, index, buffer.id(), offset, stride);
 
@@ -45,7 +45,7 @@ void VertexArrayObject::add_buffer_float(GLuint index, const BufferObject &buffe
 }
 
 void VertexArrayObject::add_buffer_byteN(GLuint index, const BufferObject &buffer,
-                                             GLint size, GLsizei stride, GLintptr offset)
+    GLint size, GLsizei stride, GLintptr offset)
 {
     glVertexArrayVertexBuffer(_id, index, buffer.id(), offset, stride);
 
