@@ -12,16 +12,16 @@
 mtrs::res::InstanceData sprite_to_instance(mtrs::comp::Transform *transform, mtrs::comp::Sprite *sprite)
 {
     mtrs::res::InstanceData date;
-    glm::mat4 glob = transform->global_matrix;
+    const glm::mat4 &m = transform->matrix.get();
 
-    date.position = glm::vec2(glob[3].x, glob[3].y);
+    date.position = glm::vec2(m[3].x, m[3].y);
 
     glm::vec2 scale;
-    scale.x = glm::length(glm::vec2(glob[0].x, glob[0].y));
-    scale.y = glm::length(glm::vec2(glob[1].x, glob[1].y));
+    scale.x = glm::length(glm::vec2(m[0].x, m[0].y));
+    scale.y = glm::length(glm::vec2(m[1].x, m[1].y));
     date.size = sprite->size * scale;
 
-    date.rotation = std::atan2(glob[0].y, glob[0].x);
+    date.rotation = std::atan2(m[0].y, m[0].x);
 
     date.lb_uv = sprite->sub_texture.lb_vertex;
     date.rt_uv = sprite->sub_texture.rt_vertex;
@@ -36,7 +36,7 @@ namespace mtrs::sys
 
 std::shared_ptr<res::RenderContext> SpriteRenderSystem::context;
 
-void SpriteRenderSystem::update(comp::ECSWorld &world, const double &delta)
+void SpriteRenderSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
     context->begin_batches();
 

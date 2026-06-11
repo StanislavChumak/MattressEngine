@@ -8,13 +8,13 @@
 namespace mtrs::sys
 {
 
-void CursorFollowersSystem::update(comp::ECSWorld &world, const double &delta)
+void CursorFollowersSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
-    comp::Cursor *cursor = world.get_single_comp<comp::Cursor>();
+    comp::Cursor *cursor = world.component_manager().get_single_comp<comp::Cursor>();
     if(!cursor) return;
     for(auto [entity, transform, follower] : world.view<comp::Transform, comp::CursorFollower>())
     {
-        transform->set_position(cursor->pos + follower->offset);
+        transform->position.set(cursor->position.get() + follower->offset);
     }
 }
 

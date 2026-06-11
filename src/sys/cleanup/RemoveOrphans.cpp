@@ -5,7 +5,7 @@
 namespace mtrs::sys
 {
 
-void RemoveOrphans::update(comp::ECSWorld &world, const double &delta)
+void RemoveOrphans::update_imp(comp::ECSWorld &world, const double &delta)
 {
 
 }

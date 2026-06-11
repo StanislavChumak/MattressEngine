@@ -5,27 +5,20 @@
 #include "glm/mat4x4.hpp"
 #include "comp/Component.hpp"
 
+#include "util/reactive/ReactiveValue.hpp"
+
 namespace mtrs::comp
 {
 struct Transform
 {
-    glm::vec2 position;
-    glm::vec2 scale_size;
-    float rotation;
+    util::ReactiveValue<glm::vec2> position;
+    util::ReactiveValue<glm::vec2> scale_size;
+    util::ReactiveValue<float> rotation;
 
-    glm::mat4 local_matrix{1.0f};
-    glm::mat4 global_matrix{1.0f};
-
-    bool dirty{true};
+    util::ReactiveValue<glm::mat4, glm::vec2, glm::vec2, float, glm::mat4> matrix;
 
     Transform() = delete;
     Transform(COMPONENT_ARGS);
-
-    void update_local_matrix();
-
-    void set_position(glm::vec2 newPosition);
-    void set_scale_size(glm::vec2 newScaleSize);
-    void set_rotation(float newRotation);
 };
 
 }

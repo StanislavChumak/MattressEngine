@@ -24,8 +24,8 @@ namespace detail
     void show_message(TipeMessage tmsg, std::string&& message);
 }
 
-template<typename... Args>
-void mtrs_message(TipeMessage tmsg, Args&&... args)
+template<typename... Desp>
+void mtrs_message(TipeMessage tmsg, Desp&&... args)
 {
     std::stringstream ss;
     switch (tmsg)
@@ -37,7 +37,7 @@ void mtrs_message(TipeMessage tmsg, Args&&... args)
         ss << "UNKNOWN: ";
         break;
     }
-    ((ss << std::forward<Args>(args)), ...) << std::endl;
+    ((ss << std::forward<Desp>(args)), ...) << std::endl;
 
     detail::show_message(tmsg, ss.str());
 }

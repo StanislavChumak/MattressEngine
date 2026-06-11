@@ -10,26 +10,20 @@ namespace mtrs::comp
 {
 
 Transform::Transform(COMPONENT_ARGS)
+: matrix([](const glm::vec2 *pos, const glm::vec2 *sc_size, const float *rot, const glm::mat4*)
+    {
+        glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(*pos, 0.0f));
+        m = glm::rotate(m, glm::radians(*rot), glm::vec3(0.0f, 0.0f, 1.0f));
+        m = glm::scale(m, glm::vec3(*sc_size, 1.0f));
+        return m;
+    }, &position, &scale_size, &rotation, nullptr)
 {
     Trancform_sc transform;
     file.read(reinterpret_cast<char*>(&transform), sizeof(transform));
-    position.x = transform.pos_x; 
-    position.y = transform.pos_y;
-    scale_size.x = transform.scale_size_x;
-    scale_size.y = transform.scale_size_y;
-    rotation = transform.rotation;
+    position.set({transform.pos_x, transform.pos_y});
+    position.set({transform.scale_size_x, transform.scale_size_y});
+    rotation.set(transform.rotation);
+    matrix.update();
 }
-
-void Transform::update_local_matrix()
-{
-    local_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(position, 0.0f));
-    local_matrix = glm::rotate(local_matrix, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-    local_matrix = glm::scale(local_matrix, glm::vec3(scale_size, 1.0f));
-    dirty = false;
-}
-
-void Transform::set_position(glm::vec2 newPosition) { dirty = true; position = newPosition; }
-void Transform::set_scale_size(glm::vec2 newScaleSize) { dirty = true; scale_size = newScaleSize; }
-void Transform::set_rotation(float newRotation) {dirty = true; rotation = newRotation; }
 
 }

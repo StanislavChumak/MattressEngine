@@ -1,19 +1,16 @@
 #ifndef AUDIO_SYSTEM_HPP
 #define AUDIO_SYSTEM_HPP
 
-namespace mtrs::comp {
-    class ECSWorld;
-}
+#include "sys/System.hpp"
 
 namespace mtrs::sys
 {
 
-class AudioSystem
+class AudioSystem : public System<AudioSystem>
 {
 public:
-    AudioSystem() = default;
-
-    static void update(comp::ECSWorld &world, const double &delta);
+    static void update_imp(comp::ECSWorld &world, const double &delta);
+    static constexpr int get_prioritet_imp() { return SystemPriority::AUDIO; };
 };
 
 }

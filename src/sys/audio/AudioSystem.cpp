@@ -9,15 +9,15 @@
 namespace mtrs::sys
 {
 
-void AudioSystem::update(comp::ECSWorld &world, const double &delta)
+void AudioSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
-    comp::Audio *audio = world.get_single_comp<comp::Audio>();
+    comp::Audio *audio = world.component_manager().get_single_comp<comp::Audio>();
     if(!audio) return;
     for(auto [entity, sound] : world.view<comp::Sound>())
     {
         if(sound->is_play)
         {
-            auto ptrSound = sound->getFreeSound();
+            auto ptrSound = sound->get_free_sound();
             if(ptrSound)
                 ma_sound_start(ptrSound);
             sound->is_play = false;
@@ -27,11 +27,11 @@ void AudioSystem::update(comp::ECSWorld &world, const double &delta)
         {
             for(auto ptrSound : sound->instances)
                 ma_sound_stop(ptrSound);
-            sound->is_stop;
+            sound->is_stop = false;
         }
 
         if(audio->cache_volume_dirty)
-            sound->setVolume(audio->sound_volume);
+            sound->set_volume(audio->sound_volume);
     }
 
     for(auto [entity, music] : world.view<comp::Music>())

@@ -25,6 +25,7 @@ src/sys/input/InputSystem.cpp
 
 src/sys/transform/CursorFollowersSystem.cpp
 src/sys/transform/GlobalTransformSystem.cpp
+src/sys/transform/TransformBindingSystem.cpp
 
 src/sys/rendering/CameraSystem.cpp
 src/sys/rendering/SpriteRenderSystem.cpp
@@ -51,6 +52,12 @@ src/res/render/VertexArrayObject.cpp
 # Components
 
 src/comp/ECSWorld.cpp
+
+src/comp/collections/ComponentManager.cpp
+
+src/comp/single/Window.cpp
+src/comp/single/Camera.cpp
+src/comp/single/Cursor.cpp
 
 src/comp/core/Transform.cpp
 

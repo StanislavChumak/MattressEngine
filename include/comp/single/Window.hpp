@@ -6,18 +6,25 @@
 
 #include "glm/vec2.hpp"
 
+#include "util/reactive/ReactiveLeaf.hpp"
+
 namespace mtrs::comp
 {
 
-struct Window {
+struct Window
+{
     GLFWwindow *poiter = nullptr;
-    glm::uvec2 size;
     const char *name;
-    unsigned int scale;
+    util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> size;
 
     Window() = delete;
-    Window(const glm::uvec2 &size, const char *name, unsigned int scale)
-    :size(size), name(name), scale(scale) {}
+    ~Window() = default;
+    Window(const Window &) = delete;
+    Window &operator=(const Window&) = delete;
+    Window(Window &&other) noexcept;
+    Window &operator=(Window &&other) noexcept;
+
+    Window(const glm::uvec2 &size, const char *name);
 };
 
 }

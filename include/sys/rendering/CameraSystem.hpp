@@ -1,17 +1,16 @@
 #ifndef CAMERA_SYSTEM_HPP
 #define CAMERA_SYSTEM_HPP
 
-namespace mtrs::comp {
-    class ECSWorld;
-}
+#include "sys/System.hpp"
 
 namespace mtrs::sys
 {
 
-class CameraSystem
+class CameraSystem : public System<CameraSystem>
 {
 public:
-    static void update(comp::ECSWorld &world, const double &delta);
+    static void update_imp(comp::ECSWorld &world, const double &delta);
+    static constexpr int get_prioritet_imp() { return SystemPriority::UI_LOGIC; };
 };
 
 }

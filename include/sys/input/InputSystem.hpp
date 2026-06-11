@@ -24,7 +24,6 @@ public:
 
     void setKey(comp::ECSWorld &world, int key, bool action);
     void setMouseButton(comp::ECSWorld &world, int button, bool action);
-    void setCursor(comp::ECSWorld &world, glm::dvec2 cursor);
 
     // void keySubscribe(int key, bool action, std::function<void()> subscriber);
     // void mouseButtonSubscribe(int botton, bool action, std::function<void()> subscriber);

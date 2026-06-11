@@ -1,17 +1,16 @@
 #ifndef REMOVE_ORPHANS_HPP
 #define REMOVE_ORPHANS_HPP
 
-namespace mtrs::comp {
-    class ECSWorld;
-}
+#include "sys/System.hpp"
 
 namespace mtrs::sys
 {
 
-class RemoveOrphans
+class RemoveOrphans : public System<RemoveOrphans>
 {
 public:
-    static void update(comp::ECSWorld &world, const double &delta);
+    static void update_imp(comp::ECSWorld &world, const double &delta);
+    static constexpr int get_prioritet_imp() { return SystemPriority::CLEANUP; };
 };
 
 }

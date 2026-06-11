@@ -10,7 +10,7 @@ namespace mtrs::comp
 
 struct CursorFollower
 {
-    glm::dvec2 offset;
+    glm::uvec2 offset;
 
     CursorFollower() = delete;
     CursorFollower(COMPONENT_ARGS);

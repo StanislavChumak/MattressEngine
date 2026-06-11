@@ -17,7 +17,7 @@ REGISTER_COMPONENT(Name); \
 REGISTER_COMPONENT(Parent); \
 REGISTER_COMPONENT(Children); \
 REGISTER_COMPONENT(Transform); \
-core.systems.register_updete<GlobalTransformSystem>(SystemPriority::TRANSFORM); \
+core.systems.register_update<GlobalTransformSystem>(SystemPriority::TRANSFORM); \
 core.systems.register_always_update<GlobalTransformSystem>()
 
 #ifdef INCLUDE_SPRITE
@@ -30,9 +30,9 @@ core.systems.register_always_update<GlobalTransformSystem>()
 
 #define REGISTER_SPRITE(core) \
 REGISTER_COMPONENT(Sprite); \
-core.systems.register_updete<CameraSystem>(SystemPriority::UI_LOGIC); \
+core.systems.register_update<CameraSystem>(SystemPriority::UI_LOGIC); \
 core.systems.register_always_update<CameraSystem>(); \
-core.systems.register_updete<SpriteRenderSystem>(SystemPriority::RENDERING); \
+core.systems.register_update<SpriteRenderSystem>(SystemPriority::RENDERING); \
 core.systems.register_always_update<SpriteRenderSystem>()
 
 #ifdef INCLUDE_ANIMATION
@@ -46,9 +46,9 @@ core.systems.register_always_update<SpriteRenderSystem>()
 #define REGISTER_ANIMATION(core) \
 REGISTER_COMPONENT(Animator); \
 REGISTER_COMPONENT(StateAnimator); \
-core.systems.register_updete<AnimatorSystem>(SystemPriority::ANIMATION); \
+core.systems.register_update<AnimatorSystem>(SystemPriority::ANIMATION); \
 core.systems.register_always_update<AnimatorSystem>(); \
-core.systems.register_updete<StateAnimatorSystem>(SystemPriority::ANIMATION); \
+core.systems.register_update<StateAnimatorSystem>(SystemPriority::ANIMATION); \
 core.systems.register_always_update<StateAnimatorSystem>()
 
 #ifdef INCLUDE_SOUNDS
@@ -63,7 +63,7 @@ core.systems.register_always_update<StateAnimatorSystem>()
 REGISTER_COMPONENT(Sound); \
 REGISTER_COMPONENT(Music); \
 core.world.add_single_comp(Audio()); \
-core.systems.register_updete<AudioSystem>(SystemPriority::AUDIO); \
+core.systems.register_update<AudioSystem>(SystemPriority::AUDIO); \
 core.systems.register_always_update<AudioSystem>()
 
 #ifdef INCLUDE_LOCATION_SOUNDS
@@ -73,7 +73,7 @@ core.systems.register_always_update<AudioSystem>()
 #endif
 
 #define REGISTER_LOCATION_SOUNDS(core) \
-core.systems.register_updete<LocationAudioSystem>(SystemPriority::AUDIO); \
+core.systems.register_update<LocationAudioSystem>(SystemPriority::AUDIO); \
 core.systems.register_always_update<LocationAudioSystem>(); \
 core.world.add_single_comp(Listener())
 

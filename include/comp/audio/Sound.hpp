@@ -89,13 +89,13 @@ struct Sound
 //         }
 //     }
 
-    void setVolume(float volume)
+    void set_volume(float volume)
     {
         for(auto sound : instances)
             ma_sound_set_volume(sound, volume * scale_volume);
     }
 
-    ma_sound *getFreeSound()
+    ma_sound *get_free_sound()
     {
         for(auto sound : instances)
             if(!ma_sound_is_playing(sound)) return sound;

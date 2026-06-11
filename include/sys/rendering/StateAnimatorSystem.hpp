@@ -1,17 +1,16 @@
 #ifndef STATE_ANIMATOR_SYSTEM_HPP
 #define STATE_ANIMATOR_SYSTEM_HPP
 
-namespace mtrs::comp {
-    class ECSWorld;
-}
+#include "sys/System.hpp"
 
 namespace mtrs::sys
 {
 
-class StateAnimatorSystem
+class StateAnimatorSystem : public System<StateAnimatorSystem>
 {
 public:
-    static void update(comp::ECSWorld &world, const double &delta);
+    static void update_imp(comp::ECSWorld &world, const double &delta);
+    static constexpr int get_prioritet_imp() { return SystemPriority::ANIMATION; };
 };
 
 }

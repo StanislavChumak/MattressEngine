@@ -4,6 +4,7 @@
 #include "SparseSet.hpp"
 #include <tuple>
 #include <utility>
+#include <unordered_set>
 
 namespace mtrs::comp
 {
@@ -11,6 +12,7 @@ namespace mtrs::comp
 template<typename... ComponentTypes>
 class View
 {
+    const std::unordered_set<EntityID>& _disabled_ids;
     std::tuple<SparseSet<ComponentTypes>&...> _sets;
 
     template<size_t I = 0>
@@ -38,7 +40,9 @@ class View
     }
 
 public:
-    explicit View(SparseSet<ComponentTypes>&... sets) : _sets(sets...) {}
+    explicit View(const std::unordered_set<EntityID>& disabled_ids,SparseSet<ComponentTypes>&... sets)
+    : _disabled_ids(disabled_ids), _sets(sets...)
+    {}
 
     class Iterator
     {
@@ -47,10 +51,12 @@ public:
         const std::vector<EntityID>* _entities = nullptr;
         size_t _index = 0;
         size_t _size = 0;
+        const std::unordered_set<EntityID>* _disabled_ids = nullptr;
         const std::tuple<SparseSet<ComponentTypes>&...>* _sets = nullptr;
 
         bool has_all_components(EntityID entity) const
         {
+            if(_disabled_ids->find(entity) == _disabled_ids->end()) return false;
             return (std::get<SparseSet<ComponentTypes>&>(*_sets).has(entity) && ...);
         }
 
@@ -64,8 +70,10 @@ public:
 
         Iterator(const std::vector<EntityID>* entities, size_t size,
             const std::tuple<SparseSet<ComponentTypes>&...>* sets,
+            const std::unordered_set<EntityID>* disabled_ids,
             size_t start_index)
-        : _entities(entities), _size(size), _sets(sets), _index(start_index)
+        : _entities(entities), _size(size), _disabled_ids(disabled_ids)
+        , _sets(sets), _index(start_index)
         {
             advance_to_valid();
         }
@@ -104,7 +112,7 @@ private:
             set_size = std::get<Is>(_sets).size(),
             true
         ) : false) || ...);
-        return Iterator(entities, set_size, &_sets, 0);
+        return Iterator(entities, set_size, &_sets, &_disabled_ids, 0);
     }
 
     template<size_t... Is>
@@ -118,7 +126,7 @@ private:
             set_size = std::get<Is>(_sets).size(),
             true
         ) : false) || ...);
-        return Iterator(entities, set_size, &_sets, set_size);
+        return Iterator(entities, set_size, &_sets, &_disabled_ids, set_size);
     }
 
 public:

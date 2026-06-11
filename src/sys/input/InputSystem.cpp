@@ -27,17 +27,6 @@ void InputSystem::setMouseButton(comp::ECSWorld &world, int button, bool action)
     // }
 }
 
-void InputSystem::setCursor(comp::ECSWorld &world, glm::dvec2 pos)
-{
-    comp::Cursor *cursor = world.get_single_comp<comp::Cursor>();
-    if(!cursor) return;
-    cursor->pos = pos;
-    // for(auto func : _subscribersCursor)
-    // {
-    //     func(cursor);
-    // }
-}
-
 // void InputSystem::keySubscribe(int key, bool action, std::function<void()> subscriber)
 // {
 //     _subscribersKey[key][action].push_back(subscriber);

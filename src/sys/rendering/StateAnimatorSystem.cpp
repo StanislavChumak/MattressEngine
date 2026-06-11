@@ -7,7 +7,7 @@
 namespace mtrs::sys
 {
 
-void StateAnimatorSystem::update(comp::ECSWorld &world, const double &delta)
+void StateAnimatorSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
     for(auto [entity, animator, state] : world.view<comp::Animator, comp::StateAnimator>())
     {
