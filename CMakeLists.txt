@@ -17,6 +17,7 @@ src/Engine.cpp
 src/util/get_files_from_folder.cpp
 src/util/get_from_file_mtrs.cpp
 src/util/mtrs_message.cpp
+src/util/hash.cpp
 
 # Systems
 src/sys/SystemManager.cpp

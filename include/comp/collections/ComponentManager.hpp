@@ -80,7 +80,11 @@ public:
     EntityID create_entity(std::string name);
     void mark_destroy(EntityID id);
     void remove_marked();
-    EntityID get_name_entity(std::string name);
+    EntityID get_entity_by_name(std::string name);
+
+    void turn_on(EntityID id);
+    void turn_off(EntityID id);
+    bool is_turn_on(EntityID id);
 
     void clear_sets();
     void clear_singletons();

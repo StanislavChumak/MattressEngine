@@ -66,7 +66,7 @@ void ComponentManager::remove_entity(EntityID id)
         fun(id);
 }
 
-EntityID ComponentManager::get_name_entity(std::string name)
+EntityID ComponentManager::get_entity_by_name(std::string name)
 {
     auto it = _names_entity.find(name);
     if(it != _names_entity.end())
@@ -91,6 +91,21 @@ void ComponentManager::remove_marked()
     }
 
     _destroy_queue.clear();
+}
+
+void ComponentManager::turn_on(EntityID id)
+{
+    _disabled_ids.erase(id);
+}
+
+void ComponentManager::turn_off(EntityID id)
+{
+    _disabled_ids.emplace(id);
+}
+
+bool ComponentManager::is_turn_on(EntityID id)
+{
+    return _disabled_ids.find(id) == _disabled_ids.end();
 }
 
 void ComponentManager::clear_sets()

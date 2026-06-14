@@ -7,14 +7,14 @@ namespace mtrs::res
 
 ResourceManager::ResourceManager(const std::string &executablePath,const std::string &resourcePath)
 :_executable_path(executablePath)
-{
+{    
     auto files = util::get_files_from_folder(resourcePath, ".mtrs");
     _resource_packs.reserve(files.size());
     _resource_pack_iters.reserve(files.size());
-    for(auto &path : files)
+    for(auto &file : files)
     {
-        _resource_packs.emplace(path, ResourcePack{std::ifstream(), 0});
-        _resource_pack_iters.push_back(_resource_packs.find(path));
+        _resource_packs.emplace(file, ResourcePack{std::ifstream(), 0});
+        _resource_pack_iters.push_back(_resource_packs.find(file));
     }
 }
 

@@ -4,21 +4,31 @@
 #include "collections/View.hpp"
 #include "collections/ComponentManager.hpp"
 
-
 #include <fstream>
 
 #include <unordered_map>
 #include <string>
+
+namespace mtrs::res
+{
+    class ResourceManager;
+}
 
 namespace mtrs::comp
 {
 
 class ECSWorld
 {
+    struct Scene
+    {
+        std::ifstream file;
+        bool init;
+    };
+    
     ComponentManager _components;
 
     std::string _executable_path;
-    std::unordered_map<std::string, std::ifstream> _scenes;
+    std::unordered_map<std::string, Scene> _scenes;
 
 public:
     ECSWorld() = delete;
@@ -29,10 +39,10 @@ public:
     ECSWorld &operator=(ECSWorld &&other) noexcept;
     ~ECSWorld();
 
-    void load_scene(std::string scene);
+    void load_scene(std::string scene, mtrs::res::ResourceManager& resource, bool is_turn_on = true);
     void remove_scene(std::string scene);
-    void open_scene(std::string scene);
-    void close_scene(std::string scene);
+    void turn_on_scene(std::string scene);
+    void turn_off_scene(std::string scene);
 
     ComponentManager &component_manager();
 
