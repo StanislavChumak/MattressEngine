@@ -3,15 +3,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "comp/single/Window.hpp"
-#include "comp/single/Input.hpp"
-#include "comp/single/States.hpp"
 #include "comp/single/Camera.hpp"
 #include "comp/single/Audio.hpp"
+#include "comp/single/States.hpp"
 #include "comp/single/Cursor.hpp"
+#include "comp/single/KeyButtons.hpp"
+#include "comp/single/MouseButtons.hpp"
 
-#include "comp/registerComponent.hpp"
-
-#include "res/render/RenderContext.hpp"
+#include "res/asset/RenderContext.hpp"
+#include "res/asset/Texture.hpp"
 #include "sys/rendering/SpriteRenderSystem.hpp"
 
 #include "util/mtrs_message.hpp"
@@ -20,16 +20,12 @@ namespace mtrs::engine
 {
 
 Core::Core(const Config& config)
-: resources(config.executable_path, config.resurce_path),
-world(config.executable_path, config.scenes_path),
-input_system(world.component_manager().add_single_comp(comp::Input{}))
+: resources(config.executable_path, config.resurce_path)
+, world(config.executable_path, config.scenes_path)
 {
-    auto single = [&](auto &&comp){ return &world.component_manager().add_single_comp(std::move(comp)); };
-    window = single(comp::Window(config.size_in_pixels * config.start_pixel_scale, config.name_window.c_str()));
-    camera = single(comp::Camera(window->size, config.size_in_pixels));
-    cursor = single(comp::Cursor(window->size, camera->size_in_pixels, camera->offset_viewport));
-
-    states = single(comp::States(config.init_state));
+    window = world.single_comp<comp::Window>(config.size_in_pixels * config.start_pixel_scale, config.name_window.c_str());
+    
+    states = world.single_comp<comp::States>(config.init_state);
 
     if (!glfwInit())
     {
@@ -75,17 +71,21 @@ input_system(world.component_manager().add_single_comp(comp::Input{}))
 
     glfwSwapInterval(0);
 
+    camera = world.single_comp<comp::Camera>(window->size, config.size_in_pixels);
+    cursor = world.single_comp<comp::Cursor>(window->size, camera->size_in_pixels, camera->offset_viewport);
+    keyboard = world.single_comp<comp::KeyButtons>(nullptr);
+    mouse = world.single_comp<comp::MouseButtons>(nullptr);
+
     util::mtrs_message(util::TipeMessage::LOG, "Renderer: ", glGetString(GL_RENDERER));
     util::mtrs_message(util::TipeMessage::LOG, "OpenGL version: ", glGetString(GL_VERSION));
     util::mtrs_message(util::TipeMessage::LOG, "GLSL Version: ",
         glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 
-    comp::Audio *audio = single(comp::Audio());
+    comp::Audio *audio = world.single_comp<comp::Audio>(nullptr);
     if(audio)
     {
         audio->sound_scale = config.saund_location_scale;
-        audio->init();
         if(!audio->initialized)
         {
             util::mtrs_message(util::TipeMessage::ERROR, "Failed to init sound engine");
@@ -100,17 +100,14 @@ input_system(world.component_manager().add_single_comp(comp::Input{}))
     
     if(config.depth) glEnable(GL_DEPTH_TEST);
 
-    
-    std::shared_ptr<res::RenderContext> context = std::make_shared<res::RenderContext>();
-    resources.get_cache<res::RenderContext>()["context"] = context;
-    sys::SpriteRenderSystem::context = std::move(context);
+    sys::SpriteRenderSystem::context = resources.get_resource<res::RenderContext>("system/render_context");
     
     _is_init = true;
 }
 
 void Core::garbage_collection()
 {
-    world.component_manager().remove_marked();
+    world.remove_marked();
     resources.garbage_collector();
 }
 
@@ -128,8 +125,7 @@ void Core::update(float delta)
 
     systems.update(world, delta, states->current_system_state);
 
-    input_system.updateLastInput();
-    world.component_manager().remove_marked();
+    world.remove_marked();
 
     glfwSwapBuffers(window->poiter);
 }
@@ -137,7 +133,7 @@ void Core::update(float delta)
 void Core::shutdown()
 {
     sys::SpriteRenderSystem::context.reset();
-    world.~ECSWorld();
+    world.clear_all();
     resources.garbage_collector();
     glfwTerminate();
 }
@@ -163,7 +159,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
     if (core)
     {
-        core->input_system.setKey(core->world, key, action);
+        core->keyboard->keys[key] = action;
     }
 }
 
@@ -172,7 +168,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
     if (core)
     {
-        core->input_system.setMouseButton(core->world, button, action);
+        core->mouse->buttons[button] = action;
     }
 }
 

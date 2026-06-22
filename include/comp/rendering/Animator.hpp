@@ -16,6 +16,10 @@ struct Animator {
 
     Animator() = delete;
     Animator(COMPONENT_ARGS);
+    Animator(const Animator&) = delete;
+    Animator &operator=(const Animator&) = delete;
+    Animator(Animator&&) noexcept;
+    Animator &operator=(Animator&&) noexcept;
     ~Animator();
 };
 

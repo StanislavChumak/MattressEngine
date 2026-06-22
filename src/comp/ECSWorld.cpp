@@ -25,12 +25,15 @@ namespace mtrs::comp
 {
 
 ECSWorld::ECSWorld(const std::string &executable_path,const std::string &scenes_path)
+: _scenes_path(scenes_path)
 {
     auto files = util::get_files_from_folder(scenes_path, ".mtsc");
     _scenes.reserve(files.size());
+    std::string name;
     for(auto &file : files)
     {
-        _scenes.emplace(file, Scene{std::ifstream(), false});
+        name = file.substr(scenes_path.size(), (file.size() - scenes_path.size() - 5));
+        _scenes.emplace(name, Scene{std::ifstream(), false});
     }
 }
 
@@ -38,6 +41,7 @@ ECSWorld::ECSWorld(ECSWorld &&other) noexcept
 {
     _executable_path = std::move(other._executable_path);
     _scenes = std::move(other._scenes);
+    _destroy_queue = std::move(other._destroy_queue);
 }
 
 ECSWorld &ECSWorld::operator=(ECSWorld &&other) noexcept
@@ -46,6 +50,7 @@ ECSWorld &ECSWorld::operator=(ECSWorld &&other) noexcept
     {
         _executable_path = std::move(other._executable_path);
         _scenes = std::move(other._scenes);
+        _destroy_queue = std::move(other._destroy_queue);
     }
     return *this;
 }
@@ -79,7 +84,8 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
 #endif
 
     auto &file = iter->second.file;
-    file.open(scene, std::ios::binary);
+    std::string file_name = _scenes_path + scene + ".mtsc";
+    file.open(file_name, std::ios::binary);
 
 #ifndef FLAG_RELEASE
     char magic[4];
@@ -101,81 +107,61 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
     file.seekg(8, std::ios::beg);
 
     uint32_t entity_count = 0;
-    FILE_READ(file, entity_count);
-
-    file.seekg(16, std::ios::beg);
-
-    uint32_t index_offset;
     uint32_t data_offset;
     uint32_t free_date_offset;
     uint32_t dynamic_date_offset;
-
-    FILE_READ(file, index_offset);
+    
+    FILE_READ(file, entity_count);
     FILE_READ(file, data_offset);
     FILE_READ(file, free_date_offset);
     FILE_READ(file, dynamic_date_offset);
 
-    file.seekg(index_offset, std::ios::beg);
-
-    struct Entity
-    {
-        uint64_t id;
-        uint32_t offset;
-        uint32_t size;
-        EntityID engine_id;
-    };
-    Entity *entities = new Entity[entity_count];
-    
-    for(int i = 0; i < entity_count; i++)
-    {
-        FILE_READ(file, entities[i].id);
-        FILE_READ(file, entities[i].offset);
-        FILE_READ(file, entities[i].size);
-        _components.create_entity(std::to_string(entities[i].id));
-        entities[i].engine_id = _components.get_entity_by_name(std::to_string(entities[i].id));
-    }
-
-    if(!is_turn_on)
-    {
-        for(int i = 0; i < entity_count; i++)
-        {
-            _components.turn_off(entities[i].engine_id);
-        }
-    }
-    
 #ifndef FLAG_RELEASE
-    if(file.tellg() != std::streampos(data_offset))
+    if(file.tellg() != data_offset)
     {
         util::mtrs_message(util::TipeMessage::ERROR,
-            "the cursor is at position ", data_offset, " for the name \"entity_data_offset\",",
-            "but the document indicates position ", file.tellg());
+                "Failed to load scene, data_offset does not match the value ", data_offset);
         file.close();
         return;
     }
 #endif
-
-    uint64_t id_comp;
-    uint32_t size;
+    
     for(int i = 0; i < entity_count; i++)
     {
-        FILE_READ(file, id_comp);
-        FILE_READ(file,id_comp);
-        switch (id_comp)
+        uint64_t id, offset;
+        EntityID entity;
+        FILE_READ(file, id);
+        FILE_READ(file, offset);
+        entity = _components.create_entity(std::to_string(id));
+
+        if(!is_turn_on)
         {
-#define X(Comp) case hash_c_string(#Comp): \
-_components.add_comp(entities[i].engine_id, Comp(entities[i].engine_id, file, *this, resource)); \
-break;
-        COMPONENT_TYPE
-#undef X
-        default:
-            util::mtrs_message(util::TipeMessage::ERROR,
-                "unknown component by id ", id_comp);
-            file.close();
-            return;
+            _components.turn_off(entity);
         }
+
+        uint64_t id_comp;
+        while(file.tellg() != offset)
+        {
+            uint64_t a = file.tellg();
+            FILE_READ(file, id_comp);
+            switch (id_comp)
+            {
+#define X(Comp) case hash_c_string(#Comp): \
+_components.add_comp<Comp>(entity, entity, file, *this, resource); \
+break;
+            COMPONENT_TYPE
+#undef X
+            default:
+                util::mtrs_message(util::TipeMessage::ERROR,
+                    "unknown component by id ", id_comp);
+                file.close();
+                return;
+            }
+        }
+
     }
 
-    #ifndef FLAG_RELEASE
+#ifndef FLAG_RELEASE
     if(file.tellg() != std::streampos(free_date_offset))
     {
         util::mtrs_message(util::TipeMessage::ERROR,
@@ -203,10 +189,34 @@ void ECSWorld::turn_off_scene(std::string scene)
 
 }
 
-ComponentManager &ECSWorld::component_manager()
+void ECSWorld::mark_destroy(EntityID id)
 {
-    return _components;
+    _destroy_queue.push_back(id);
 }
 
+void ECSWorld::remove_marked()
+{
+    for(auto id : _destroy_queue)
+    {
+        _components.remove_entity(id);
+    }
+
+    _destroy_queue.clear();
+}
+
+void ECSWorld::clear_all()
+{
+    _components.clear_sets();
+    _components.clear_singletons();
+
+    for(auto &scene : _scenes)
+    {
+        if(scene.second.file.is_open())
+        {
+            scene.second.file.close();
+        }
+    }
+    _scenes.clear();
+}
 
 }

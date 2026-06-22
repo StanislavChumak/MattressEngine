@@ -17,28 +17,14 @@ struct Audio
     float music_volume = 1.f;
     bool cache_volume_dirty = false;
 
-    void init()
-    {
-        ma_engine_config config = ma_engine_config_init();
-        config.listenerCount = 1;
-        if (ma_engine_init(&config, &engine) == MA_SUCCESS)
-            initialized = true;
-    }
+    Audio() = delete;
+    ~Audio();
+    Audio(const Audio &) = delete;
+    Audio &operator=(const Audio&) = delete;
+    Audio(Audio&&) = delete;
+    Audio &operator=(Audio&&) = delete;
 
-    void destroy()
-    {
-        if (initialized)
-        {
-            ma_engine_stop(&engine);
-            ma_engine_uninit(&engine);
-            initialized = false;
-        }
-    }
-
-    ~Audio()
-    {
-        destroy();
-    }
+    Audio(void*);
 };
 
 }

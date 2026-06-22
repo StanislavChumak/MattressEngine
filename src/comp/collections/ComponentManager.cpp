@@ -12,7 +12,7 @@ ComponentManager::ComponentManager(ComponentManager &&other) noexcept
 
     _names_entity = std::move(other._names_entity);
     _remove_entity = std::move(other._remove_entity);
-    _destroy_queue = std::move(other._destroy_queue);
+    
 
     _entity_index = other._entity_index;
     other._entity_index = 0;
@@ -28,7 +28,6 @@ ComponentManager &ComponentManager::operator=(ComponentManager &&other) noexcept
 
         _names_entity = std::move(other._names_entity);
         _remove_entity = std::move(other._remove_entity);
-        _destroy_queue = std::move(other._destroy_queue);
 
         _entity_index = other._entity_index;
         other._entity_index = 0;
@@ -39,8 +38,6 @@ ComponentManager &ComponentManager::operator=(ComponentManager &&other) noexcept
 
 ComponentManager::~ComponentManager()
 {
-    clear_sets();
-    clear_singletons();
 }
 
 EntityID ComponentManager::create_entity(std::string name)
@@ -63,7 +60,10 @@ EntityID ComponentManager::create_entity(std::string name)
 void ComponentManager::remove_entity(EntityID id)
 {
     for(auto fun : _remove_entity)
+    {
         fun(id);
+    }
+    _freed_ids.push(id);
 }
 
 EntityID ComponentManager::get_entity_by_name(std::string name)
@@ -75,22 +75,6 @@ EntityID ComponentManager::get_entity_by_name(std::string name)
     }
     util::mtrs_message(util::TipeMessage::ERROR, "Fatal find Entity to name: ", name);
     return NULL_ENTITY;
-}
-
-void ComponentManager::mark_destroy(EntityID id)
-{
-    _destroy_queue.push_back(id);
-}
-
-void ComponentManager::remove_marked()
-{
-    for(auto id : _destroy_queue)
-    {
-        remove_entity(id);
-        _freed_ids.push(id);
-    }
-
-    _destroy_queue.clear();
 }
 
 void ComponentManager::turn_on(EntityID id)
@@ -111,13 +95,17 @@ bool ComponentManager::is_turn_on(EntityID id)
 void ComponentManager::clear_sets()
 {
     for(auto fun : _clear_sets)
+    {
         fun();
+    }
 }
 
 void ComponentManager::clear_singletons()
 {
     for(auto fun : _clear_singletons)
+    {
         fun();
+    }
 }
 
 

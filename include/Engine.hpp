@@ -7,7 +7,6 @@
 
 #include "comp/ECSWorld.hpp"
 #include "sys/SystemManager.hpp"
-#include "sys/input/InputSystem.hpp"
 #include "res/ResourceManager.hpp"
 
 namespace mtrs
@@ -17,8 +16,10 @@ namespace comp
 {
     struct Window;
     struct Camera;
-    struct Cursor;
     struct States;
+    struct Cursor;
+    struct KeyButtons;
+    struct MouseButtons;
 }
 
 namespace engine
@@ -50,8 +51,10 @@ namespace engine
     {
         comp::Window *window;
         comp::Camera *camera;
-        comp::Cursor *cursor;
         comp::States *states;
+        comp::Cursor *cursor;
+        comp::KeyButtons *keyboard;
+        comp::MouseButtons *mouse;
 
         bool _is_init;
 
@@ -64,7 +67,6 @@ namespace engine
         res::ResourceManager resources;
         comp::ECSWorld world;
         sys::SystemManager systems;
-        sys::InputSystem input_system;
 
         Core(const Config& config);
         bool is_init() { return _is_init; }

@@ -1,7 +1,7 @@
 #ifndef NAME_HPP
 #define NAME_HPP
 
-#include "Component.hpp"
+#include "comp/Component.hpp"
 
 #include <string>
 

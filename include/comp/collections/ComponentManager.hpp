@@ -22,7 +22,6 @@ class ComponentManager
     std::vector<std::function<void()>> _clear_singletons;
 
     std::vector<std::function<void(EntityID)>> _remove_entity;
-    std::vector<EntityID> _destroy_queue;
 
     EntityID _entity_index = 0;
     std::stack<EntityID> _freed_ids;
@@ -67,7 +66,7 @@ class ComponentManager
         return pool;
     }
 
-    void remove_entity(EntityID id);
+    
 
 public:
     ComponentManager() = default;
@@ -78,9 +77,8 @@ public:
     ~ComponentManager();
 
     EntityID create_entity(std::string name);
-    void mark_destroy(EntityID id);
-    void remove_marked();
     EntityID get_entity_by_name(std::string name);
+    void remove_entity(EntityID id);
 
     void turn_on(EntityID id);
     void turn_off(EntityID id);
@@ -94,12 +92,12 @@ public:
     template<typename Component> bool has_set();
 
     template<typename Component> Component *get_comp(EntityID entity);
-    template<typename Component> Component &add_comp(EntityID entity, Component&& component);
+    template<typename Component, typename ...Args> Component &add_comp(EntityID entity, Args&& ...args);
     template<typename Component> void remove_comp(EntityID entity);
     template<typename Component> bool has_comp(EntityID entity);
 
     template<typename Component> Component *get_single_comp();
-    template<typename Component> Component &add_single_comp(Component&& component);
+    template<typename Component, typename ...Args> Component& add_single_comp(Args&& ...args);
     template<typename Component> void remove_single_comp();
     template<typename Component> bool has_single_comp();
 
@@ -134,10 +132,10 @@ Component *ComponentManager::get_comp(EntityID entity)
     return get_set<Component>().get(entity);
 }
 
-template<typename Component>
-Component& ComponentManager::add_comp(EntityID entity, Component&& component)
+template<typename Component, typename ...Args>
+Component& ComponentManager::add_comp(EntityID entity, Args&& ...args)
 {
-    return get_set<Component>().add(entity, std::move(component));
+    return get_set<Component>().add(entity, args...);
 }
 
 template<typename Component>
@@ -162,11 +160,11 @@ Component *ComponentManager::get_single_comp()
     return pool.component.get();
 }
 
-template<typename Component>
-Component& ComponentManager::add_single_comp(Component&& component)
+template<typename Component, typename ...Args>
+Component& ComponentManager::add_single_comp(Args&& ...args)
 {
     auto& pool = get_single_pool<Component>();
-    pool.component = std::make_unique<Component>(std::move(component));
+    pool.component = std::make_unique<Component>(args...);
     pool.initialized = true;
     return *pool.component;
 }

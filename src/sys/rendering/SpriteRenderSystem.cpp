@@ -1,12 +1,11 @@
 #include "sys/rendering/SpriteRenderSystem.hpp"
 
-#include "res/render/RenderContext.hpp"
+#include "res/asset/RenderContext.hpp"
 #include "res/asset/ShaderProgram.hpp"
 #include "res/asset/Texture.hpp"
 
 #include "comp/ECSWorld.hpp"
 #include "comp/core/Transform.hpp"
-#include "comp/single/Camera.hpp"
 #include "comp/rendering/Sprite.hpp"
 
 mtrs::res::InstanceData sprite_to_instance(mtrs::comp::Transform *transform, mtrs::comp::Sprite *sprite)
@@ -28,7 +27,7 @@ mtrs::res::InstanceData sprite_to_instance(mtrs::comp::Transform *transform, mtr
     date.color = sprite->color;
     date.layer = sprite->layer;
 
-    return std::move(date);
+    return date;
 }
 
 namespace mtrs::sys

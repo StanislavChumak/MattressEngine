@@ -24,8 +24,10 @@ class ECSWorld
         std::ifstream file;
         bool init;
     };
+    std::string _scenes_path;
     
     ComponentManager _components;
+    std::deque<EntityID> _destroy_queue;
 
     std::string _executable_path;
     std::unordered_map<std::string, Scene> _scenes;
@@ -44,13 +46,29 @@ public:
     void turn_on_scene(std::string scene);
     void turn_off_scene(std::string scene);
 
-    ComponentManager &component_manager();
+    void mark_destroy(EntityID id);
+    void remove_marked();
 
     template<typename... Components>
     View<Components...> view()
     {
         return _components.view<Components...>();
     }
+
+    template<typename Component, typename ...Args>
+    Component* single_comp(Args&& ...args)
+    {
+        if constexpr (sizeof...(Args) > 0)
+        {
+            return &_components.add_single_comp<Component>(args...);
+        }
+        else
+        {
+            return _components.get_single_comp<Component>();
+        }
+    }
+
+    void clear_all();
 };
 
 }

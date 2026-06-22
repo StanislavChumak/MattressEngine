@@ -11,7 +11,7 @@ namespace mtrs::sys
 
 void AudioSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
-    comp::Audio *audio = world.component_manager().get_single_comp<comp::Audio>();
+    comp::Audio *audio = world.single_comp<comp::Audio>();
     if(!audio) return;
     for(auto [entity, sound] : world.view<comp::Sound>())
     {

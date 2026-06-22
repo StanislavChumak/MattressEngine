@@ -34,24 +34,26 @@ VertexArrayObject &VertexArrayObject::operator=(VertexArrayObject &&other) noexc
     return *this;
 }
 
-void VertexArrayObject::add_buffer_float(GLuint index, const BufferObject &buffer,
-    GLint size, GLsizei stride, GLintptr offset)
+void VertexArrayObject::add_attrib_float(GLuint attrib_index, GLuint binding_index,
+    GLint size, GLintptr rel_offset)
 {
-    glVertexArrayVertexBuffer(_id, index, buffer.id(), offset, stride);
-
-    glEnableVertexArrayAttrib(_id, index);
-    glVertexArrayAttribBinding(_id, index, index);
-    glVertexArrayAttribFormat(_id, index, size, GL_FLOAT, GL_FALSE, 0);
+    glEnableVertexArrayAttrib(_id, attrib_index);
+    glVertexArrayAttribBinding(_id, attrib_index, binding_index);
+    glVertexArrayAttribFormat(_id, attrib_index, size, GL_FLOAT, GL_FALSE, rel_offset);
 }
 
-void VertexArrayObject::add_buffer_byteN(GLuint index, const BufferObject &buffer,
-    GLint size, GLsizei stride, GLintptr offset)
+void VertexArrayObject::add_attrib_byteN(GLuint attrib_index, GLuint binding_index,
+    GLint size, GLintptr rel_offset)
 {
-    glVertexArrayVertexBuffer(_id, index, buffer.id(), offset, stride);
+    glEnableVertexArrayAttrib(_id, attrib_index);
+    glVertexArrayAttribBinding(_id, attrib_index, binding_index);
+    glVertexArrayAttribFormat(_id, attrib_index, size, GL_UNSIGNED_BYTE, GL_TRUE, rel_offset);
+}
 
-    glEnableVertexArrayAttrib(_id, index);
-    glVertexArrayAttribBinding(_id, index, index);
-    glVertexArrayAttribFormat(_id, index, size, GL_UNSIGNED_BYTE, GL_TRUE, 0);
+void VertexArrayObject::set_vertex_buffer(GLuint binding_index, const BufferObject &buffer,
+    GLsizei stride, GLintptr offset)
+{
+    glVertexArrayVertexBuffer(_id, binding_index, buffer.id(), offset, stride);
 }
 
 void VertexArrayObject::bind() const

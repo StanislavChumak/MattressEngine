@@ -21,8 +21,8 @@ struct Window
     ~Window() = default;
     Window(const Window &) = delete;
     Window &operator=(const Window&) = delete;
-    Window(Window &&other) noexcept;
-    Window &operator=(Window &&other) noexcept;
+    Window(Window&&) = delete;
+    Window &operator=(Window&&) = delete;
 
     Window(const glm::uvec2 &size, const char *name);
 };

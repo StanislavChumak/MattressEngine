@@ -16,6 +16,7 @@ class SpriteRenderSystem : public System<SpriteRenderSystem>
 {
 public:
     static std::shared_ptr<res::RenderContext> context;
+    
     static void update_imp(comp::ECSWorld &world, const double &delta);
     static constexpr int get_prioritet_imp() { return SystemPriority::RENDERING; };
 };

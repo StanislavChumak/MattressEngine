@@ -116,12 +116,12 @@ ShaderProgram::~ShaderProgram()
     glDeleteProgram(_ID);
 }
 
-std::string ShaderProgram::get_type_name() noexcept
+std::string ShaderProgram::get_type_name_imp() noexcept
 {
     return "shaders";
 }
 
-uint32_t ShaderProgram::get_type_size() noexcept
+uint32_t ShaderProgram::get_type_size_imp() noexcept
 {
     return sizeof(Shader_rs);
 }

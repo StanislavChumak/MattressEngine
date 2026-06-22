@@ -21,7 +21,7 @@ Transform::Transform(COMPONENT_ARGS)
     Trancform_sc transform;
     file.read(reinterpret_cast<char*>(&transform), sizeof(transform));
     position.set({transform.pos_x, transform.pos_y});
-    position.set({transform.scale_size_x, transform.scale_size_y});
+    scale_size.set({transform.scale_size_x, transform.scale_size_y});
     rotation.set(transform.rotation);
     matrix.update();
 }

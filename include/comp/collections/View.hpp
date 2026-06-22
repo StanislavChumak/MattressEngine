@@ -48,7 +48,7 @@ public:
     {
         friend class View;
 
-        const std::vector<EntityID>* _entities = nullptr;
+        const std::deque<EntityID>* _entities = nullptr;
         size_t _index = 0;
         size_t _size = 0;
         const std::unordered_set<EntityID>* _disabled_ids = nullptr;
@@ -56,7 +56,7 @@ public:
 
         bool has_all_components(EntityID entity) const
         {
-            if(_disabled_ids->find(entity) == _disabled_ids->end()) return false;
+            if(_disabled_ids->find(entity) != _disabled_ids->end()) return false;
             return (std::get<SparseSet<ComponentTypes>&>(*_sets).has(entity) && ...);
         }
 
@@ -68,7 +68,7 @@ public:
             }
         }
 
-        Iterator(const std::vector<EntityID>* entities, size_t size,
+        Iterator(const std::deque<EntityID>* entities, size_t size,
             const std::tuple<SparseSet<ComponentTypes>&...>* sets,
             const std::unordered_set<EntityID>* disabled_ids,
             size_t start_index)
@@ -104,7 +104,7 @@ private:
     template<size_t... Is>
     Iterator make_begin_impl(size_t min_index, std::index_sequence<Is...>) const
     {
-        const std::vector<EntityID>* entities = nullptr;
+        const std::deque<EntityID>* entities = nullptr;
         size_t set_size = 0;
         (void)((min_index == Is ?
         (
@@ -118,7 +118,7 @@ private:
     template<size_t... Is>
     Iterator make_end_impl(size_t min_index, std::index_sequence<Is...>) const
     {
-        const std::vector<EntityID>* entities = nullptr;
+        const std::deque<EntityID>* entities = nullptr;
         size_t set_size = 0;
         (void)((min_index == Is ?
         (

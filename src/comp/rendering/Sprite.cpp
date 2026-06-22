@@ -1,7 +1,7 @@
 #include "comp/rendering/Sprite.hpp"
 
 #include "res/ResourceManager.hpp"
-#include "res/render/RenderContext.hpp"
+#include "res/asset/RenderContext.hpp"
 #include "res/asset/ShaderProgram.hpp"
 #include "res/asset/Texture.hpp"
 
@@ -39,7 +39,7 @@ Sprite::Sprite(COMPONENT_ARGS)
         sub_texture = res::TextureAtlas::SubTexture2D{glm::vec2(0.001f), glm::vec2(0.999f)};
     }
 
-    std::shared_ptr<res::RenderContext> context = resource.get_cache<res::RenderContext>()["context"].lock();
+    std::shared_ptr<res::RenderContext> context = resource.get_resource<res::RenderContext>("system/render_context");
     context->create_sprite_batch(shader, texture);
 
     layer = sprite.layer;

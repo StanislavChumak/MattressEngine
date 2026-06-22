@@ -41,11 +41,11 @@ src/sys/cleanup/RemoveOrphans.cpp
 # Resourses
 src/res/ResourceManager.cpp
 
+src/res/asset/RenderContext.cpp
 src/res/asset/ShaderProgram.cpp
 src/res/asset/Texture.cpp
 src/res/asset/TextureAtlas.cpp
 
-src/res/render/RenderContext.cpp
 src/res/render/SpriteBatch.cpp
 src/res/render/BufferObject.cpp
 src/res/render/VertexArrayObject.cpp
@@ -58,7 +58,11 @@ src/comp/collections/ComponentManager.cpp
 
 src/comp/single/Window.cpp
 src/comp/single/Camera.cpp
+src/comp/single/States.cpp
 src/comp/single/Cursor.cpp
+src/comp/single/KeyButtons.cpp
+src/comp/single/MouseButtons.cpp
+src/comp/single/Listener.cpp
 
 src/comp/core/Transform.cpp
 
@@ -67,6 +71,7 @@ src/comp/rendering/Animator.cpp
 src/comp/rendering/StateAnimator.cpp
 
 src/comp/ui/CursorFollower.cpp
+src/comp/single/Audio.cpp
 
 )
 

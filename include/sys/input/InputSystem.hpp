@@ -1,35 +1,25 @@
 #ifndef INPUT_SYSTEM_HPP
 #define INPUT_SYSTEM_HPP
 
-#include "glm/fwd.hpp"
-// #include <vector>
-// #include <functional>
+#include "sys/System.hpp"
 
 namespace mtrs::comp {
     class ECSWorld;
-    struct Input;
+    struct KeyButtons;
+    struct MouseButtons;
 }
 
 namespace mtrs::sys
 {
 
-class InputSystem
+class InputSystem : public System<InputSystem>
 {
-    comp::Input &input;
-    // std::vector<std::function<void()>> _subscribersKey[349][3];
-    // std::vector<std::function<void()>> _subscribersMouseButton[8][2];
-    // std::vector<std::function<void(glm::dvec2)>> _subscribersCursor;
 public:
-    InputSystem(comp::Input &input);
+    inline static comp::KeyButtons *key_buttons;
+    inline static comp::MouseButtons *mouse_buttons;
 
-    void setKey(comp::ECSWorld &world, int key, bool action);
-    void setMouseButton(comp::ECSWorld &world, int button, bool action);
-
-    // void keySubscribe(int key, bool action, std::function<void()> subscriber);
-    // void mouseButtonSubscribe(int botton, bool action, std::function<void()> subscriber);
-    // void cursorSubscribe(std::function<void(glm::dvec2)> subscriber);
-
-    void updateLastInput();
+    void update_imp(comp::ECSWorld &world, const double &delta);
+    constexpr int get_prioritet_imp() { return SystemPriority::INPUT; }
 };
 
 }

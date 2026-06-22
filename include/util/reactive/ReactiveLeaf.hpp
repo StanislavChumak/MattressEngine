@@ -19,32 +19,8 @@ public:
     ~ReactiveLeaf() = default;
     ReactiveLeaf(const ReactiveLeaf&) = delete;
     ReactiveLeaf &operator=(const ReactiveLeaf&) = delete;
-
-    ReactiveLeaf(ReactiveLeaf &&other)
-    {
-        _value = std::move(other._value);
-        for (size_t i = 0; i < _observer_count; i++)
-        {
-            _observers[i] = std::move(other._observers[i]);
-        }
-        _observer_count = other._observer_count;
-        other._observer_count = 0;
-    }
-
-    ReactiveLeaf &operator=(ReactiveLeaf &&other)
-    {
-        if(this != &other)
-        {
-            _value = std::move(other._value);
-            for (size_t i = 0; i < _observer_count; i++)
-            {
-                _observers[i] = std::move(other._observers[i]);
-            }
-            _observer_count = other._observer_count;
-            other._observer_count = 0;
-        }
-        return *this;
-    }
+    ReactiveLeaf(ReactiveLeaf &&) = delete;
+    ReactiveLeaf &operator=(ReactiveLeaf &&) = delete;
 
     ReactiveLeaf()
     : _value{}
@@ -64,7 +40,7 @@ public:
     bool add_observer(PullNode<U> node)
     {
         if (_observer_count >= MaxObservers) return false;
-        _observers[_observer_count++] = std::move(PullNode<U>(node));
+        _observers[_observer_count++] = PullNode<U>(node);
         return true;
     }
 

@@ -17,18 +17,19 @@ struct Camera
     util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> size_in_pixels;
     util::ReactiveValue<glm::uvec2, glm::uvec2, glm::uvec2> offset_viewport;
     
-    res::BufferObject UBO;
+    res::BufferObject UBO, ui_UBO;
     struct {
         glm::mat4 proj;
         glm::mat4 view;
     } matrices;
+    glm::mat4 ui_projection;
 
     Camera() = delete;
     ~Camera() = default;
     Camera(const Camera &) = delete;
     Camera &operator=(const Camera&) = delete;
-    Camera(Camera &&other) noexcept;
-    Camera &operator=(Camera &&other) noexcept;
+    Camera(Camera&&) = delete;
+    Camera &operator=(Camera&&) = delete;
 
     Camera(util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> &window_size, glm::uvec2 size_in_pixels);
     

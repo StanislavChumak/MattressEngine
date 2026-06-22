@@ -1,6 +1,8 @@
 #ifndef PUSH_NODE_HPP
 #define PUSH_NODE_HPP
 
+#include <cstddef>
+
 namespace mtrs::util
 {
 

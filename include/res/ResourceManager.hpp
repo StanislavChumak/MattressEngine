@@ -22,12 +22,13 @@ private:
         size_t resource_count;
     };
     std::string _executable_path;
+    std::string _resource_path;
     std::unordered_map<std::string, ResourcePack> _resource_packs;
     std::vector<decltype(_resource_packs)::const_iterator> _resource_pack_iters;
 
     std::vector<std::function<void()>> _garbage_collectors;
 
-    void move_to_resource(std::ifstream &file, const std::string &resName,
+    void move_to_resource(std::ifstream &file, const std::string &res_name,
         const std::string &res_type_name, uint32_t res_type_size);
 
     template<typename Resource>
@@ -36,6 +37,34 @@ private:
         std::unordered_map<std::string, std::weak_ptr<Resource>> cache;
         bool initialization = false;
     };
+
+    template<typename Resource>
+    std::unordered_map<std::string, std::weak_ptr<Resource>> &get_cache()
+    {
+        static cacheWrapper<Resource> wrapper;
+        if(!wrapper.initialization)
+        {
+            _garbage_collectors.push_back([&]()
+            {
+                for (auto it_res = wrapper.cache.begin(); it_res != wrapper.cache.end(); )
+                {
+                    if (it_res->second.expired())
+                    {
+                        size_t pos = it_res->first.find_last_of("\\/");
+                        _resource_packs[it_res->first.substr(0, pos)].resource_count--;
+
+                        it_res = wrapper.cache.erase(it_res);
+                    }
+                    else
+                    {
+                        it_res++;
+                    }
+                }
+            });
+            wrapper.initialization = true;
+        }
+        return wrapper.cache;
+    }
 
 public:
     ResourceManager() = delete;
@@ -47,30 +76,6 @@ public:
     ~ResourceManager();
 
     void garbage_collector();
-
-    template<typename Resource>
-    std::unordered_map<std::string, std::weak_ptr<Resource>> &get_cache()
-    {
-        static cacheWrapper<Resource> wrapper;
-        if(!wrapper.initialization)
-        {
-            _garbage_collectors.push_back([&]()
-            {
-                for (auto it_res = wrapper.cache.begin(); it_res != wrapper.cache.end(); )
-                    if (it_res->second.expired())
-                    {
-                        it_res = wrapper.cache.erase(it_res);
-
-                        size_t pos = it_res->first.find_last_of("\\/");
-                        _resource_packs[it_res->first.substr(0, pos)].resource_count--;
-                    }
-                    else
-                        ++it_res;
-            });
-            wrapper.initialization = true;
-        }
-        return wrapper.cache;
-    }
 
     template<typename Resource>
     std::shared_ptr<Resource> get_resource(const std::string &resource_path)
@@ -86,7 +91,9 @@ public:
         if(it_pack != _resource_packs.end())
         {
             if(!it_pack->second.file.is_open())
-                it_pack->second.file.open(it_pack->first, std::ios::binary);
+            {
+                it_pack->second.file.open(_resource_path + "/" + it_pack->first + ".mtrs", std::ios::binary);
+            }
             
             std::string res_type_name = Resource::get_type_name();
             uint32_t res_type_size = Resource::get_type_size();

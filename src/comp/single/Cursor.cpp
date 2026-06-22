@@ -5,22 +5,6 @@
 namespace mtrs::comp
 {
 
-Cursor::Cursor(Cursor &&other) noexcept
-: position(std::move(other.position))
-{
-    window_position = std::move(other.window_position);
-}
-
-Cursor &Cursor::operator=(Cursor &&other) noexcept
-{
-    if(this != &other)
-    {
-        window_position = std::move(other.window_position);
-        position = std::move(other.position);
-    }
-    return *this;
-}
-
 Cursor::Cursor(util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> &window_size,
     util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> &size_in_pixels,
     util::ReactiveValue<glm::uvec2, glm::uvec2, glm::uvec2> &offset_viewport)

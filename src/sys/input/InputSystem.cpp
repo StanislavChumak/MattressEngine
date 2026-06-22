@@ -1,53 +1,17 @@
 #include "sys/input/InputSystem.hpp"
 
-#include "comp/ECSWorld.hpp"
-#include "comp/single/Input.hpp"
-#include "comp/single/Cursor.hpp"
+#include "comp/single/KeyButtons.hpp"
+#include "comp/single/MouseButtons.hpp"
+
+#include <algorithm>
 
 namespace mtrs::sys
 {
 
-InputSystem::InputSystem(comp::Input &input):input(input){}
-
-void InputSystem::setKey(comp::ECSWorld &world, int key, bool action)
+void InputSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
-    input.keys[key] = action;
-    // for(auto func : _subscribersKey[key][action])
-    // {
-    //     func();
-    // }
-}
-
-void InputSystem::setMouseButton(comp::ECSWorld &world, int button, bool action)
-{
-    input.mouse_buttons[button] = action;
-    // for(auto func : _subscribersMouseButton[button][action])
-    // {
-    //     func();
-    // }
-}
-
-// void InputSystem::keySubscribe(int key, bool action, std::function<void()> subscriber)
-// {
-//     _subscribersKey[key][action].push_back(subscriber);
-// }
-
-// void InputSystem::mouseButtonSubscribe(int botton, bool action, std::function<void()> subscriber)
-// {
-//     _subscribersMouseButton[botton][action].push_back(subscriber);
-// }
-
-// void InputSystem::cursorSubscribe(std::function<void(glm::dvec2)> subscriber)
-// {
-//     _subscribersCursor.push_back(subscriber);
-// }
-
-void InputSystem::updateLastInput()
-{
-    for(int i = 0; i < 349; i++)
-        input.last_keys[i] = input.keys[i];
-    for(int i = 0; i < 8; i++)
-        input.last_mouse_buttons[i] = input.mouse_buttons[i];
+    std::copy_n(key_buttons->keys, 349, key_buttons->last_keys);
+    std::copy_n(mouse_buttons->buttons, 8, mouse_buttons->last_buttons);
 }
 
 }

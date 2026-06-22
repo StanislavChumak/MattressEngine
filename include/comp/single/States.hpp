@@ -9,7 +9,15 @@ namespace mtrs::comp
 struct States
 {
     std::string current_system_state;
-    States(std::string start_state) : current_system_state(start_state) {}
+
+    States() = delete;
+    ~States() = default;
+    States(const States &) = delete;
+    States &operator=(const States&) = delete;
+    States(States&&) = delete;
+    States &operator=(States&&) = delete;
+
+    States(std::string start_state);
 };
 
 }

@@ -1,20 +1,24 @@
 #include "res/ResourceManager.hpp"
 
 #include "util/get_files_from_folder.hpp"
+#include "util/hash.hpp"
 
 namespace mtrs::res
 {
 
-ResourceManager::ResourceManager(const std::string &executablePath,const std::string &resourcePath)
-:_executable_path(executablePath)
+ResourceManager::ResourceManager(const std::string &executable_path,const std::string &resource_path)
+:_executable_path(executable_path), _resource_path(resource_path)
 {    
-    auto files = util::get_files_from_folder(resourcePath, ".mtrs");
+    auto files = util::get_files_from_folder(_resource_path, ".mtrs");
     _resource_packs.reserve(files.size());
     _resource_pack_iters.reserve(files.size());
+
+    std::string name;
     for(auto &file : files)
     {
-        _resource_packs.emplace(file, ResourcePack{std::ifstream(), 0});
-        _resource_pack_iters.push_back(_resource_packs.find(file));
+        name = file.substr(_resource_path.size(), (file.size() - _resource_path.size() - 5));
+        _resource_packs.emplace(name, ResourcePack{std::ifstream(), 0});
+        _resource_pack_iters.push_back(_resource_packs.find(name));
     }
 }
 
@@ -46,41 +50,32 @@ ResourceManager::~ResourceManager()
 void ResourceManager::move_to_resource(std::ifstream &file, const std::string &res_name,
         const std::string &res_type_name, uint32_t res_type_size)
 {
-    file.seekg(16, std::ios::beg);
+    file.seekg(8, std::ios::beg);
 
-    char *name;
-    uint32_t size, offset, block_size;
-    std::streampos cursor_buffer;
+    uint64_t res_type_id = hash_string(res_type_name);
+    uint64_t res_id = hash_string(res_name);
+
+    uint64_t id = 0, offset = 0;
     while(!file.eof())
     {
-        file.read(reinterpret_cast<char*>(&size), sizeof(size));
-        name = new char[size];
-        file.read(name, size);
-        file.read(reinterpret_cast<char*>(&block_size), sizeof(block_size));
-        if(name == res_type_name)
-            break;
-        file.seekg(block_size, std::ios::cur);
-    }
-    delete(name);
-
-    int count = block_size / res_type_size;
-    for(int i=0; i < count; i++)
-    {
-        file.read(reinterpret_cast<char*>(&size), sizeof(size));
-        if(res_name.size() == size)
+        file.read(reinterpret_cast<char*>(&id), sizeof(id));
+        file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
+        if(id == res_type_id)
         {
-            name = new char[size];
-            file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
-            cursor_buffer = file.tellg();
-            file.seekg(offset, std::ios::beg);
-            file.read(name, size);
-            if(name == res_name)
-            {
-                return;
-            }
-            delete(name);
+            break;
         }
-        file.seekg(res_type_size - sizeof(size), std::ios::cur);
+        file.seekg(offset, std::ios::beg);
+    }
+
+    int count = (offset - file.tellg()) / (res_type_size + sizeof(id));
+    for(int i = 0; i < count; i++)
+    {
+        file.read(reinterpret_cast<char*>(&id), sizeof(id));
+        if(id == res_id)
+        {
+            return;
+        }
+        file.seekg(res_type_size, std::ios::cur);
     }
 
     util::mtrs_message(util::TipeMessage::ERROR, "Failed to get resource(",

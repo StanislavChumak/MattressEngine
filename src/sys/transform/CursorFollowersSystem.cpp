@@ -10,7 +10,7 @@ namespace mtrs::sys
 
 void CursorFollowersSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
-    comp::Cursor *cursor = world.component_manager().get_single_comp<comp::Cursor>();
+    comp::Cursor *cursor = world.single_comp<comp::Cursor>();
     if(!cursor) return;
     for(auto [entity, transform, follower] : world.view<comp::Transform, comp::CursorFollower>())
     {

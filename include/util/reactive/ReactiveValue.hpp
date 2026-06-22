@@ -25,26 +25,8 @@ class ReactiveValue : public ReactiveBase<ReactiveValue<T, Deps...>, Deps...>
 public:
     ReactiveValue(const ReactiveValue&) = delete;
     ReactiveValue &operator=(const ReactiveValue&) = delete;
-
-    ReactiveValue(ReactiveValue &&other) noexcept
-    : Base(std::move(other))
-    {
-        _value = std::move(other._value);
-        _calculator = other._calculator;
-        other._calculator = nullptr;
-    }
-
-    ReactiveValue &operator=(ReactiveValue &&other) noexcept
-    {
-        if(this != &other)
-        {
-            Base::operator=(std::move(other));
-            _value = std::move(other._value);
-            _calculator = other._calculator;
-            other._calculator = nullptr;
-        }
-        return *this;
-    }
+    ReactiveValue(ReactiveValue &&) = delete;
+    ReactiveValue &operator=(ReactiveValue &&) = delete;
 
     ReactiveValue()
     : _value{}, _calculator(nullptr)

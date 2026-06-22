@@ -23,6 +23,7 @@ Texture::Texture(std::ifstream &file)
     file.read(reinterpret_cast<char*>(&texture), sizeof(texture));
     std::string path = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(texture, path));
 
+    _number = 0;
     // auto resultInt = obj["number"].get_int64();
     // if(!resultInt.error())
     //     _number = resultInt.value();
@@ -89,12 +90,12 @@ Texture::~Texture()
     glDeleteTextures(1, &_ID);
 }
 
-std::string Texture::get_type_name() noexcept
+std::string Texture::get_type_name_imp() noexcept
 {
     return "textures";
 }
 
-uint32_t Texture::get_type_size() noexcept
+uint32_t Texture::get_type_size_imp() noexcept
 {
     return sizeof(Texture_rs);
 }

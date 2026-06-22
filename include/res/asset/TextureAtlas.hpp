@@ -5,6 +5,7 @@
 
 #include "res/asset/Asset.hpp"
 
+#include <iosfwd>
 #include <vector>
 
 namespace mtrs::res
@@ -12,7 +13,7 @@ namespace mtrs::res
 
 class ResourceManager;
 
-class TextureAtlas
+class TextureAtlas : public Asset<TextureAtlas>
 {
 public:
     struct SubTexture2D
@@ -25,7 +26,16 @@ private:
     std::vector<SubTexture2D> _atlas;
 
 public:
-    ASSETS_CONSTRUCTORS(TextureAtlas);
+    TextureAtlas(std::ifstream &file);
+    TextureAtlas() = delete;
+    TextureAtlas(const TextureAtlas&) = delete;
+    TextureAtlas &operator=(const TextureAtlas&) = delete;
+    TextureAtlas(TextureAtlas &&other) noexcept;
+    TextureAtlas &operator=(TextureAtlas &&other) noexcept;
+    ~TextureAtlas();
+
+    static std::string get_type_name_imp() noexcept;
+    static uint32_t get_type_size_imp() noexcept;
 
     const SubTexture2D &get_sub_texture(const size_t index) const;
 };

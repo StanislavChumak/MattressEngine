@@ -57,12 +57,12 @@ TextureAtlas::~TextureAtlas()
     _atlas.clear();
 }
 
-std::string TextureAtlas::get_type_name() noexcept
+std::string TextureAtlas::get_type_name_imp() noexcept
 {
     return "atlases";
 }
 
-uint32_t TextureAtlas::get_type_size() noexcept
+uint32_t TextureAtlas::get_type_size_imp() noexcept
 {
     return sizeof(TextureAtlas_rs);
 }

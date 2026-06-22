@@ -24,6 +24,7 @@ SpriteBatch::SpriteBatch(SpriteBatch &&other) noexcept
     }
     _shader = std::move(other._shader);
     _texture = std::move(other._texture);
+    _current_buffer_index = other._current_buffer_index;
 }
 
 SpriteBatch &SpriteBatch::operator=(SpriteBatch &&other) noexcept
@@ -42,6 +43,7 @@ SpriteBatch &SpriteBatch::operator=(SpriteBatch &&other) noexcept
         }
         _shader = std::move(other._shader);
         _texture = std::move(other._texture);
+        _current_buffer_index = other._current_buffer_index;
     }
     return *this;
 }
@@ -84,8 +86,9 @@ void SpriteBatch::end_batch()
     InstanceData *ptr_vbo = _mapped_buffers[_current_buffer_index];
     std::memcpy(ptr_vbo, _instances.data(), _instances.size() * sizeof(InstanceData));
     
+    
     _vao.bind();
-    _instance_vbo[_current_buffer_index].bind();
+    _vao.set_vertex_buffer(1, _instance_vbo[_current_buffer_index], sizeof(InstanceData), 0);
     
     _shader->use();
     _texture->bind();
