@@ -40,7 +40,7 @@ class View
     }
 
 public:
-    explicit View(const std::unordered_set<EntityID>& disabled_ids,SparseSet<ComponentTypes>&... sets)
+    explicit View(const std::unordered_set<EntityID>& disabled_ids, SparseSet<ComponentTypes>&... sets)
     : _disabled_ids(disabled_ids), _sets(sets...)
     {}
 

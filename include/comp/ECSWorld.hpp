@@ -27,10 +27,12 @@ class ECSWorld
     std::string _scenes_path;
     
     ComponentManager _components;
-    std::deque<EntityID> _destroy_queue;
+    std::deque<uint64_t> _destroy_queue;
 
     std::string _executable_path;
     std::unordered_map<std::string, Scene> _scenes;
+
+    std::ifstream *open_scene(const std::string &scene);
 
 public:
     ECSWorld() = delete;
@@ -46,7 +48,7 @@ public:
     void turn_on_scene(std::string scene);
     void turn_off_scene(std::string scene);
 
-    void mark_destroy(EntityID id);
+    void mark_destroy(std::string name);
     void remove_marked();
 
     template<typename... Components>

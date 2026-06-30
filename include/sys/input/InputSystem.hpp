@@ -18,8 +18,8 @@ public:
     inline static comp::KeyButtons *key_buttons;
     inline static comp::MouseButtons *mouse_buttons;
 
-    void update_imp(comp::ECSWorld &world, const double &delta);
-    constexpr int get_prioritet_imp() { return SystemPriority::INPUT; }
+    static void update_imp(comp::ECSWorld &world, const double &delta);
+    static constexpr int get_prioritet_imp() { return SystemPriority::INPUT; }
 };
 
 }

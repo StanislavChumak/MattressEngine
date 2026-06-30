@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-#include "mtrsstruct/comp_struct/Transform.struct"
+#include "comp_struct/Transform.struct"
 
 namespace mtrs::comp
 {

@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "mtrsstruct/comp_struct/CursorFollower.struct"
+#include "comp_struct/CursorFollower.struct"
 
 namespace mtrs::comp
 {

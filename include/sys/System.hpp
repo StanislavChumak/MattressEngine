@@ -31,16 +31,15 @@ namespace SystemPriority
 template <typename Derived>
 class System
 {
-    static Derived derived;
 public:
     static void update(comp::ECSWorld &world, const double &delta)
     {
-        derived.update_imp(world, delta);
+        Derived::update_imp(world, delta);
     }
 
     static constexpr int get_prioritet()
     {
-        return derived.get_prioritet_imp();
+        return Derived::get_prioritet_imp();
     }
 };
 

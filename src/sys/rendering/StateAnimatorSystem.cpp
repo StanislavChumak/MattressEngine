@@ -13,7 +13,7 @@ void StateAnimatorSystem::update_imp(comp::ECSWorld &world, const double &delta)
     {
         if(!state->dirty) continue;
 
-        auto it = state->states.find(state->current_state);
+        auto it = state->states.find(state->current_state.first);
         if(it != state->states.end())
         {
             animator->current_frame = animator->offset = it->second.offset;

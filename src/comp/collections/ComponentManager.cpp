@@ -1,6 +1,7 @@
 #include "comp/collections/ComponentManager.hpp"
 
 #include "util/mtrs_message.hpp"
+#include "util/hash.hpp"
 
 namespace mtrs::comp
 {
@@ -10,7 +11,7 @@ ComponentManager::ComponentManager(ComponentManager &&other) noexcept
     _clear_sets = std::move(other._clear_sets);
     _clear_singletons = std::move(_clear_singletons);
 
-    _names_entity = std::move(other._names_entity);
+    _hashes_entity = std::move(other._hashes_entity);
     _remove_entity = std::move(other._remove_entity);
     
 
@@ -26,7 +27,7 @@ ComponentManager &ComponentManager::operator=(ComponentManager &&other) noexcept
         _clear_sets = std::move(other._clear_sets);
         _clear_singletons = std::move(_clear_singletons);
 
-        _names_entity = std::move(other._names_entity);
+        _hashes_entity = std::move(other._hashes_entity);
         _remove_entity = std::move(other._remove_entity);
 
         _entity_index = other._entity_index;
@@ -40,7 +41,7 @@ ComponentManager::~ComponentManager()
 {
 }
 
-EntityID ComponentManager::create_entity(std::string name)
+EntityID ComponentManager::create_entity(uint64_t hash)
 {
     EntityID id;
     if(_freed_ids.empty())
@@ -53,12 +54,14 @@ EntityID ComponentManager::create_entity(std::string name)
         id = _freed_ids.top();
         _freed_ids.pop();
     }
-    _names_entity.emplace(std::move(name), id);
+    _hashes_entity.emplace(hash, id);
     return id;
 }
 
-void ComponentManager::remove_entity(EntityID id)
+void ComponentManager::remove_entity(uint64_t hash)
 {
+    uint64_t id = _hashes_entity[hash];
+    _hashes_entity.erase(hash);
     for(auto fun : _remove_entity)
     {
         fun(id);
@@ -68,8 +71,8 @@ void ComponentManager::remove_entity(EntityID id)
 
 EntityID ComponentManager::get_entity_by_name(std::string name)
 {
-    auto it = _names_entity.find(name);
-    if(it != _names_entity.end())
+    auto it = _hashes_entity.find(util::hash_string<uint64_t>(name));
+    if(it != _hashes_entity.end())
     {
         return it->second;
     }
@@ -77,19 +80,19 @@ EntityID ComponentManager::get_entity_by_name(std::string name)
     return NULL_ENTITY;
 }
 
-void ComponentManager::turn_on(EntityID id)
+void ComponentManager::turn_on(uint64_t hash)
 {
-    _disabled_ids.erase(id);
+    _disabled_ids.erase(_hashes_entity[hash]);
 }
 
-void ComponentManager::turn_off(EntityID id)
+void ComponentManager::turn_off(uint64_t hash)
 {
-    _disabled_ids.emplace(id);
+    _disabled_ids.emplace(_hashes_entity[hash]);
 }
 
-bool ComponentManager::is_turn_on(EntityID id)
+bool ComponentManager::is_turn_on(uint64_t hash)
 {
-    return _disabled_ids.find(id) == _disabled_ids.end();
+    return _disabled_ids.find(_hashes_entity[hash]) == _disabled_ids.end();
 }
 
 void ComponentManager::clear_sets()
@@ -107,7 +110,5 @@ void ComponentManager::clear_singletons()
         fun();
     }
 }
-
-
 
 }

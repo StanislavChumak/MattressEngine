@@ -1,7 +1,7 @@
 #include "res/asset/TextureAtlas.hpp"
 
-#include "mtrsstruct/dynamic_field.def"
-#include "mtrsstruct/res_struct/TextureAtlas.struct"
+#include "dynamic_field.def"
+#include "res_struct/TextureAtlas.struct"
 #include "util/mtrs_message.hpp"
 
 #include <fstream>

@@ -1,11 +1,14 @@
 #include "comp/rendering/StateAnimator.hpp"
 
-#include "util/get_from_file_mtrs.hpp"
+#include "util/set_from_file_mtrs.hpp"
+#include "util/mtrs_message.hpp"
+#include "util/hash.hpp"
 
 #include <fstream>
+#include <vector>
 
-#include "mtrsstruct/dynamic_field.def"
-#include "mtrsstruct/comp_struct/StateAnimator.struct"
+#include "dynamic_field.def"
+#include "comp_struct/StateAnimator.struct"
 
 namespace mtrs::comp
 {
@@ -18,21 +21,31 @@ StateAnimator::StateAnimator(COMPONENT_ARGS)
     size_t count = state_anim.states_size / sizeof(StateAnimator_sc::State);
     states.reserve(count);
 
-    StateAnimator_sc::State *statesBuffer;
-    statesBuffer = util::get_array_from_mtrs_file<StateAnimator_sc::State>(file, DYNAMIC_ARGS(state_anim, states));
+    current_state.first = 0;
 
-    StateAnimator_sc::State *iter;
-    for(iter = statesBuffer; iter < (statesBuffer + state_anim.states_size); iter++)
+    std::vector<StateAnimator_sc::State> buffer;
+    util::set_array_from_mtrs_file(file, buffer, DYNAMIC_ARGS(state_anim, states));
+
+    for(auto &state : buffer)
     {
-        std::string key = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(*iter, name));
-        states.emplace(key, State{iter->offset, iter->count});
-        if(current_state == "") current_state = key;
+        uint32_t id = state.id_state;
+        states.emplace(id, State{state.offset, state.count});
+        if(current_state.first == 0) current_state.first = id; 
     }
 }
 
 void StateAnimator::set_state(std::string state)
 {
-    current_state = state;
+#ifndef FLAG_RELEASE
+    auto iter = states.find(util::hash_string<uint32_t>(state));
+    if(iter == states.end())
+    {
+        util::mtrs_message(util::TipeMessage::ERROR, "Animator does not have a state named: ", state);
+        return;
+    }
+#endif
+    current_state.first = util::hash_string<uint32_t>(state);
+    current_state.second = state;
     dirty = true;
 }
 

@@ -12,7 +12,7 @@ namespace mtrs::res
 
 class ShaderProgram : public Asset<ShaderProgram>
 {
-    bool createShader(const char *sourse, const uint32_t &shader_type, uint32_t &shader_id);
+    bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &shader_id);
     bool _is_compiled = false;
     uint32_t _ID = 0;
 

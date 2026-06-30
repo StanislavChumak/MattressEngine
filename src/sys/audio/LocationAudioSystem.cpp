@@ -5,8 +5,7 @@
 #include "comp/core/Transform.hpp"
 
 #include "comp/single/Listener.hpp"
-#include "comp/audio/Sound.hpp"
-#include "comp/audio/Music.hpp"
+#include "comp/audio/SoundPlayer.hpp"
 
 namespace mtrs::sys
 {

@@ -1,26 +1,41 @@
 #include "comp/single/Audio.hpp"
 
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+
 namespace mtrs::comp
 {
+
+struct Audio::Impl
+{
+    ma_engine engine;
+};
+
+void *Audio::ptr_engine()
+{
+    return &impl->engine;
+}
 
 Audio::Audio(void*)
 {
     ma_engine_config config = ma_engine_config_init();
     config.listenerCount = 1;
-    if (ma_engine_init(&config, &engine) == MA_SUCCESS)
+    impl = new Audio::Impl();
+    if (ma_engine_init(&config, &impl->engine) == MA_SUCCESS)
     {
-        initialized = true;
+        is_init = true;
     }
 }
 
 Audio::~Audio()
 {
-    if (initialized)
+    if (is_init)
     {
-        ma_engine_stop(&engine);
-        ma_engine_uninit(&engine);
-        initialized = false;
+        ma_engine_stop(&impl->engine);
+        ma_engine_uninit(&impl->engine);
+        is_init = false;
     }
+    delete impl;
 }
 
 }

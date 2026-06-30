@@ -3,23 +3,24 @@
 #include "res/ResourceManager.hpp"
 
 #include "comp/core/Transform.hpp"
+
 #include "comp/rendering/Sprite.hpp"
 #include "comp/rendering/Animator.hpp"
 #include "comp/rendering/StateAnimator.hpp"
+#include "comp/rendering/SpriteMap.hpp"
+#include "comp/rendering/MapAnimator.hpp"
+
+#include "comp/audio/SoundPlayer.hpp"
+
 #include "comp/ui/CursorFollower.hpp"
 
 #include "util/get_files_from_folder.hpp"
 #include "util/mtrs_message.hpp"
 #include "util/hash.hpp"
 
-#define FILE_READ(file, date) file.read(reinterpret_cast<char*>(&date), sizeof(date))
+#include "comp_struct/comp_type.def"
 
-#define COMPONENT_TYPE \
-X(Transform)\
-X(Sprite)\
-X(Animator)\
-X(StateAnimator)\
-X(CursorFollower)
+#define FILE_READ(file, date) file.read(reinterpret_cast<char*>(&date), sizeof(date))
 
 namespace mtrs::comp
 {
@@ -60,11 +61,13 @@ ECSWorld::~ECSWorld()
     for(auto &scene : _scenes)
     {
         if(scene.second.file.is_open())
+        {
             scene.second.file.close();
+        }
     }
 }
 
-void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resource, bool is_turn_on)
+std::ifstream *ECSWorld::open_scene(const std::string &scene)
 {
     auto iter = _scenes.find(scene);
 #ifndef FLAG_RELEASE
@@ -72,24 +75,22 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
     {
         util::mtrs_message(util::TipeMessage::ERROR,
             "Failed to load scene, there is no scene named \"", scene,"\" in the list");
-        return;
-    }
-
-    if(iter->second.init || iter->second.file.is_open())
-    {
-        util::mtrs_message(util::TipeMessage::LOG,
-            "Failed to load scene, scene \"",scene,"\" is already loaded");
-        return;
+        return nullptr;
     }
 #endif
 
-    auto &file = iter->second.file;
+    auto file = &iter->second.file;
     std::string file_name = _scenes_path + scene + ".mtsc";
-    file.open(file_name, std::ios::binary);
+    if(!file->is_open())
+    {
+        file->open(file_name, std::ios::binary);
+    }
+
+    file->seekg(0, std::ios::beg);
 
 #ifndef FLAG_RELEASE
     char magic[4];
-    file.read(magic, sizeof(magic));
+    file->read(magic, sizeof(magic));
 
     char true_magic[4] = {'m','t','s','c'};
     for(uint8_t i{}; i < 4; i++)
@@ -98,11 +99,27 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
         {
             util::mtrs_message(util::TipeMessage::ERROR,
                 "Failed to load scene, scene \"",scene,"\" does not have the magic .mtsc");
-            file.close();
-            return;
+            file->close();
+            return nullptr;
         }
     }
 #endif
+
+    return file;
+}
+
+void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resource, bool is_turn_on)
+{
+    auto result = open_scene(scene);
+    if(!result) return;
+    if(_scenes[scene].init)
+    {
+        util::mtrs_message(util::TipeMessage::WARNING, "Attempting to load already loaded scene: ", scene);
+        result->close();
+        return;
+    }
+
+    std::ifstream &file = *result;
 
     file.seekg(8, std::ios::beg);
 
@@ -120,7 +137,7 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
     if(file.tellg() != data_offset)
     {
         util::mtrs_message(util::TipeMessage::ERROR,
-                "Failed to load scene, data_offset does not match the value ", data_offset);
+            "Failed to load scene, data_offset does not match the value ", data_offset);
         file.close();
         return;
     }
@@ -132,7 +149,7 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
         EntityID entity;
         FILE_READ(file, id);
         FILE_READ(file, offset);
-        entity = _components.create_entity(std::to_string(id));
+        entity = _components.create_entity(id);
 
         if(!is_turn_on)
         {
@@ -142,11 +159,10 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
         uint64_t id_comp;
         while(file.tellg() != offset)
         {
-            uint64_t a = file.tellg();
             FILE_READ(file, id_comp);
             switch (id_comp)
             {
-#define X(Comp) case hash_c_string(#Comp): \
+#define X(Comp) case util::hash_c_string<uint64_t>(#Comp): \
 _components.add_comp<Comp>(entity, entity, file, *this, resource); \
 break;
             COMPONENT_TYPE
@@ -158,7 +174,6 @@ break;
                 return;
             }
         }
-
     }
 
 #ifndef FLAG_RELEASE
@@ -171,34 +186,109 @@ break;
         return;
     }
 #endif
-
+    _scenes[scene].init = true;
+    file.close();
 }
 
 void ECSWorld::remove_scene(std::string scene)
 {
+    auto result = open_scene(scene);
+    if(!result) return;
 
+    std::ifstream &file = *result;
+
+    file.seekg(8, std::ios::beg);
+
+    uint32_t entity_count = 0;
+    uint32_t data_offset;
+
+    FILE_READ(file, entity_count);
+    FILE_READ(file, data_offset);
+
+    file.seekg(data_offset, std::ios::beg);
+    
+    for(int i = 0; i < entity_count; i++)
+    {
+        uint64_t id, offset;
+        EntityID entity;
+        FILE_READ(file, id);
+        FILE_READ(file, offset);
+
+        _components.remove_entity(id);
+        file.seekg(offset, std::ios::beg);
+    }
+
+    _scenes[scene].init = false;
 }
 
 void ECSWorld::turn_on_scene(std::string scene)
 {
+    auto result = open_scene(scene);
+    if(!result) return;
+
+    std::ifstream &file = *result;
+
+    file.seekg(8, std::ios::beg);
+
+    uint32_t entity_count = 0;
+    uint32_t data_offset;
+
+    FILE_READ(file, entity_count);
+    FILE_READ(file, data_offset);
+
+    file.seekg(data_offset, std::ios::beg);
     
+    for(int i = 0; i < entity_count; i++)
+    {
+        uint64_t id, offset;
+        EntityID entity;
+        FILE_READ(file, id);
+        FILE_READ(file, offset);
+
+        _components.turn_on(id);
+        file.seekg(offset, std::ios::beg);
+    }
 }
 
 void ECSWorld::turn_off_scene(std::string scene)
 {
+    auto result = open_scene(scene);
+    if(!result) return;
 
+    std::ifstream &file = *result;
+
+    file.seekg(8, std::ios::beg);
+
+    uint32_t entity_count = 0;
+    uint32_t data_offset;
+
+    FILE_READ(file, entity_count);
+    FILE_READ(file, data_offset);
+
+    file.seekg(data_offset, std::ios::beg);
+    
+    for(int i = 0; i < entity_count; i++)
+    {
+        uint64_t id, offset;
+        EntityID entity;
+        FILE_READ(file, id);
+        FILE_READ(file, offset);
+
+        _components.turn_off(id);
+        file.seekg(offset, std::ios::beg);
+    }
 }
 
-void ECSWorld::mark_destroy(EntityID id)
+void ECSWorld::mark_destroy(std::string name)
 {
-    _destroy_queue.push_back(id);
+    _destroy_queue.push_back(util::hash_string<uint64_t>(name));
 }
 
 void ECSWorld::remove_marked()
 {
-    for(auto id : _destroy_queue)
+    for(auto hash : _destroy_queue)
     {
-        _components.remove_entity(id);
+        _components.remove_entity(hash);
     }
 
     _destroy_queue.clear();

@@ -16,8 +16,8 @@ struct StateAnimator
         size_t offset;
         size_t count;
     };
-    std::unordered_map<std::string, State> states;
-    std::string current_state = "";
+    std::unordered_map<uint32_t, State> states;
+    std::pair<uint32_t, std::string> current_state;
     bool dirty = true;
 
     StateAnimator() = delete;

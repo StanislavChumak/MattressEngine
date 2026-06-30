@@ -1,5 +1,5 @@
-#ifndef SPRITE_RENDER_SYSTEM_HPP
-#define SPRITE_RENDER_SYSTEM_HPP
+#ifndef SPRITE_MAP_RENDER_SYSTEM_HPP
+#define SPRITE_MAP_RENDER_SYSTEM_HPP
 
 #include "sys/System.hpp"
 
@@ -13,13 +13,13 @@ namespace mtrs::res
 namespace mtrs::sys
 {
 
-class SpriteRenderSystem : public System<SpriteRenderSystem>
+class SpriteMapRenderSystem : public System<SpriteMapRenderSystem>
 {
 public:
     static std::shared_ptr<res::RenderContext> context;
-    
+
     static void update_imp(comp::ECSWorld &world, const double &delta);
-    static constexpr int get_prioritet_imp() { return SystemPriority::RENDERING; };
+    static constexpr int get_prioritet_imp() { return SystemPriority::RENDERING; }
 };
 
 }

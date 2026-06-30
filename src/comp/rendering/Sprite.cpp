@@ -5,13 +5,13 @@
 #include "res/asset/ShaderProgram.hpp"
 #include "res/asset/Texture.hpp"
 
-#include "util/get_from_file_mtrs.hpp"
+#include "util/set_from_file_mtrs.hpp"
 
 #include <fstream>
 #include <cstring>
 
-#include "mtrsstruct/dynamic_field.def"
-#include "mtrsstruct/comp_struct/Sprite.struct"
+#include "dynamic_field.def"
+#include "comp_struct/Sprite.struct"
 
 namespace mtrs::comp
 {
@@ -21,16 +21,19 @@ Sprite::Sprite(COMPONENT_ARGS)
     Sprite_sc sprite;
     file.read(reinterpret_cast<char*>(&sprite), sizeof(sprite));
 
-    std::string path_shader = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(sprite, shader));
-    std::string path_texture = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(sprite, texture));
-    std::string path_atlas = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(sprite, atlas));
+    std::string path_buffer;
 
-    shader = resource.get_resource<res::ShaderProgram>(path_shader);
-    texture = resource.get_resource<res::Texture>(path_texture);
+    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, shader));
+    shader = resource.get_resource<res::ShaderProgram>(path_buffer);
 
-    if(path_atlas != "")
+    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, texture));
+    texture = resource.get_resource<res::Texture>(path_buffer);
+
+    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, atlas));
+    
+    if(path_buffer != "")
     {
-        atlas = resource.get_resource<res::TextureAtlas>(path_atlas);
+        atlas = resource.get_resource<res::TextureAtlas>(path_buffer);
         sub_texture = atlas->get_sub_texture(0);
     }
     else
@@ -47,13 +50,7 @@ Sprite::Sprite(COMPONENT_ARGS)
     size.x = sprite.size_x;
     size.y = sprite.size_y;
 
-    uint8_t bufferColor[4];
-    std::memcpy(bufferColor, &sprite.color, 4);
-    
-    color.r = bufferColor[0];
-    color.g = bufferColor[1];
-    color.b = bufferColor[2];
-    color.a = bufferColor[3];
+    std::memcpy(&color, &sprite.color, 4);
 }
 
 }

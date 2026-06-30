@@ -13,6 +13,7 @@
 #include "res/asset/RenderContext.hpp"
 #include "res/asset/Texture.hpp"
 #include "sys/rendering/SpriteRenderSystem.hpp"
+#include "sys/rendering/SpriteMapRenderSystem.hpp"
 
 #include "util/mtrs_message.hpp"
 
@@ -86,7 +87,7 @@ Core::Core(const Config& config)
     if(audio)
     {
         audio->sound_scale = config.saund_location_scale;
-        if(!audio->initialized)
+        if(!audio->is_init)
         {
             util::mtrs_message(util::TipeMessage::ERROR, "Failed to init sound engine");
             glfwTerminate();
@@ -101,6 +102,7 @@ Core::Core(const Config& config)
     if(config.depth) glEnable(GL_DEPTH_TEST);
 
     sys::SpriteRenderSystem::context = resources.get_resource<res::RenderContext>("system/render_context");
+    sys::SpriteMapRenderSystem::context = resources.get_resource<res::RenderContext>("system/render_context");
     
     _is_init = true;
 }
@@ -133,6 +135,7 @@ void Core::update(float delta)
 void Core::shutdown()
 {
     sys::SpriteRenderSystem::context.reset();
+    sys::SpriteMapRenderSystem::context.reset();
     world.clear_all();
     resources.garbage_collector();
     glfwTerminate();

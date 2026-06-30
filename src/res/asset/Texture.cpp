@@ -2,15 +2,15 @@
 
 #include "glad/glad.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
+#define  STB_IMAGE_IMPLEMENTATION
+#define  STBI_ONLY_PNG
 #include "stb_image.h"
 
-#include "util/get_from_file_mtrs.hpp"
+#include "util/set_from_file_mtrs.hpp"
 #include "util/mtrs_message.hpp"
 
-#include "mtrsstruct/dynamic_field.def"
-#include "mtrsstruct/res_struct/Texture.struct"
+#include "dynamic_field.def"
+#include "res_struct/Texture.struct"
 
 #include <fstream>
 
@@ -21,7 +21,9 @@ Texture::Texture(std::ifstream &file)
 {
     Texture_rs texture;
     file.read(reinterpret_cast<char*>(&texture), sizeof(texture));
-    std::string path = util::get_string_from_mtrs_file(file, DYNAMIC_ARGS(texture, path));
+    
+    std::string path;
+    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(texture, path));
 
     _number = 0;
     // auto resultInt = obj["number"].get_int64();

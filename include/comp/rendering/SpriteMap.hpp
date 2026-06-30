@@ -1,5 +1,5 @@
-#ifndef SPRITE_HPP
-#define SPRITE_HPP
+#ifndef SPRITE_MAP_HPP
+#define SPRITE_MAP_HPP
 
 #include "comp/Component.hpp"
 #include "res/asset/TextureAtlas.hpp"
@@ -17,22 +17,29 @@ namespace mtrs::res
 namespace mtrs::comp
 {
 
-struct Sprite
+struct SpriteMap
 {
     std::shared_ptr<res::ShaderProgram> shader;
     std::shared_ptr<res::Texture> texture;
     std::shared_ptr<res::TextureAtlas> atlas;
 
-    res::TextureAtlas::SubTexture2D sub_texture;
-    
-    glm::uvec2 size;
+    std::vector<res::TextureAtlas::SubTexture2D> cell_types;
+
+    struct MapCell
+    {
+        size_t type;
+        glm::ivec2 cord;
+    };
+    std::vector<MapCell> cell_map;
+
+    glm::uvec2 cell_size;
     glm::tvec4<uint8_t, glm::precision::highp> color{255, 255, 255, 255};
     float layer = 0.f;
 
-    bool visibility =  true;
+    bool visibility = true;
 
-    Sprite() = delete;
-    Sprite(COMPONENT_ARGS);
+    SpriteMap() = delete;
+    SpriteMap(COMPONENT_ARGS);
 };
 
 }

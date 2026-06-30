@@ -1,15 +1,17 @@
 #ifndef AUDIO_HPP
 #define AUDIO_HPP
 
-#include "miniaudio.h"
-
 namespace mtrs::comp
 {
 
 struct Audio
 {
-    ma_engine engine;
-    bool initialized = false;
+    struct Impl;
+    Impl *impl;
+
+    void *ptr_engine();
+
+    bool is_init = false;
 
     float sound_scale = 100.f;
 

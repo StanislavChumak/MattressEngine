@@ -18,7 +18,7 @@ mtrs::res::InstanceData sprite_to_instance(mtrs::comp::Transform *transform, mtr
     glm::vec2 scale;
     scale.x = glm::length(glm::vec2(m[0].x, m[0].y));
     scale.y = glm::length(glm::vec2(m[1].x, m[1].y));
-    date.size = sprite->size * scale;
+    date.size = (glm::vec2)sprite->size * scale;
 
     date.rotation = std::atan2(m[0].y, m[0].x);
 
@@ -44,7 +44,7 @@ void SpriteRenderSystem::update_imp(comp::ECSWorld &world, const double &delta)
         if(!sprite->visibility) continue;
 
         u_int64_t id = sprite->shader->id() | u_int64_t(sprite->texture->id()) << 32;
-        context->submit_batch(id, std::move(sprite_to_instance(transform, sprite)));
+        context->submit_batch(id, sprite_to_instance(transform, sprite));
     }
 
     context->end_batches();

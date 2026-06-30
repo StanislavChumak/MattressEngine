@@ -52,8 +52,8 @@ void ResourceManager::move_to_resource(std::ifstream &file, const std::string &r
 {
     file.seekg(8, std::ios::beg);
 
-    uint64_t res_type_id = hash_string(res_type_name);
-    uint64_t res_id = hash_string(res_name);
+    uint64_t res_type_id = util::hash_string<uint64_t>(res_type_name);
+    uint64_t res_id = util::hash_string<uint64_t>(res_name);
 
     uint64_t id = 0, offset = 0;
     while(!file.eof())

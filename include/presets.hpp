@@ -45,10 +45,8 @@ core.systems.register_always_update<mtrs::sys::StateAnimatorSystem>()
 
 #ifdef INCLUDE_SOUNDS
 #include "comp/single/Audio.hpp"
-#include "comp/audio/Sound.hpp"
-#include "comp/audio/Music.hpp"
-
-#include "sys/audio/AudioSystem.hpp"
+#include "comp/audio/SoundPlayer.hpp"
+#include "res/asset/Sound.hpp"
 #endif
 
 #define REGISTER_SOUNDS(core) \
