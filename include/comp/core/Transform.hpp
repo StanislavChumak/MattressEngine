@@ -9,6 +9,7 @@
 
 namespace mtrs::comp
 {
+
 struct Transform
 {
     util::ReactiveValue<glm::vec2> position;

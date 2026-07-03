@@ -15,6 +15,25 @@
 namespace mtrs::res
 {
 
+std::string shader_path_to_string(std::string path)
+{
+    std::ifstream shader;
+    std::string buffer;
+
+    shader.open(path, std::ios::ate | std::ios::binary);
+    if (!shader.is_open())
+    {
+        util::mtrs_message(util::TypeMessage::ERROR ,"Failed to open shader: ", path);
+        return "";
+    }
+    buffer.resize(shader.tellg());
+    shader.seekg(0);
+
+    shader.read(buffer.data(), buffer.size());
+
+    return buffer;
+}
+
 ShaderProgram::ShaderProgram(std::ifstream &file)
 {
     Shader_rs shader;
@@ -22,29 +41,31 @@ ShaderProgram::ShaderProgram(std::ifstream &file)
 
     std::string code_buffer, fragment_shader_code;
     util::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, vertex));
+    code_buffer = shader_path_to_string(std::move(code_buffer));
     
     if (code_buffer.empty())
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Vertex shader no code");
+        util::mtrs_message(util::TypeMessage::ERROR, "Vertex shader no code");
         return;
     }
     GLuint vertex_id = 0;
     if(!create_shader(std::move(code_buffer).c_str(), GL_VERTEX_SHADER, vertex_id))
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Vertex shader compilation failed");
+        util::mtrs_message(util::TypeMessage::ERROR, "Vertex shader compilation failed");
         return;
     }
     
     util::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, fragment));
+    code_buffer = shader_path_to_string(std::move(code_buffer));
     if (code_buffer.empty())
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Fragment shader no code");
+        util::mtrs_message(util::TypeMessage::ERROR, "Fragment shader no code");
         return;
     }
     GLuint fragment_id = 0;
     if(!create_shader(std::move(code_buffer).c_str(), GL_FRAGMENT_SHADER, fragment_id))
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Fragment shader compilation failed");
+        util::mtrs_message(util::TypeMessage::ERROR, "Fragment shader compilation failed");
         glDeleteShader(vertex_id);
         return;
     }
@@ -59,7 +80,7 @@ ShaderProgram::ShaderProgram(std::ifstream &file)
     {
         GLchar info_log[1024];
         glGetProgramInfoLog(_ID, 1024, nullptr, info_log);
-        util::mtrs_message(util::TipeMessage::ERROR, "Program linking failed:\n", info_log);
+        util::mtrs_message(util::TypeMessage::ERROR, "Program linking failed:\n", info_log);
         _is_compiled = false;
     }
     else
@@ -81,7 +102,7 @@ bool ShaderProgram::create_shader(const char *sourse,const uint32_t &shader_type
     {
         GLchar info_log[1024];
         glGetShaderInfoLog(shader_id, 1024, nullptr, info_log);
-        util::mtrs_message(util::TipeMessage::ERROR, "Shader (type: ", shader_type,
+        util::mtrs_message(util::TypeMessage::ERROR, "Shader (type: ", shader_type,
             ") compilation failed:\n", info_log);
         return false;
     }

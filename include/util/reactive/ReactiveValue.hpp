@@ -3,6 +3,8 @@
 
 #include "ReactiveBase.hpp"
 
+#include "util/concept.hpp"
+
 namespace mtrs::util
 {
 
@@ -78,6 +80,83 @@ public:
     {
         return _value;
     }
+
+    template <typename U = T, enable_if_addable<U> = 0>
+    auto operator+(const T& rhs) const { return _value + rhs; }
+
+    template <typename U = T, enable_if_subtractable<U> = 0>
+    auto operator-(const T& rhs) const { return _value - rhs; }
+
+    template <typename U = T, enable_if_multiplicable<U> = 0>
+    auto operator*(const T& rhs) const { return _value * rhs; }
+
+    template <typename U = T, enable_if_divisible<U> = 0>
+    auto operator/(const T& rhs) const { return _value / rhs; }
+
+
+    template <typename U = T, enable_if_addable<U> = 0>
+    auto operator+(const ReactiveValue& rhs) const { return _value + rhs._value; }
+
+    template <typename U = T, enable_if_subtractable<U> = 0>
+    auto operator-(const ReactiveValue& rhs) const { return _value - rhs._value; }
+
+    template <typename U = T, enable_if_multiplicable<U> = 0>
+    auto operator*(const ReactiveValue& rhs) const { return _value * rhs._value; }
+
+    template <typename U = T, enable_if_divisible<U> = 0>
+    auto operator/(const ReactiveValue& rhs) const { return _value / rhs._value; }
+
+
+    template <typename U = T, enable_if_eq<U> = 0>
+    bool operator==(const T& rhs) const { return _value == rhs; }
+
+    template <typename U = T, enable_if_eq<U> = 0>
+    bool operator!=(const T& rhs) const { return _value != rhs; }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator< (const T& rhs) const { return _value <  rhs; }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator> (const T& rhs) const { return rhs    <  _value; }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator<=(const T& rhs) const { return !(_value > rhs); }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator>=(const T& rhs) const { return !(_value < rhs); }
+
+
+    template <typename U = T, enable_if_eq<U> = 0>
+    bool operator==(const ReactiveValue& rhs) const { return _value == rhs._value; }
+
+    template <typename U = T, enable_if_eq<U> = 0>
+    bool operator!=(const ReactiveValue& rhs) const { return _value != rhs._value; }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator< (const ReactiveValue& rhs) const { return _value  < rhs._value; }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator> (const ReactiveValue& rhs) const { return rhs._value < _value; }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator<=(const ReactiveValue& rhs) const { return !(_value > rhs._value); }
+
+    template <typename U = T, enable_if_lt<U> = 0>
+    bool operator>=(const ReactiveValue& rhs) const { return !(_value < rhs._value); }
+
+
+    template <typename U = T, size_t N = sizeof...(Deps), enable_if_addable<U> = 0, enable_if_leaf<N> = 0>
+    ReactiveValue& operator+=(const T& rhs) { set(_value + rhs); return *this; }
+
+    template <typename U = T, size_t N = sizeof...(Deps), enable_if_subtractable<U> = 0, enable_if_leaf<N> = 0>
+    ReactiveValue& operator-=(const T& rhs) { set(_value - rhs); return *this; }
+
+    template <typename U = T, size_t N = sizeof...(Deps), enable_if_multiplicable<U> = 0, enable_if_leaf<N> = 0>
+    ReactiveValue& operator*=(const T& rhs) { set(_value * rhs); return *this; }
+
+    template <typename U = T, size_t N = sizeof...(Deps), enable_if_divisible<U> = 0, enable_if_leaf<N> = 0>
+    ReactiveValue& operator/=(const T& rhs) { set(_value / rhs); return *this; }
+
 };
 
 }

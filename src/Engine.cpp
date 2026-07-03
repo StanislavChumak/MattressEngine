@@ -15,6 +15,8 @@
 #include "sys/rendering/SpriteRenderSystem.hpp"
 #include "sys/rendering/SpriteMapRenderSystem.hpp"
 
+#include "sys/core/InputSystem.hpp"
+
 #include "util/mtrs_message.hpp"
 
 namespace mtrs::engine
@@ -30,7 +32,7 @@ Core::Core(const Config& config)
 
     if (!glfwInit())
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Failed GLFW init");
+        util::mtrs_message(util::TypeMessage::ERROR, "Failed GLFW init");
         _is_init = false;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -48,7 +50,7 @@ Core::Core(const Config& config)
 
         if (description)
         {
-            util::mtrs_message(util::TipeMessage::ERROR, "Failed to create GLFW window: ", code);
+            util::mtrs_message(util::TypeMessage::ERROR, "Failed to create GLFW window: ", code);
         }
         
         glfwTerminate();
@@ -65,7 +67,7 @@ Core::Core(const Config& config)
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Couidn't load opengl");
+        util::mtrs_message(util::TypeMessage::ERROR, "Couidn't load opengl");
         glfwTerminate();
         _is_init = false;
     }
@@ -77,9 +79,9 @@ Core::Core(const Config& config)
     keyboard = world.single_comp<comp::KeyButtons>(nullptr);
     mouse = world.single_comp<comp::MouseButtons>(nullptr);
 
-    util::mtrs_message(util::TipeMessage::LOG, "Renderer: ", glGetString(GL_RENDERER));
-    util::mtrs_message(util::TipeMessage::LOG, "OpenGL version: ", glGetString(GL_VERSION));
-    util::mtrs_message(util::TipeMessage::LOG, "GLSL Version: ",
+    util::mtrs_message(util::TypeMessage::LOG, "Renderer: ", glGetString(GL_RENDERER));
+    util::mtrs_message(util::TypeMessage::LOG, "OpenGL version: ", glGetString(GL_VERSION));
+    util::mtrs_message(util::TypeMessage::LOG, "GLSL Version: ",
         glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 
@@ -89,7 +91,7 @@ Core::Core(const Config& config)
         audio->sound_scale = config.saund_location_scale;
         if(!audio->is_init)
         {
-            util::mtrs_message(util::TipeMessage::ERROR, "Failed to init sound engine");
+            util::mtrs_message(util::TypeMessage::ERROR, "Failed to init sound engine");
             glfwTerminate();
             _is_init = false;
         }
@@ -103,6 +105,9 @@ Core::Core(const Config& config)
 
     sys::SpriteRenderSystem::context = resources.get_resource<res::RenderContext>("system/render_context");
     sys::SpriteMapRenderSystem::context = resources.get_resource<res::RenderContext>("system/render_context");
+
+    sys::InputSystem::key_buttons = keyboard;
+    sys::InputSystem::mouse_buttons = mouse;
     
     _is_init = true;
 }
@@ -160,7 +165,7 @@ void window_size_callback(GLFWwindow *window, int width, int height)
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
     mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
-    if (core)
+    if(core)
     {
         core->keyboard->keys[key] = action;
     }

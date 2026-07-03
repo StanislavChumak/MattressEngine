@@ -71,7 +71,7 @@ const TextureAtlas::SubTexture2D &TextureAtlas::get_sub_texture(const size_t ind
 {
     if (index >= _atlas.size())
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Fatal find subTexture \"", index , "\"");
+        util::mtrs_message(util::TypeMessage::ERROR, "Fatal find subTexture \"", index , "\"");
         return _atlas[0];
     }
     return _atlas[index];

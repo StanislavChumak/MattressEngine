@@ -25,7 +25,6 @@ class ComponentManager
 
     EntityID _entity_index = 0;
     std::stack<EntityID> _freed_ids;
-    std::unordered_map<uint64_t, EntityID> _hashes_entity;
     std::unordered_set<EntityID> _disabled_ids;
 
     template<typename Component>
@@ -74,13 +73,14 @@ public:
     ComponentManager &operator=(ComponentManager &&other) noexcept;
     ~ComponentManager();
 
-    EntityID create_entity(uint64_t hash);
-    EntityID get_entity_by_name(std::string name);
-    void remove_entity(uint64_t hash);
+    EntityID create_entity();
+    void remove_entity(EntityID entity);
 
-    void turn_on(uint64_t hash);
-    void turn_off(uint64_t hash);
-    bool is_turn_on(uint64_t hash);
+    
+    void turn_on(EntityID entity);
+    void turn_off(EntityID entity);
+    void reserve_turn_off(size_t count);
+    bool is_turn_on(EntityID entity);
 
     void clear_sets();
     void clear_singletons();

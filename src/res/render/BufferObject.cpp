@@ -51,7 +51,7 @@ void BufferObject::update(const void *data, const GLsizeiptr size, const GLintpt
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Attempt to update uninitialized buffer");
+        util::mtrs_message(util::TypeMessage::ERROR, "Attempt to update uninitialized buffer");
         return;
     }
 #endif
@@ -63,7 +63,7 @@ void BufferObject::bind() const
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Attempt to bind uninitialized buffer");
+        util::mtrs_message(util::TypeMessage::ERROR, "Attempt to bind uninitialized buffer");
         return;
     }
 #endif
@@ -75,7 +75,7 @@ void BufferObject::bind_base(const GLuint index)
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Attempt to update uninitialized buffer");
+        util::mtrs_message(util::TypeMessage::ERROR, "Attempt to update uninitialized buffer");
         return;
     }
 #endif

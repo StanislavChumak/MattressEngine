@@ -37,7 +37,7 @@ Texture::Texture(std::ifstream &file)
 
     if (!pixels)
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Failed to load texture: ", path);
+        util::mtrs_message(util::TypeMessage::ERROR, "Failed to load texture: ", path);
         return;
     }
     

@@ -21,8 +21,10 @@ class ECSWorld
 {
     struct Scene
     {
+        std::unordered_map<uint64_t, EntityID> local_entities;
         std::ifstream file;
         bool init;
+        bool turn_on;
     };
     std::string _scenes_path;
     
@@ -31,8 +33,6 @@ class ECSWorld
 
     std::string _executable_path;
     std::unordered_map<std::string, Scene> _scenes;
-
-    std::ifstream *open_scene(const std::string &scene);
 
 public:
     ECSWorld() = delete;
@@ -71,6 +71,10 @@ public:
     }
 
     void clear_all();
+
+// API for Scripts
+    void *script_get_component(uint64_t hash_comp, EntityID &entity);
+    void *script_get_single_comp(uint64_t hash_comp);
 };
 
 }

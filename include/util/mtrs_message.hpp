@@ -11,7 +11,7 @@ X(LOG)
 namespace mtrs::util
 {
 
-enum class TipeMessage
+enum class TypeMessage
 {
 #define X(TMSG) TMSG,
     TYPE_MESSAGE
@@ -21,16 +21,16 @@ enum class TipeMessage
 
 namespace detail
 {
-    void show_message(TipeMessage tmsg, std::string&& message);
+    void show_message(TypeMessage tmsg, std::string&& message);
 }
 
 template<typename... Args>
-void mtrs_message(TipeMessage tmsg, Args&&... args)
+void mtrs_message(TypeMessage tmsg, Args&&... args)
 {
     std::stringstream ss;
     switch (tmsg)
     {
-#define X(TMSG) case TipeMessage::TMSG: ss << #TMSG << ": "; break;
+#define X(TMSG) case TypeMessage::TMSG: ss << #TMSG << ": "; break;
     TYPE_MESSAGE
 #undef X  
     default:

@@ -5,17 +5,17 @@
 namespace mtrs::util::detail
 {
 
-void show_message(TipeMessage tmsg, std::string&& message)
+void show_message(TypeMessage tmsg, std::string&& message)
 {
     switch (tmsg)
     {
-    case TipeMessage::ERROR:
+    case TypeMessage::ERROR:
         std::cerr << message;
         break;
-    case TipeMessage::WARNING:
+    case TypeMessage::WARNING:
         std::cout << message;
         break;
-    case TipeMessage::LOG:
+    case TypeMessage::LOG:
         std::cout << message;
         break;
     default:

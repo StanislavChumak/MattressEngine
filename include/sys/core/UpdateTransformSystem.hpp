@@ -6,7 +6,7 @@
 namespace mtrs::sys
 {
 
-class GlobalTransformSystem : public System<GlobalTransformSystem>
+class UpdateTransformSystem : public System<UpdateTransformSystem>
 {
 public:
     static void update_imp(comp::ECSWorld &world, const double &delta);

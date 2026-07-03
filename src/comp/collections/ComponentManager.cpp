@@ -11,7 +11,6 @@ ComponentManager::ComponentManager(ComponentManager &&other) noexcept
     _clear_sets = std::move(other._clear_sets);
     _clear_singletons = std::move(_clear_singletons);
 
-    _hashes_entity = std::move(other._hashes_entity);
     _remove_entity = std::move(other._remove_entity);
     
 
@@ -27,7 +26,6 @@ ComponentManager &ComponentManager::operator=(ComponentManager &&other) noexcept
         _clear_sets = std::move(other._clear_sets);
         _clear_singletons = std::move(_clear_singletons);
 
-        _hashes_entity = std::move(other._hashes_entity);
         _remove_entity = std::move(other._remove_entity);
 
         _entity_index = other._entity_index;
@@ -41,7 +39,7 @@ ComponentManager::~ComponentManager()
 {
 }
 
-EntityID ComponentManager::create_entity(uint64_t hash)
+EntityID ComponentManager::create_entity()
 {
     EntityID id;
     if(_freed_ids.empty())
@@ -54,45 +52,36 @@ EntityID ComponentManager::create_entity(uint64_t hash)
         id = _freed_ids.top();
         _freed_ids.pop();
     }
-    _hashes_entity.emplace(hash, id);
     return id;
 }
 
-void ComponentManager::remove_entity(uint64_t hash)
+void ComponentManager::remove_entity(EntityID entity)
 {
-    uint64_t id = _hashes_entity[hash];
-    _hashes_entity.erase(hash);
     for(auto fun : _remove_entity)
     {
-        fun(id);
+        fun(entity);
     }
-    _freed_ids.push(id);
+    _freed_ids.push(entity);
 }
 
-EntityID ComponentManager::get_entity_by_name(std::string name)
+void ComponentManager::turn_on(EntityID entity)
 {
-    auto it = _hashes_entity.find(util::hash_string<uint64_t>(name));
-    if(it != _hashes_entity.end())
-    {
-        return it->second;
-    }
-    util::mtrs_message(util::TipeMessage::ERROR, "Fatal find Entity to name: ", name);
-    return NULL_ENTITY;
+    _disabled_ids.erase(entity);
 }
 
-void ComponentManager::turn_on(uint64_t hash)
+void ComponentManager::turn_off(EntityID entity)
 {
-    _disabled_ids.erase(_hashes_entity[hash]);
+    _disabled_ids.emplace(entity);
 }
 
-void ComponentManager::turn_off(uint64_t hash)
+void ComponentManager::reserve_turn_off(size_t count)
 {
-    _disabled_ids.emplace(_hashes_entity[hash]);
+    _disabled_ids.reserve(count + _disabled_ids.size());
 }
 
-bool ComponentManager::is_turn_on(uint64_t hash)
+bool ComponentManager::is_turn_on(EntityID entity)
 {
-    return _disabled_ids.find(_hashes_entity[hash]) == _disabled_ids.end();
+    return _disabled_ids.find(entity) == _disabled_ids.end();
 }
 
 void ComponentManager::clear_sets()

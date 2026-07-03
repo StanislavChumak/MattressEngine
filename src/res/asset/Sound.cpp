@@ -101,7 +101,7 @@ bool Sound::init(void *audio_engine)
 
         if(result != MA_SUCCESS)
         {
-            util::mtrs_message(util::TipeMessage::ERROR, "Failed init sould to path ", _path, " ", result);
+            util::mtrs_message(util::TypeMessage::ERROR, "Failed init sould to path ", _path, " ", result);
         }
     }
     return true;

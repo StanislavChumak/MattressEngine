@@ -9,14 +9,14 @@ namespace mtrs::res
 ResourceManager::ResourceManager(const std::string &executable_path,const std::string &resource_path)
 :_executable_path(executable_path), _resource_path(resource_path)
 {    
-    auto files = util::get_files_from_folder(_resource_path, ".mtrs");
+    auto files = util::get_files_from_folder(_resource_path, ".mtpck");
     _resource_packs.reserve(files.size());
     _resource_pack_iters.reserve(files.size());
 
     std::string name;
     for(auto &file : files)
     {
-        name = file.substr(_resource_path.size(), (file.size() - _resource_path.size() - 5));
+        name = file.substr(_resource_path.size(), (file.size() - _resource_path.size() - 6));
         _resource_packs.emplace(name, ResourcePack{std::ifstream(), 0});
         _resource_pack_iters.push_back(_resource_packs.find(name));
     }
@@ -78,7 +78,7 @@ void ResourceManager::move_to_resource(std::ifstream &file, const std::string &r
         file.seekg(res_type_size, std::ios::cur);
     }
 
-    util::mtrs_message(util::TipeMessage::ERROR, "Failed to get resource(",
+    util::mtrs_message(util::TypeMessage::ERROR, "Failed to get resource(",
         res_type_name, ": ", res_name,") from resource pack");
     file.close();
 }

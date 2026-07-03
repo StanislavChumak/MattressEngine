@@ -1,4 +1,4 @@
-#include "sys/input/InputSystem.hpp"
+#include "sys/core/InputSystem.hpp"
 
 #include "comp/single/KeyButtons.hpp"
 #include "comp/single/MouseButtons.hpp"

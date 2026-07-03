@@ -40,7 +40,7 @@ void StateAnimator::set_state(std::string state)
     auto iter = states.find(util::hash_string<uint32_t>(state));
     if(iter == states.end())
     {
-        util::mtrs_message(util::TipeMessage::ERROR, "Animator does not have a state named: ", state);
+        util::mtrs_message(util::TypeMessage::ERROR, "Animator does not have a state named: ", state);
         return;
     }
 #endif

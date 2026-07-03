@@ -3,8 +3,8 @@
 
 #include "sys/System.hpp"
 
-namespace mtrs::comp {
-    class ECSWorld;
+namespace mtrs::comp
+{
     struct KeyButtons;
     struct MouseButtons;
 }

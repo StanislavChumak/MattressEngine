@@ -29,7 +29,7 @@ std::unordered_set<std::string> get_files_from_folder(const std::string &dirPath
     }
     catch (const fs::filesystem_error& e)
     {
-        util::mtrs_message(TipeMessage::ERROR, e.what());
+        util::mtrs_message(TypeMessage::ERROR, e.what());
     }
     return files;
 }

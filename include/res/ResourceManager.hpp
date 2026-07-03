@@ -92,7 +92,7 @@ public:
         {
             if(!it_pack->second.file.is_open())
             {
-                it_pack->second.file.open(_resource_path + "/" + it_pack->first + ".mtrs", std::ios::binary);
+                it_pack->second.file.open(_resource_path + "/" + it_pack->first + ".mtpck", std::ios::binary);
             }
             
             std::string res_type_name = Resource::get_type_name();
@@ -104,7 +104,7 @@ public:
 
             if(!resource)
             {
-                util::mtrs_message(util::TipeMessage::ERROR, "in ResourcePack(", it_pack->first, ")");
+                util::mtrs_message(util::TypeMessage::ERROR, "in ResourcePack(", it_pack->first, ")");
             }
 
             it_pack->second.resource_count++;
