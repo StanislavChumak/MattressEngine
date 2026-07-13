@@ -5,7 +5,7 @@
 #include "res/asset/ShaderProgram.hpp"
 #include "res/asset/Texture.hpp"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "util/files/data_mtrs_file.hpp"
 
 #include <fstream>
 #include <cstring>
@@ -23,13 +23,13 @@ Sprite::Sprite(COMPONENT_ARGS)
 
     std::string path_buffer;
 
-    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, shader));
+    file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, shader));
     shader = resource.get_resource<res::ShaderProgram>(path_buffer);
 
-    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, texture));
+    file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, texture));
     texture = resource.get_resource<res::Texture>(path_buffer);
 
-    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, atlas));
+    file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, atlas));
     
     if(path_buffer != "")
     {
@@ -39,7 +39,7 @@ Sprite::Sprite(COMPONENT_ARGS)
     else
     {
         atlas = nullptr; 
-        sub_texture = res::TextureAtlas::SubTexture2D{glm::vec2(0.001f), glm::vec2(0.999f)};
+        sub_texture = res::TextureAtlas::SubTexture2D();
     }
 
     std::shared_ptr<res::RenderContext> context = resource.get_resource<res::RenderContext>("system/render_context");

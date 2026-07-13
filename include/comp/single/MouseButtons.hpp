@@ -1,10 +1,12 @@
 #ifndef MOUSE_BUTTONS_HPP
 #define MOUSE_BUTTONS_HPP
 
+#include "comp/Component.hpp"
+
 namespace mtrs::comp
 {
 
-struct MouseButtons
+struct MouseButtons : public Component<MouseButtons>
 {
     bool buttons[8];
     bool last_buttons[8];
@@ -17,6 +19,8 @@ struct MouseButtons
     MouseButtons &operator=(MouseButtons&&) = delete;
     
     MouseButtons(void*);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "MouseButtons"; }
 };
 
 

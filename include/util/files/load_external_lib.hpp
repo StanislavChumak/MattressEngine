@@ -1,5 +1,5 @@
-#ifndef UTIL_FOR_EXTERNAL_LIB_HPP
-#define UTIL_FOR_EXTERNAL_LIB_HPP
+#ifndef LOAD_EXTERNAL_LIB_HPP
+#define LOAD_EXTERNAL_LIB_HPP
 
 #include <string>
 
@@ -11,7 +11,7 @@
     #define EXPORT __attribute__((visibility("default")))
 #endif
 
-namespace mtrs::util
+namespace mtrs::file
 {
 
 #if defined(_WIN32)

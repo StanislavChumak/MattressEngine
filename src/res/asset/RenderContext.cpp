@@ -8,7 +8,7 @@
 namespace mtrs::res
 {
 
-RenderContext::RenderContext(std::ifstream& file)
+RenderContext::RenderContext(ASSET_ARGS)
 {
     const float quad[] = {
         -0.5f, -0.5f,  0.0f, 0.0f,
@@ -50,7 +50,7 @@ uint32_t RenderContext::get_type_size_imp() noexcept
     return 0;
 }
 
-void RenderContext::create_sprite_batch(std::shared_ptr<ShaderProgram> shader, std::shared_ptr<Texture> texture)
+void RenderContext::create_sprite_batch(std::shared_ptr<const ShaderProgram> shader, std::shared_ptr<const Texture> texture)
 {
     uint64_t id = shader->id() | uint64_t(texture->id()) << 32;
 
@@ -64,14 +64,15 @@ void RenderContext::create_sprite_batch(std::shared_ptr<ShaderProgram> shader, s
 
     for(uint8_t i = 0; i < SpriteBatch::BUFFER_COUNT; i++)
     {
+        const uint64_t max_instances = batch._texture->max_instances();
         batch._instance_vbo[i]._mode = GL_ARRAY_BUFFER;
         glBindBuffer(GL_ARRAY_BUFFER, batch._instance_vbo[i]._id);
-        glBufferStorage(GL_ARRAY_BUFFER, SpriteBatch::MAX_INSTANCES * sizeof(InstanceData), nullptr,
-                        GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+        glBufferStorage(GL_ARRAY_BUFFER, max_instances * sizeof(InstanceData), nullptr,
+            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
         batch._mapped_buffers[i] = reinterpret_cast<InstanceData*>(glMapBufferRange(
-                                  GL_ARRAY_BUFFER, 0, SpriteBatch::MAX_INSTANCES * sizeof(InstanceData),
-                                  GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
+            GL_ARRAY_BUFFER, 0, max_instances * sizeof(InstanceData),
+            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
     }
 
     batch._vao.set_vertex_buffer(0, _quad_VBO, sizeof(float) * 4, 0);

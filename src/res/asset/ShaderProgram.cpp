@@ -4,7 +4,7 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "util/files/data_mtrs_file.hpp"
 #include "util/mtrs_message.hpp"
 
 #include "dynamic_field.def"
@@ -23,7 +23,7 @@ std::string shader_path_to_string(std::string path)
     shader.open(path, std::ios::ate | std::ios::binary);
     if (!shader.is_open())
     {
-        util::mtrs_message(util::TypeMessage::ERROR ,"Failed to open shader: ", path);
+        util::mtrs_error("Failed to open shader: ", path);
         return "";
     }
     buffer.resize(shader.tellg());
@@ -34,38 +34,56 @@ std::string shader_path_to_string(std::string path)
     return buffer;
 }
 
-ShaderProgram::ShaderProgram(std::ifstream &file)
+bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &shader_id)
+{
+    shader_id = glCreateShader(shader_type);
+    glShaderSource(shader_id, 1, &sourse, nullptr);
+    glCompileShader(shader_id);
+    GLint success = 0;
+    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
+    if (!success)
+    {
+        GLchar info_log[1024];
+        glGetShaderInfoLog(shader_id, 1024, nullptr, info_log);
+        util::mtrs_error("Shader (type: ", shader_type, ") compilation failed:\n",
+            info_log);
+        return false;
+    }
+    return true;
+}
+
+ShaderProgram::ShaderProgram(ASSET_ARGS)
 {
     Shader_rs shader;
     file.read(reinterpret_cast<char*>(&shader), sizeof(shader));
 
-    std::string code_buffer, fragment_shader_code;
-    util::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, vertex));
-    code_buffer = shader_path_to_string(std::move(code_buffer));
-    
+    std::string code_buffer;
+
+    file::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, vertex));
+    code_buffer = shader_path_to_string(dir_resource + std::move(code_buffer));
     if (code_buffer.empty())
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Vertex shader no code");
+        util::mtrs_error("Vertex shader no code");
         return;
     }
     GLuint vertex_id = 0;
     if(!create_shader(std::move(code_buffer).c_str(), GL_VERTEX_SHADER, vertex_id))
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Vertex shader compilation failed");
+        util::mtrs_error("Vertex shader compilation failed");
         return;
     }
     
-    util::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, fragment));
-    code_buffer = shader_path_to_string(std::move(code_buffer));
+    file::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, fragment));
+    code_buffer = shader_path_to_string(dir_resource + std::move(code_buffer));
     if (code_buffer.empty())
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Fragment shader no code");
+        util::mtrs_error("Fragment shader no code");
         return;
     }
     GLuint fragment_id = 0;
     if(!create_shader(std::move(code_buffer).c_str(), GL_FRAGMENT_SHADER, fragment_id))
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Fragment shader compilation failed");
+        util::mtrs_error("Fragment shader compilation failed");
         glDeleteShader(vertex_id);
         return;
     }
@@ -80,7 +98,7 @@ ShaderProgram::ShaderProgram(std::ifstream &file)
     {
         GLchar info_log[1024];
         glGetProgramInfoLog(_ID, 1024, nullptr, info_log);
-        util::mtrs_message(util::TypeMessage::ERROR, "Program linking failed:\n", info_log);
+        util::mtrs_error("Program linking failed:\n", info_log);
         _is_compiled = false;
     }
     else
@@ -91,23 +109,7 @@ ShaderProgram::ShaderProgram(std::ifstream &file)
     glDeleteShader(fragment_id);
 }
 
-bool ShaderProgram::create_shader(const char *sourse,const uint32_t &shader_type,uint32_t &shader_id)
-{
-    shader_id = glCreateShader(shader_type);
-    glShaderSource(shader_id, 1, &sourse, nullptr);
-    glCompileShader(shader_id);
-    GLint success = 0;
-    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        GLchar info_log[1024];
-        glGetShaderInfoLog(shader_id, 1024, nullptr, info_log);
-        util::mtrs_message(util::TypeMessage::ERROR, "Shader (type: ", shader_type,
-            ") compilation failed:\n", info_log);
-        return false;
-    }
-    return true;
-}
+
 
 ShaderProgram::ShaderProgram(ShaderProgram &&other) noexcept
 {

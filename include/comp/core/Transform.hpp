@@ -5,21 +5,24 @@
 #include "glm/mat4x4.hpp"
 #include "comp/Component.hpp"
 
-#include "util/reactive/ReactiveValue.hpp"
+#include "util/reactive/ReactiveStruct.hpp"
+#include "util/reactive/ReactiveSet.hpp"
 
 namespace mtrs::comp
 {
 
-struct Transform
+struct Transform : public Component<Transform>
 {
-    util::ReactiveValue<glm::vec2> position;
-    util::ReactiveValue<glm::vec2> scale_size;
-    util::ReactiveValue<float> rotation;
+    react::ReactiveStruct<glm::vec2, 2> position;
+    react::ReactiveStruct<glm::vec2, 2> scale_size;
+    react::ReactiveValue<float, 2> rotation;
 
-    util::ReactiveValue<glm::mat4, glm::vec2, glm::vec2, float, glm::mat4> matrix;
+    react::ReactiveSet<glm::mat4, 4, glm::vec2, glm::vec2, float, glm::mat4> matrix;
 
     Transform() = delete;
     Transform(COMPONENT_ARGS);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "Transform"; }
 };
 
 }

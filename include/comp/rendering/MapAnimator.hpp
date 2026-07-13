@@ -8,7 +8,7 @@
 namespace mtrs::comp
 {
 
-struct MapAnimator
+struct MapAnimator : public Component<MapAnimator>
 {
     std::vector<float> durations;
 
@@ -24,6 +24,8 @@ struct MapAnimator
 
     MapAnimator() = delete;
     MapAnimator(COMPONENT_ARGS);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "MapAnimator"; }
 };
 
 }

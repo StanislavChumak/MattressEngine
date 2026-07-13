@@ -1,8 +1,5 @@
 #include "comp/collections/ComponentManager.hpp"
 
-#include "util/mtrs_message.hpp"
-#include "util/hash.hpp"
-
 namespace mtrs::comp
 {
 
@@ -12,7 +9,6 @@ ComponentManager::ComponentManager(ComponentManager &&other) noexcept
     _clear_singletons = std::move(_clear_singletons);
 
     _remove_entity = std::move(other._remove_entity);
-    
 
     _entity_index = other._entity_index;
     other._entity_index = 0;

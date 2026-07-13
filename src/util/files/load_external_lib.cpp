@@ -1,8 +1,8 @@
-#include "util/util_for_external_lib.hpp"
+#include "util/files/load_external_lib.hpp"
 
 #include <cstdio>
 
-namespace mtrs::util
+namespace mtrs::file
 {
 
 LibHandle load_library(const std::string& path)

@@ -4,9 +4,10 @@
 
 #define  STB_IMAGE_IMPLEMENTATION
 #define  STBI_ONLY_PNG
+#define  STBI_ONLY_JPEG
 #include "stb_image.h"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "util/files/data_mtrs_file.hpp"
 #include "util/mtrs_message.hpp"
 
 #include "dynamic_field.def"
@@ -17,13 +18,16 @@
 namespace mtrs::res
 {
 
-Texture::Texture(std::ifstream &file)
+Texture::Texture(ASSET_ARGS)
 {
     Texture_rs texture;
     file.read(reinterpret_cast<char*>(&texture), sizeof(texture));
     
     std::string path;
-    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(texture, path));
+    file::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(texture, path));
+    path = dir_resource + path;
+
+    _max_instances = texture.max_instances;
 
     _number = 0;
     // auto resultInt = obj["number"].get_int64();
@@ -37,7 +41,7 @@ Texture::Texture(std::ifstream &file)
 
     if (!pixels)
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Failed to load texture: ", path);
+        util::mtrs_error("Failed to load texture: ", path);
         return;
     }
     
@@ -60,6 +64,8 @@ Texture::Texture(std::ifstream &file)
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    stbi_image_free(pixels);
 }
 
 Texture::Texture(Texture &&other) noexcept
@@ -115,6 +121,21 @@ void Texture::active() const
 uint32_t Texture::id() const noexcept
 {
     return _ID;
+}
+
+uint64_t Texture::max_instances() const noexcept
+{
+    return _max_instances;
+}
+
+int32_t Texture::width() const noexcept
+{
+    return _width;
+}
+
+int32_t Texture::height() const noexcept
+{
+    return _height;
 }
 
 }

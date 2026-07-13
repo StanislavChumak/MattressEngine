@@ -7,6 +7,10 @@
 
 #include <cstring>
 
+#ifndef FLAG_RELEASE
+    #include "util/mtrs_message.hpp"
+#endif
+
 namespace mtrs::res
 {
 
@@ -55,9 +59,9 @@ SpriteBatch::~SpriteBatch()
 
 void SpriteBatch::begin_batch()
 {
-    size_t cacheCout = _instances.size();
+    size_t cache_cout = _instances.size();
     _instances.clear();
-    _instances.reserve(cacheCout);
+    _instances.reserve(cache_cout);
 }
 
 void SpriteBatch::submit(InstanceData date)
@@ -72,6 +76,16 @@ void SpriteBatch::end_batch()
     _current_buffer_index++;
     _current_buffer_index %= BUFFER_COUNT;
 
+    size_t count = std::min(_instances.size(), (size_t)_texture->max_instances());
+#ifndef FLAG_RELEASE
+    if(_instances.size() > _texture->max_instances())
+    {
+        util::mtrs_warning("The number of instances is ", _instances.size(),
+            ", which has exceeded the MAX_INSTANCES limit of ", _texture->max_instances(),
+            " in the SpriteBatch resource.");
+    }
+#endif
+
     if(_fences[_current_buffer_index])
     {
         GLenum result = glClientWaitSync(_fences[_current_buffer_index], GL_SYNC_FLUSH_COMMANDS_BIT, 1000000000);
@@ -84,7 +98,7 @@ void SpriteBatch::end_batch()
     }
 
     InstanceData *ptr_vbo = _mapped_buffers[_current_buffer_index];
-    std::memcpy(ptr_vbo, _instances.data(), _instances.size() * sizeof(InstanceData));
+    std::memcpy(ptr_vbo, _instances.data(), count * sizeof(InstanceData));
     
     
     _vao.bind();
@@ -93,7 +107,7 @@ void SpriteBatch::end_batch()
     _shader->use();
     _texture->bind();
     
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (GLsizei)_instances.size());
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (GLsizei)count);
 
     _fences[_current_buffer_index] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 }

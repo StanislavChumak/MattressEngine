@@ -3,8 +3,6 @@
 
 #include "res/asset/Asset.hpp"
 
-#include <iosfwd>
-
 namespace mtrs::res
 {
 
@@ -22,7 +20,7 @@ class Sound : public Asset<Sound>
     void *get_free_sound();
 
 public:
-    Sound(std::ifstream &file);
+    Sound(ASSET_ARGS);
     Sound() = delete;
     Sound(const Sound&) = delete;
     Sound &operator=(const Sound&) = delete;

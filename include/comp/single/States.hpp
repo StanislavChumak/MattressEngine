@@ -1,12 +1,14 @@
 #ifndef STATES_HPP
 #define STATES_HPP
 
+#include "comp/Component.hpp"
+
 #include <string>
 
 namespace mtrs::comp
 {
 
-struct States
+struct States : public Component<States>
 {
     std::string current_system_state;
 
@@ -18,6 +20,8 @@ struct States
     States &operator=(States&&) = delete;
 
     States(std::string start_state);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "States"; }
 };
 
 }

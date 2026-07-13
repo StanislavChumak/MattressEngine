@@ -35,7 +35,6 @@ class SpriteBatch
     friend class RenderContext;
 private:
     static constexpr uint8_t BUFFER_COUNT = 3;
-    static constexpr uint32_t MAX_INSTANCES = 1000;
 
     std::vector<InstanceData> _instances;
     VertexArrayObject _vao;
@@ -45,8 +44,8 @@ private:
     GLsync _fences[BUFFER_COUNT] = {0};
     uint8_t _current_buffer_index = 0;
     
-    std::shared_ptr<ShaderProgram> _shader;
-    std::shared_ptr<Texture> _texture;
+    std::shared_ptr<const ShaderProgram> _shader;
+    std::shared_ptr<const Texture> _texture;
     
 public:
     SpriteBatch() = default;

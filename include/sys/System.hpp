@@ -37,6 +37,11 @@ public:
         Derived::update_imp(world, delta);
     }
 
+    static constexpr const char *get_system_name()
+    {
+        return Derived::get_system_name_imp();
+    }
+
     static constexpr int get_prioritet()
     {
         return Derived::get_prioritet_imp();

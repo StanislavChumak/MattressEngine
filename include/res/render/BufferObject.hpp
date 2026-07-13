@@ -1,7 +1,7 @@
 #ifndef BUFFER_OBJECT_H
 #define BUFFER_OBJECT_H
 
-#include "glad/glad.h"
+#include <cstdint>
 
 namespace mtrs::res
 {
@@ -10,8 +10,8 @@ class BufferObject
 {
     friend class RenderContext;
 
-    GLuint _id;
-    GLenum _mode;
+    uint32_t _id;
+    uint32_t _mode;
 public:
     BufferObject();
     ~BufferObject() noexcept;
@@ -21,13 +21,13 @@ public:
     BufferObject(BufferObject &&other) noexcept;
     BufferObject &operator=(BufferObject &&other) noexcept;
 
-    GLuint id() const noexcept { return _id; }
+    uint32_t id() const noexcept { return _id; }
 
-    void init(const GLenum &mode, const void *data, const GLsizeiptr size, const GLenum usage);
-    void update(const void *data, const GLsizeiptr size, const GLintptr offset) const;
+    void init(const uint32_t &mode, const void *data, const int64_t size, const uint32_t usage);
+    void update(const void *data, const int64_t size, const int64_t offset) const;
 
     void bind() const;
-    void bind_base(const GLuint index);
+    void bind_base(const uint32_t index);
     void unbind() const noexcept;
 };
 

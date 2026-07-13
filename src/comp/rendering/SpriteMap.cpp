@@ -5,7 +5,7 @@
 #include "res/asset/ShaderProgram.hpp"
 #include "res/asset/Texture.hpp"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "util/files/data_mtrs_file.hpp"
 
 #include <fstream>
 #include <cstring>
@@ -23,20 +23,20 @@ SpriteMap::SpriteMap(COMPONENT_ARGS)
 
     std::string path_buffer;
 
-    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, shader));
+    file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, shader));
     shader = resource.get_resource<res::ShaderProgram>(path_buffer);
 
-    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, texture));
+    file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, texture));
     texture = resource.get_resource<res::Texture>(path_buffer);
 
-    util::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, atlas));
+    file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, atlas));
     atlas = resource.get_resource<res::TextureAtlas>(path_buffer);
 
     std::shared_ptr<res::RenderContext> context = resource.get_resource<res::RenderContext>("system/render_context");
     context->create_sprite_batch(shader, texture);
 
     std::vector<uint32_t> buffer_types;
-    util::set_array_from_mtrs_file(file, buffer_types, DYNAMIC_ARGS(sprite_map, cell_types));
+    file::set_array_from_mtrs_file(file, buffer_types, DYNAMIC_ARGS(sprite_map, cell_types));
     cell_types.resize(buffer_types.size());
 
     for(size_t i = 0; i < buffer_types.size(); i++)
@@ -45,7 +45,7 @@ SpriteMap::SpriteMap(COMPONENT_ARGS)
     }
 
     std::vector<SpriteMap_sc::MapCell> map_buffer;
-    util::set_array_from_mtrs_file(file, map_buffer, DYNAMIC_ARGS(sprite_map, cell_map));
+    file::set_array_from_mtrs_file(file, map_buffer, DYNAMIC_ARGS(sprite_map, cell_map));
     cell_map.reserve(map_buffer.size());
     for(auto &cell : map_buffer)
     {

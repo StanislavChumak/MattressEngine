@@ -6,7 +6,7 @@
 #define TYPE_MESSAGE \
 X(ERROR) \
 X(WARNING) \
-X(LOG)
+X(INFO)
 
 namespace mtrs::util
 {
@@ -40,6 +40,24 @@ void mtrs_message(TypeMessage tmsg, Args&&... args)
     ((ss << std::forward<Args>(args)), ...) << std::endl;
 
     detail::show_message(tmsg, ss.str());
+}
+
+template<typename... Args>
+void mtrs_info(Args&&... args)
+{
+    mtrs_message(TypeMessage::INFO, args...);
+}
+
+template<typename... Args>
+void mtrs_warning(Args&&... args)
+{
+    mtrs_message(TypeMessage::WARNING, args...);
+}
+
+template<typename... Args>
+void mtrs_error(Args&&... args)
+{
+    mtrs_message(TypeMessage::ERROR, args...);
 }
 
 }

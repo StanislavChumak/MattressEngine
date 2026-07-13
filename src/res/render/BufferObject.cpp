@@ -39,19 +39,19 @@ BufferObject::BufferObject(BufferObject &&other) noexcept
     other._mode = 0;
 }
 
-void BufferObject::init(const GLenum &mode, const void *data,
-    const GLsizeiptr size, const GLenum usage)
+void BufferObject::init(const uint32_t &mode, const void *data,
+    const int64_t size, const uint32_t usage)
 {
     _mode = mode;
     glNamedBufferData(_id, size, data, usage);
 }
 
-void BufferObject::update(const void *data, const GLsizeiptr size, const GLintptr offset) const
+void BufferObject::update(const void *data, const int64_t size, const int64_t offset) const
 {
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Attempt to update uninitialized buffer");
+        util::mtrs_error("Attempt to update uninitialized buffer");
         return;
     }
 #endif
@@ -63,19 +63,19 @@ void BufferObject::bind() const
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Attempt to bind uninitialized buffer");
+        util::mtrs_error("Attempt to bind uninitialized buffer");
         return;
     }
 #endif
     glBindBuffer(_mode, _id);
 }
 
-void BufferObject::bind_base(const GLuint index)
+void BufferObject::bind_base(const uint32_t index)
 {
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Attempt to update uninitialized buffer");
+        util::mtrs_error("Attempt to update uninitialized buffer");
         return;
     }
 #endif

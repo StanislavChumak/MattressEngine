@@ -3,7 +3,7 @@
 
 #include "ReactiveBase.hpp"
 
-namespace mtrs::util
+namespace mtrs::react
 {
 
 template <typename ...Deps>
@@ -21,7 +21,7 @@ class ReactiveTrigger : public ReactiveBase<ReactiveTrigger<Deps...>, Deps...>
     }
 
 public:
-    ReactiveTrigger(void(*callback)(const Deps* ...), ReactiveRef<Deps>... deps)
+    ReactiveTrigger(void(*callback)(const Deps* ...), PushNode<Deps>... deps)
     : Base(deps...), _callback(callback)
     {}
 
@@ -31,10 +31,10 @@ public:
         this->_dirty = true;
     }
 
-    void set_callback(void(*callback)(const Deps* ...), ReactiveRef<Deps>... deps)
+    void set_callback(void(*callback)(const Deps* ...), PushNode<Deps>... deps)
     {
         _callback = callback;
-        this->_deps = std::tuple<ReactiveRef<Deps>...>(deps...);
+        this->_deps = std::tuple<PushNode<Deps>...>(deps...);
         this->_dirty = true;
     }
 };

@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-namespace mtrs::util
+namespace mtrs::react
 {
 
 template <typename T>

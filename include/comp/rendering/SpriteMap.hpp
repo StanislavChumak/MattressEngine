@@ -17,7 +17,7 @@ namespace mtrs::res
 namespace mtrs::comp
 {
 
-struct SpriteMap
+struct SpriteMap : public Component<SpriteMap>
 {
     std::shared_ptr<res::ShaderProgram> shader;
     std::shared_ptr<res::Texture> texture;
@@ -40,6 +40,8 @@ struct SpriteMap
 
     SpriteMap() = delete;
     SpriteMap(COMPONENT_ARGS);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "SpriteMap"; }
 };
 
 }

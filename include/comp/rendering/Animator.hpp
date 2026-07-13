@@ -8,7 +8,7 @@
 namespace mtrs::comp
 {
 
-struct Animator
+struct Animator : public Component<Animator>
 {
     size_t count_frame = 0;
     size_t offset = 0;
@@ -20,6 +20,8 @@ struct Animator
 
     Animator() = delete;
     Animator(COMPONENT_ARGS);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "Animator"; }
 };
 
 }

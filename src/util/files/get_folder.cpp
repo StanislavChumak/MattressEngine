@@ -1,4 +1,4 @@
-#include "util/get_files_from_folder.hpp"
+#include "util/files/get_folder.hpp"
 
 #include "util/mtrs_message.hpp"
 
@@ -6,7 +6,7 @@
 
 namespace fs = std::filesystem;
 
-namespace mtrs::util
+namespace mtrs::file
 {
 
 std::unordered_set<std::string> get_files_from_folder(const std::string &dirPath, const std::string &extension)
@@ -29,7 +29,7 @@ std::unordered_set<std::string> get_files_from_folder(const std::string &dirPath
     }
     catch (const fs::filesystem_error& e)
     {
-        util::mtrs_message(TypeMessage::ERROR, e.what());
+        util::mtrs_error(e.what());
     }
     return files;
 }

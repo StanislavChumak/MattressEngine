@@ -6,7 +6,7 @@
 #include <utility>
 #include <cstddef>
 
-namespace mtrs::util
+namespace mtrs::react
 {
 
 template <typename Derived, typename ...Deps>
@@ -68,7 +68,7 @@ public:
 
     bool update()
     {
-        if (_dirty || update_deps(std::index_sequence_for<Deps...>{}))
+        if (update_deps(std::index_sequence_for<Deps...>{}) || _dirty)
         {
             _dirty = false;
             static_cast<Derived*>(this)->on_dirty(std::index_sequence_for<Deps...>{});

@@ -15,12 +15,14 @@ namespace mtrs::res
 namespace mtrs::comp
 {
 
-struct SoundPlayer
+struct SoundPlayer : public Component<SoundPlayer>
 {
     std::shared_ptr<res::Sound> sound;
 
     SoundPlayer() = delete;
     SoundPlayer(COMPONENT_ARGS);
+
+    static constexpr const char *get_type_name_imp() { return "SoundPlayer"; }
 };
 
 }

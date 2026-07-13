@@ -1,48 +1,91 @@
 #include "sys/SystemManager.hpp"
 
+#include "sys/core/InputSystem.hpp"
+#include "sys/core/ScriptsSystem.hpp"
+#include "sys/core/TransformSystem.hpp"
+
+#include "sys/rendering/CameraSystem.hpp"
+#include "sys/rendering/SpriteRenderSystem.hpp"
+#include "sys/rendering/AnimatorSystem.hpp"
+#include "sys/rendering/StateAnimatorSystem.hpp"
+#include "sys/rendering/SpriteMapRenderSystem.hpp"
+#include "sys/rendering/MapAnimatorSystem.hpp"
+
+#include "util/hash.hpp"
+#include "util/mtrs_message.hpp"
+
 #include <algorithm>
 
 namespace mtrs::sys
 {
 
 SystemManager::SystemManager()
-: _cache_dirty(true), _cache_state("")
-{}
+: _cache_dirty(true)
+{
+#define UPDATE_SYSTEM(System) {HASH64S(System::get_system_name()), {System::get_prioritet(), System::update}}
+    _updates = {
+        UPDATE_SYSTEM(InputSystem),
+        UPDATE_SYSTEM(ScriptsSystem),
+        UPDATE_SYSTEM(TransformSystem),
+
+        UPDATE_SYSTEM(CameraSystem),
+        UPDATE_SYSTEM(SpriteRenderSystem),
+        UPDATE_SYSTEM(AnimatorSystem),
+        UPDATE_SYSTEM(StateAnimatorSystem),
+        UPDATE_SYSTEM(SpriteMapRenderSystem),
+        UPDATE_SYSTEM(MapAnimatorSystem)
+    };
+#undef UPDATE_SYSTEM
+}
 
 void SystemManager::rebuild_cache()
 {
-    _cached_merged_updates = _always_updates;
-    _cached_merged_updates.reserve(_always_updates.size() + _state_update_map[_cache_state].size());
+    _cached_updates.clear();
+    _cached_updates.reserve(_updates.size() - _disabled_systems.size());
 
-    _cached_merged_updates.insert(_cached_merged_updates.end(),
-        _state_update_map[_cache_state].begin(), _state_update_map[_cache_state].end());
+    for (const auto &[hash, _] : _updates)
+    {
+        if (_disabled_systems.find(hash) == _disabled_systems.end())
+            _cached_updates.push_back(hash);
+    }
 
-    std::sort(_cached_merged_updates.begin(), _cached_merged_updates.end(),
-        [&](std::type_index a, std::type_index b) { return _updates[a].first > _updates[b].first; });
+    std::sort(_cached_updates.begin(), _cached_updates.end(),
+        [&](uint64_t a, uint64_t b)
+        {
+            return _updates[a].first > _updates[b].first;
+        });
 }
 
-void SystemManager::update(comp::ECSWorld &world, const double &delta, const std::string &currentState)
+void SystemManager::update(comp::ECSWorld &world, const double &delta)
 {
-    if(_cache_dirty || _cache_state != currentState)
+    if(_cache_dirty)
     {
-        _cache_state = currentState;
         rebuild_cache();
     }
 
-    for(auto id : _cached_merged_updates)
+    for(auto id : _cached_updates)
     {
         _updates[id].second(world, delta);
     }
 }
 
-void SystemManager::set_state_updates(std::string state , std::vector<std::type_index> &&systems)
+void SystemManager::turn_on_system(uint64_t hash_system)
 {
-    _state_update_map.try_emplace(std::move(state), std::move(systems));
+    auto iter = _disabled_systems.find(hash_system);
+    if(iter == _disabled_systems.end()) return;
+    _disabled_systems.erase(iter);
 }
 
-void SystemManager::add_state_update(std::string state , std::type_index system)
+void SystemManager::turn_off_system(uint64_t hash_system)
 {
-    _state_update_map[state].push_back(system);
+    auto iter = _disabled_systems.find(hash_system);
+    if(iter != _disabled_systems.end()) return;
+    _disabled_systems.emplace(hash_system);
+}
+
+bool SystemManager::is_turn_on_system(uint64_t hash_system)
+{
+    return _disabled_systems.find(hash_system) == _disabled_systems.end();
 }
 
 }

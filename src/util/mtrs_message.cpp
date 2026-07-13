@@ -15,7 +15,7 @@ void show_message(TypeMessage tmsg, std::string&& message)
     case TypeMessage::WARNING:
         std::cout << message;
         break;
-    case TypeMessage::LOG:
+    case TypeMessage::INFO:
         std::cout << message;
         break;
     default:

@@ -22,7 +22,7 @@ private:
         size_t resource_count;
     };
     std::string _executable_path;
-    std::string _resource_path;
+    std::string _resource_dir;
     std::unordered_map<std::string, ResourcePack> _resource_packs;
     std::vector<decltype(_resource_packs)::const_iterator> _resource_pack_iters;
 
@@ -68,7 +68,7 @@ private:
 
 public:
     ResourceManager() = delete;
-    ResourceManager(const std::string &executable_path,const std::string &resource_path);
+    ResourceManager(const std::string &executable_path,const std::string &resource_dir);
     ResourceManager(ResourceManager &) = delete;
     ResourceManager &operator=(const ResourceManager &) = delete;
     ResourceManager(ResourceManager &&other) noexcept;
@@ -92,7 +92,7 @@ public:
         {
             if(!it_pack->second.file.is_open())
             {
-                it_pack->second.file.open(_resource_path + "/" + it_pack->first + ".mtpck", std::ios::binary);
+                it_pack->second.file.open(_resource_dir + "/" + it_pack->first + ".mtpck", std::ios::binary);
             }
             
             std::string res_type_name = Resource::get_type_name();
@@ -100,7 +100,7 @@ public:
 
             move_to_resource(it_pack->second.file, resource_path.substr(pos + 1), res_type_name, res_type_size);
             
-            std::shared_ptr<Resource> resource = std::make_shared<Resource>(it_pack->second.file);
+            std::shared_ptr<Resource> resource = std::make_shared<Resource>(it_pack->second.file, _resource_dir);
 
             if(!resource)
             {

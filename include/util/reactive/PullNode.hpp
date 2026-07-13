@@ -1,10 +1,9 @@
 #ifndef PULL_NODE_HPP
 #define PULL_NODE_HPP
 
-namespace mtrs::util
+namespace mtrs::react
 {
 
-template <typename T>
 struct PullNode
 {
     void (*_mark_dirty)(void*) = nullptr;

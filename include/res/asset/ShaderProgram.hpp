@@ -5,19 +5,16 @@
 
 #include "res/asset/Asset.hpp"
 
-#include <iosfwd>
-
 namespace mtrs::res
 {
 
 class ShaderProgram : public Asset<ShaderProgram>
 {
-    bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &shader_id);
     bool _is_compiled = false;
     uint32_t _ID = 0;
 
 public:
-    ShaderProgram(std::ifstream &file);
+    ShaderProgram(ASSET_ARGS);
     ShaderProgram() = delete;
     ShaderProgram(const ShaderProgram&) = delete;
     ShaderProgram &operator=(const ShaderProgram&) = delete;

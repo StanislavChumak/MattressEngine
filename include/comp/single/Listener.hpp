@@ -1,12 +1,14 @@
 #ifndef LISTENER_HPP
 #define LISTENER_HPP
 
+#include "comp/Component.hpp"
+
 #include "comp/core/Transform.hpp"
 
 namespace mtrs::comp
 {
 
-struct Listener
+struct Listener : public Component<Listener>
 {
     Transform *target;
 
@@ -18,6 +20,8 @@ struct Listener
     Listener &operator=(Listener&&) = delete;
 
     Listener(void*);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "Listener"; }
 };
 
 }

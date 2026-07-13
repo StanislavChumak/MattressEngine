@@ -5,6 +5,8 @@ project(mattres VERSION 1.1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -march=native")
+
 if (WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
     set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
@@ -14,17 +16,17 @@ add_library(${PROJECT_NAME} STATIC
 
 src/Engine.cpp
 
-src/util/get_files_from_folder.cpp
-src/util/set_from_file_mtrs.cpp
 src/util/mtrs_message.cpp
-src/util/util_for_external_lib.cpp
+src/util/files/get_folder.cpp
+src/util/files/data_mtrs_file.cpp
+src/util/files/load_external_lib.cpp
 
 # Systems
 src/sys/SystemManager.cpp
 
 src/sys/core/InputSystem.cpp
 src/sys/core/ScriptsSystem.cpp
-src/sys/core/UpdateTransformSystem.cpp
+src/sys/core/TransformSystem.cpp
 
 src/sys/rendering/CameraSystem.cpp
 src/sys/rendering/SpriteRenderSystem.cpp
@@ -34,8 +36,6 @@ src/sys/rendering/SpriteMapRenderSystem.cpp
 src/sys/rendering/MapAnimatorSystem.cpp
 
 src/sys/audio/LocationAudioSystem.cpp
-
-src/sys/ui/CursorFollowersSystem.cpp
 
 # Resourses
 src/res/ResourceManager.cpp
@@ -52,7 +52,6 @@ src/res/render/BufferObject.cpp
 src/res/render/VertexArrayObject.cpp
 
 # Components
-
 src/comp/ECSWorld.cpp
 
 src/comp/collections/ComponentManager.cpp
@@ -63,10 +62,12 @@ src/comp/single/States.cpp
 src/comp/single/Cursor.cpp
 src/comp/single/KeyButtons.cpp
 src/comp/single/MouseButtons.cpp
+src/comp/single/MouseScroll.cpp
 src/comp/single/Audio.cpp
 src/comp/single/Listener.cpp
 
-src/comp/core/Script.cpp
+src/comp/core/ScriptUpdate.cpp
+src/comp/core/ScriptCallback.cpp
 src/comp/core/Transform.cpp
 
 src/comp/rendering/Sprite.cpp
@@ -75,11 +76,11 @@ src/comp/rendering/StateAnimator.cpp
 src/comp/rendering/SpriteMap.cpp
 src/comp/rendering/MapAnimator.cpp
 
-src/comp/ui/CursorFollower.cpp
-
 src/comp/audio/SoundPlayer.cpp
 
 )
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Release>:FLAG_RELEASE>

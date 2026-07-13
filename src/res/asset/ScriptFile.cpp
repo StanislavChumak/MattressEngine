@@ -1,8 +1,12 @@
 #include "res/asset/ScriptFile.hpp"
 
 #include "comp/ECSWorld.hpp"
+#include "comp/single/Window.hpp"
+#include "comp/single/Camera.hpp"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "res/asset/TextureAtlas.hpp"
+
+#include "util/files/data_mtrs_file.hpp"
 #include "util/hash.hpp"
 #include "util/mtrs_message.hpp"
 
@@ -12,27 +16,26 @@
 namespace mtrs::res
 {
 
-EngineAPI ScriptFile::_api{};
-
-ScriptFile::ScriptFile(std::ifstream &file)
+ScriptFile::ScriptFile(ASSET_ARGS)
 {
     ScriptFile_sc script_file;
     file.read(reinterpret_cast<char*>(&script_file), sizeof(script_file));
 
     std::string path;
-    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script_file, path));
+    file::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script_file, path));
 
-    _handle = util::load_library(path + util::lib_extension());
+    _handle = file::load_library(dir_resource + path + file::lib_extension());
     if (_handle)
     {
-        _on_load = reinterpret_cast<decltype(_on_load)>(util::get_symbol(_handle, "on_load"));
-        _on_unload = reinterpret_cast<decltype(_on_unload)>(util::get_symbol(_handle, "on_unload"));
-        _update = reinterpret_cast<decltype(_update)>(util::get_symbol(_handle, "update"));
+        _on_load = reinterpret_cast<decltype(_on_load)>(file::get_symbol(_handle, "on_load"));
+        if(!_on_load) mtrs::util::mtrs_error(file::get_last_error());
+        _on_unload = reinterpret_cast<decltype(_on_unload)>(file::get_symbol(_handle, "on_unload"));
+        if(!_on_unload) mtrs::util::mtrs_error(file::get_last_error());
     }
     else
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Failed to load script at path: ", path, "\n",
-            util::get_last_error());
+        util::mtrs_error("Failed to load script at path: ", path, "\n",
+            file::get_last_error());
     }
 }
 
@@ -44,8 +47,6 @@ ScriptFile::ScriptFile(ScriptFile &&other) noexcept
     other._on_load = nullptr;
     _on_unload = other._on_unload;
     other._on_unload = nullptr;
-    _update = other._update;
-    other._update = nullptr;
 }
 
 ScriptFile &ScriptFile::operator=(ScriptFile &&other) noexcept
@@ -58,8 +59,6 @@ ScriptFile &ScriptFile::operator=(ScriptFile &&other) noexcept
         other._on_load = nullptr;
         _on_unload = other._on_unload;
         other._on_unload = nullptr;
-        _update = other._update;
-        other._update = nullptr;
     }
     return *this;
 }
@@ -69,7 +68,7 @@ ScriptFile::~ScriptFile()
     if(_handle)
     {
         _on_unload();
-        util::free_library(_handle);
+        file::free_library(_handle);
         _handle = nullptr;
     }
 }
@@ -84,39 +83,52 @@ uint32_t ScriptFile::get_type_size_imp() noexcept
     return sizeof(ScriptFile_sc);
 }
 
-void ScriptFile::update(comp::EntityID entity, const double &delta)
-{
-    _update(entity, delta);
-}
-
-void messege(const char *msg)
-{
-    util::mtrs_message(util::TypeMessage::LOG, msg);
-}
-
-void *get_component(comp::ECSWorld* world, uint64_t hash_comp, comp::EntityID entity)
-{
-    return world->script_get_component(hash_comp, entity);
-}
-
-void *get_single_component(comp::ECSWorld* world, uint64_t hash_comp)
-{
-    return world->script_get_single_comp(hash_comp);
-}
-
 void ScriptFile::load(comp::EntityID entity, comp::ECSWorld& world, ResourceManager& resource)
 {
-    if(!_api.init)
-    {
-        _api.world = &world;
+    // base
+    _api.world = &world;
+    _api.scene = world.current_scene().c_str();
 
-        _api.messege = messege;
-        _api.get_component = get_component;
-        _api.get_single_component = get_single_component;
+    // util
+    _api.message = [](mtrs::util::TypeMessage tmsg, const char *msg)
+        { util::detail::show_message(tmsg, msg); };
 
-        _api.init = true;
-    }
+    // ECSWorld
+    _api.world_single_comp = [](comp::ECSWorld* w, const char *c)
+        { return w->single_comp(c); };
+    _api.world_component = [](comp::ECSWorld* w, const char *c, comp::EntityID e)
+        { return w->component(c, e); };
+    _api.world_get_entity = [](comp::ECSWorld* w, const char *s, uint64_t h)
+        { return w->get_entity(s,h); };
+
+    // window
+    _api.window_set_icon = [](comp::Window*w){ w->set_icon(); };
+    _api.window_set_position = [](comp::Window*w, glm::uvec2 v){ w->set_position(v); };
+    _api.window_set_full_screen = [](comp::Window*w, bool is){ w->set_full_screen(is); };
+    _api.window_get_position = [](comp::Window*w){ return w->get_position(); };
+
+    // camera
+    _api.camera_update_UBO = [](comp::Camera*c){ c->update_UBO(); };
+    _api.camera_update_proj_matrix = [](comp::Camera*c){ c->update_proj_matrix(); };
+    _api.camera_update_view_matrix = [](comp::Camera*c){ c->update_view_matrix(); };
+
+    // texture atlas
+    _api.atlas_get_sub_texture = [](const res::TextureAtlas *a, size_t i){ return glm::vec4(a->get_sub_texture(i)); };
+
+    // script file
+    _api.script_get_symbol = [](res::ScriptFile *s, const char *n){ return s->get_symbol(n); };
+    
     _on_load(entity, &_api);
+}
+
+void *ScriptFile::get_symbol(std::string &&name)
+{
+    if(_handle)
+    {
+        return file::get_symbol(_handle, name);
+    }
+    mtrs::util::mtrs_error("attempt to get a ", name, " from a script that is not loaded");
+    return nullptr;
 }
 
 }

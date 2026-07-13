@@ -23,6 +23,11 @@ Transform::Transform(COMPONENT_ARGS)
     position.set({transform.pos_x, transform.pos_y});
     scale_size.set({transform.scale_size_x, transform.scale_size_y});
     rotation.set(transform.rotation);
+
+    position.add_observer(&matrix);
+    scale_size.add_observer(&matrix);
+    rotation.add_observer(&matrix);
+
     matrix.update();
 }
 

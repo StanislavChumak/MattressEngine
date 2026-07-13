@@ -3,8 +3,6 @@
 
 #include "res/asset/Asset.hpp"
 
-#include <iosfwd>
-
 namespace mtrs::res
 {
 
@@ -15,9 +13,10 @@ class Texture : public Asset<Texture>
     int32_t _mode;
     int32_t _width;
     int32_t _height;
+    int64_t _max_instances;
 
 public:
-    Texture(std::ifstream &file);
+    Texture(ASSET_ARGS);
     Texture() = delete;
     Texture(const Texture&) = delete;
     Texture &operator=(const Texture&) = delete;
@@ -30,7 +29,11 @@ public:
 
     void bind() const;
     void active() const;
+    
     uint32_t id() const noexcept;
+    uint64_t max_instances() const noexcept;
+    int32_t width() const noexcept;
+    int32_t height() const noexcept;
 };
 
 }

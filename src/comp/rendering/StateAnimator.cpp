@@ -1,6 +1,6 @@
 #include "comp/rendering/StateAnimator.hpp"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "util/files/data_mtrs_file.hpp"
 #include "util/mtrs_message.hpp"
 #include "util/hash.hpp"
 
@@ -24,7 +24,7 @@ StateAnimator::StateAnimator(COMPONENT_ARGS)
     current_state.first = 0;
 
     std::vector<StateAnimator_sc::State> buffer;
-    util::set_array_from_mtrs_file(file, buffer, DYNAMIC_ARGS(state_anim, states));
+    file::set_array_from_mtrs_file(file, buffer, DYNAMIC_ARGS(state_anim, states));
 
     for(auto &state : buffer)
     {
@@ -40,7 +40,7 @@ void StateAnimator::set_state(std::string state)
     auto iter = states.find(util::hash_string<uint32_t>(state));
     if(iter == states.end())
     {
-        util::mtrs_message(util::TypeMessage::ERROR, "Animator does not have a state named: ", state);
+        util::mtrs_error("Animator does not have a state named: ", state);
         return;
     }
 #endif

@@ -1,10 +1,12 @@
 #ifndef AUDIO_HPP
 #define AUDIO_HPP
 
+#include "comp/Component.hpp"
+
 namespace mtrs::comp
 {
 
-struct Audio
+struct Audio : public Component<Audio>
 {
     struct Impl;
     Impl *impl;

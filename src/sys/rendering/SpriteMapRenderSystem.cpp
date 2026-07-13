@@ -18,7 +18,7 @@ mtrs::res::InstanceData map_cell_to_instance(mtrs::comp::Transform *transform, m
     scale.y = glm::length(glm::vec2(m[1].x, m[1].y));
     data.size = (glm::vec2)map->cell_size * scale;
 
-    data.position = glm::vec2(m[3].x, m[3].y) + ((glm::vec2)cell.cord + glm::vec2(0.5f)) * data.size;
+    data.position = glm::vec2(m[3].x, m[3].y) + (glm::vec2)cell.cord * data.size;
 
     data.rotation = std::atan2(m[0].y, m[0].x);
 

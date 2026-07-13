@@ -17,7 +17,7 @@ namespace mtrs::res
 namespace mtrs::comp
 {
 
-struct Sprite
+struct Sprite : public Component<Sprite>
 {
     std::shared_ptr<res::ShaderProgram> shader;
     std::shared_ptr<res::Texture> texture;
@@ -33,6 +33,8 @@ struct Sprite
 
     Sprite() = delete;
     Sprite(COMPONENT_ARGS);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "Sprite"; }
 };
 
 }

@@ -2,7 +2,7 @@
 
 #include "miniaudio.h"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "util/files/data_mtrs_file.hpp"
 #include "util/mtrs_message.hpp"
 
 #include <vector>
@@ -18,12 +18,13 @@ struct Sound::Impl
     std::vector<ma_sound> sounds;
 };
 
-Sound::Sound(std::ifstream &file)
+Sound::Sound(ASSET_ARGS)
 {
     Sound_sc sound;
     file.read(reinterpret_cast<char*>(&sound), sizeof(sound));
 
-    util::set_string_from_mtrs_file(file, _path, DYNAMIC_ARGS(sound, path));
+    file::set_string_from_mtrs_file(file, _path, DYNAMIC_ARGS(sound, path));
+    _path = dir_resource + _path;
 
     _impl = new Sound::Impl();
 
@@ -101,7 +102,7 @@ bool Sound::init(void *audio_engine)
 
         if(result != MA_SUCCESS)
         {
-            util::mtrs_message(util::TypeMessage::ERROR, "Failed init sould to path ", _path, " ", result);
+            util::mtrs_error("Failed init sould to path ", _path, " ", result);
         }
     }
     return true;

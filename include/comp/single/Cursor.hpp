@@ -1,18 +1,21 @@
 #ifndef CURSOR_HPP
 #define CURSOR_HPP
 
-#include "glm/vec2.hpp"
+#include "comp/Component.hpp"
+
+#include "comp/single/Camera.hpp"
 
 #include "util/reactive/ReactiveValue.hpp"
-#include "util/reactive/ReactiveLeaf.hpp"
 
 namespace mtrs::comp
 {
 
-struct Cursor
+struct Cursor : public Component<Cursor>
 {
-    util::ReactiveValue<glm::uvec2> window_position;
-    util::ReactiveValue<glm::uvec2, glm::uvec2, glm::uvec2, glm::uvec2, glm::uvec2> position;
+    react::ReactiveValue<glm::vec2, 1> window_position;
+    react::ReactiveValue<glm::vec2, 1, glm::vec2, glm::uvec4, glm::vec2> position;
+    react::ReactiveValue<glm::vec2, 0, glm::vec2, glm::uvec2, glm::mat4, glm::mat4> glob_pos;
+    std::vector<void(*)()> subscribers;
 
     Cursor() = delete;
     ~Cursor() = default;
@@ -21,9 +24,11 @@ struct Cursor
     Cursor(Cursor &&other) = delete;
     Cursor &operator=(Cursor &&other) = delete;
 
-    Cursor(util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> &window_size,
-        util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> &size_in_pixels,
-        util::ReactiveValue<glm::uvec2, glm::uvec2, glm::uvec2> &offset_viewport);
+    Cursor(Camera *camera);
+
+    void add_subscriber(void(*)());
+
+    static constexpr const char *get_type_name_imp() noexcept { return "Cursor"; }
 };
 
 }

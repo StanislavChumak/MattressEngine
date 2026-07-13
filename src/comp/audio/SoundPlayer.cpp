@@ -5,7 +5,7 @@
 #include "res/ResourceManager.hpp"
 #include "res/asset/Sound.hpp"
 
-#include "util/set_from_file_mtrs.hpp"
+#include "util/files/data_mtrs_file.hpp"
 
 #include "dynamic_field.def"
 #include "comp_struct/SoundPlayer.struct"
@@ -19,7 +19,7 @@ SoundPlayer::SoundPlayer(COMPONENT_ARGS)
     file.read(reinterpret_cast<char*>(&sound_player), sizeof(sound_player));
 
     std::string sound_path;
-    util::set_string_from_mtrs_file(file, sound_path, DYNAMIC_ARGS(sound_player, sound));
+    file::set_string_from_mtrs_file(file, sound_path, DYNAMIC_ARGS(sound_player, sound));
     sound = resource.get_resource<res::Sound>(sound_path);
 
     auto audio = world.single_comp<comp::Audio>();

@@ -7,6 +7,7 @@ namespace mtrs::comp
 {
     struct KeyButtons;
     struct MouseButtons;
+    struct MouseScroll;
 }
 
 namespace mtrs::sys
@@ -15,11 +16,13 @@ namespace mtrs::sys
 class InputSystem : public System<InputSystem>
 {
 public:
-    inline static comp::KeyButtons *key_buttons;
-    inline static comp::MouseButtons *mouse_buttons;
+    static comp::KeyButtons *key_buttons;
+    static comp::MouseButtons *mouse_buttons;
+    static comp::MouseScroll *mouse_scroll;
 
     static void update_imp(comp::ECSWorld &world, const double &delta);
     static constexpr int get_prioritet_imp() { return SystemPriority::INPUT; }
+    static constexpr const char *get_system_name_imp() { return "InputSystem"; }
 };
 
 }

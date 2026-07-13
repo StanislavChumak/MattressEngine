@@ -19,6 +19,7 @@ namespace mtrs::comp
 
 class ECSWorld
 {
+    std::string _current_scene;
     struct Scene
     {
         std::unordered_map<uint64_t, EntityID> local_entities;
@@ -48,6 +49,8 @@ public:
     void turn_on_scene(std::string scene);
     void turn_off_scene(std::string scene);
 
+    std::string current_scene();
+
     void mark_destroy(std::string name);
     void remove_marked();
 
@@ -57,24 +60,31 @@ public:
         return _components.view<Components...>();
     }
 
+    template<typename Component>
+    Component* single_comp()
+    {
+        return _components.get_single_comp<Component>();
+    }
+
     template<typename Component, typename ...Args>
     Component* single_comp(Args&& ...args)
     {
-        if constexpr (sizeof...(Args) > 0)
-        {
-            return &_components.add_single_comp<Component>(args...);
-        }
-        else
-        {
-            return _components.get_single_comp<Component>();
-        }
+        return &_components.add_single_comp<Component>(args...);
     }
 
-    void clear_all();
+    void *single_comp(const char *comp);
 
-// API for Scripts
-    void *script_get_component(uint64_t hash_comp, EntityID &entity);
-    void *script_get_single_comp(uint64_t hash_comp);
+    template<typename Component>
+    Component *component(EntityID entity)
+    {
+        return _components.get_comp<Component>(entity);
+    }
+
+    void *component(const char *comp, EntityID entity);
+
+    EntityID get_entity(const char *scene, uint64_t hash_entity);
+
+    void clear_all();
 };
 
 }

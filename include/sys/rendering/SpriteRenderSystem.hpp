@@ -19,7 +19,8 @@ public:
     static std::shared_ptr<res::RenderContext> context;
     
     static void update_imp(comp::ECSWorld &world, const double &delta);
-    static constexpr int get_prioritet_imp() { return SystemPriority::RENDERING; };
+    static constexpr int get_prioritet_imp() { return SystemPriority::RENDERING; }
+    static constexpr const char *get_system_name_imp() { return "SpriteRenderSystem"; }
 };
 
 }

@@ -2,23 +2,40 @@
 
 #include <utility>
 
+const glm::mat4 *get_mat4(const void *self) { return static_cast<const glm::mat4*>(self);}
+bool update_mat4(void*) { return false; }
+
+mtrs::react::PushNode<glm::mat4> mat4_to_node(glm::mat4 *m)
+{
+    mtrs::react::PushNode<glm::mat4> node;
+    node._get = get_mat4;
+    node._update = update_mat4;
+    node._self = m;
+    return node;
+}
+
 namespace mtrs::comp
 {
 
-Cursor::Cursor(util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> &window_size,
-    util::ReactiveLeaf<glm::uvec2, glm::uvec2, 2> &size_in_pixels,
-    util::ReactiveValue<glm::uvec2, glm::uvec2, glm::uvec2> &offset_viewport)
-: position([](const glm::uvec2 *win_pos, const glm::uvec2 *win_sz,
-        const glm::uvec2 *sz_pxs, const glm::uvec2 *offset)
+Cursor::Cursor(Camera *camera)
+: position([](const glm::vec2 *win_pos, const glm::uvec4 *view, const glm::vec2 *scale)
     {
-        double ratio;
-        if(offset->x == 0) ratio = static_cast<double>(win_sz->x) / sz_pxs->x;
-        else ratio = static_cast<double>(win_sz->y) / sz_pxs->y;
-        return static_cast<glm::uvec2>(static_cast<glm::dvec2>(*win_pos - *offset) / ratio);
-    }, &window_position, &window_size, &size_in_pixels, &offset_viewport)
+        return (*win_pos - static_cast<glm::vec2>(*view)) / *scale;
+    }, &window_position, &camera->viewport, &camera->point_scale)
+, glob_pos([](const glm::vec2 *cursor, const glm::uvec2 *pnts_sz,
+    const glm::mat4 *proj, const glm::mat4 *view)
+    {
+        glm::vec4 clip_pos((float)(cursor->x / pnts_sz->x) * 2.0f - 1.0f,
+            1.0f - (float)(cursor->y / pnts_sz->y) * 2.0f, 0.0f, 1.0f);
+        return glm::vec2(glm::inverse(*proj * *view) * clip_pos);
+    }, &position, &camera->size_in_points, mat4_to_node(&camera->matrices.proj), mat4_to_node(&camera->matrices.view))
 {
-    window_size.add_observer(&position);
-    size_in_pixels.add_observer(&position);
+    window_position.add_observer(&position);
+    camera->viewport.add_observer(&position);
+    camera->point_scale.add_observer(&position);
+
+    position.add_observer(&glob_pos);
+    camera->size_in_points.add_observer(&glob_pos);
 }
 
 }

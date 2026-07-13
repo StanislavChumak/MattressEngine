@@ -9,7 +9,7 @@
 namespace mtrs::comp
 {
 
-struct StateAnimator
+struct StateAnimator : public Component<StateAnimator>
 {
     struct State
     {
@@ -24,6 +24,8 @@ struct StateAnimator
     StateAnimator(COMPONENT_ARGS);
 
     void set_state(std::string state);
+
+    static constexpr const char *get_type_name_imp() noexcept { return "StateAnimator"; }
 };
 
 }
