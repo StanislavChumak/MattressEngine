@@ -26,7 +26,8 @@ struct Cursor : public Component<Cursor>
 
     Cursor(Camera *camera);
 
-    void add_subscriber(void(*)());
+    void subscribe(void(*callback)());
+    void unsubscribe(void(*callback)());
 
     static constexpr const char *get_type_name_imp() noexcept { return "Cursor"; }
 };

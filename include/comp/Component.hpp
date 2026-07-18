@@ -25,7 +25,7 @@ public:
     }
 };
 
-#define COMPONENT_ARGS mtrs::comp::EntityID entity, std::ifstream &file,\
-    mtrs::comp::ECSWorld& world, mtrs::res::ResourceManager& resource    
+#define COMPONENT_ARGS mtrs::comp::EntityID entity, const char* scene,\
+    std::ifstream &file, mtrs::comp::ECSWorld& world, mtrs::res::ResourceManager& resource    
 
 #endif

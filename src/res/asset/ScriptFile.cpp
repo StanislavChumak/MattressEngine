@@ -3,6 +3,10 @@
 #include "comp/ECSWorld.hpp"
 #include "comp/single/Window.hpp"
 #include "comp/single/Camera.hpp"
+#include "comp/single/KeyButtons.hpp"
+#include "comp/single/MouseButtons.hpp"
+#include "comp/single/MouseScroll.hpp"
+#include "comp/single/Cursor.hpp"
 
 #include "res/asset/TextureAtlas.hpp"
 
@@ -23,6 +27,7 @@ ScriptFile::ScriptFile(ASSET_ARGS)
 
     std::string path;
     file::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script_file, path));
+    path = path.substr(0, path.rfind('.'));
 
     _handle = file::load_library(dir_resource + path + file::lib_extension());
     if (_handle)
@@ -83,11 +88,12 @@ uint32_t ScriptFile::get_type_size_imp() noexcept
     return sizeof(ScriptFile_sc);
 }
 
-void ScriptFile::load(comp::EntityID entity, comp::ECSWorld& world, ResourceManager& resource)
+void ScriptFile::load(const char *scene, comp::EntityID entity,
+    comp::ECSWorld& world, ResourceManager& resource)
 {
     // base
     _api.world = &world;
-    _api.scene = world.current_scene().c_str();
+    _api.scene = scene;
 
     // util
     _api.message = [](mtrs::util::TypeMessage tmsg, const char *msg)
@@ -112,12 +118,36 @@ void ScriptFile::load(comp::EntityID entity, comp::ECSWorld& world, ResourceMana
     _api.camera_update_proj_matrix = [](comp::Camera*c){ c->update_proj_matrix(); };
     _api.camera_update_view_matrix = [](comp::Camera*c){ c->update_view_matrix(); };
 
+    // script file
+    _api.script_get_symbol = [](res::ScriptFile *s, const char *n){ return s->get_symbol(n); };
+
     // texture atlas
     _api.atlas_get_sub_texture = [](const res::TextureAtlas *a, size_t i){ return glm::vec4(a->get_sub_texture(i)); };
 
-    // script file
-    _api.script_get_symbol = [](res::ScriptFile *s, const char *n){ return s->get_symbol(n); };
+    // key buttons
+    _api.key_subscribe = [](mtrs::comp::KeyButtons *keybord, int key, bool action, void (*callback)())
+        { keybord->subscribe(key, action, callback); };
+    _api.key_unsubscribe = [](mtrs::comp::KeyButtons *keybord, int key, bool action, void (*callback)())
+        { keybord->unsubscribe(key, action, callback); };
+
+    // mouse buttons
+    _api.mouse_subscribe = [](mtrs::comp::MouseButtons *mouse, int button, bool action, void (*callback)())
+        { mouse->subscribe(button, action, callback); };
+    _api.mouse_unsubscribe = [](mtrs::comp::MouseButtons *mouse, int button, bool action, void (*callback)())
+        { mouse->unsubscribe(button, action, callback); };
     
+    // mouse scroll
+    _api.scroll_subscribe = [](mtrs::comp::MouseScroll *scroll, void (*callback)())
+        { scroll->subscribe(callback); };
+    _api.scroll_unsubscribe = [](mtrs::comp::MouseScroll *scroll, void (*callback)())
+        { scroll->unsubscribe(callback); };
+    
+    // cursor
+    _api.cursor_subscribe = [](mtrs::comp::Cursor *cursor, void (*callback)())
+        { cursor->subscribe(callback); };
+    _api.cursor_unsubscribe = [](mtrs::comp::Cursor *cursor, void (*callback)())
+        { cursor->unsubscribe(callback); };
+
     _on_load(entity, &_api);
 }
 

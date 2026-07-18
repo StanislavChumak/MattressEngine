@@ -74,7 +74,7 @@ namespace mtrs::comp
 
     void Camera::update_view_matrix()
     {
-        matrices.view = *target_matrix;
+        matrices.view = glm::inverse(*target_matrix);
         UBO.update(&matrices, sizeof(matrices), 0);
     }
 }

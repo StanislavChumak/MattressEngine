@@ -71,11 +71,13 @@ namespace engine
         comp::MouseButtons *_mouse;
         comp::MouseScroll *_scroll;
 
+        std::vector<void(*)()> _input_callbacks;
+
         bool _is_init;
 
         std::chrono::duration<double> _time_frame;
         std::chrono::duration<double> _delta;
-        std::chrono::_V2::steady_clock::time_point start, end;
+        std::chrono::_V2::steady_clock::time_point _start, _end;
 
         friend void window_size_callback(GLFWwindow *window, int width, int height);
         friend void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);

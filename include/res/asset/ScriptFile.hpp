@@ -28,7 +28,8 @@ public:
     static std::string get_type_name_imp() noexcept;
     static uint32_t get_type_size_imp() noexcept;
 
-    void load(comp::EntityID entity, comp::ECSWorld& world, ResourceManager& resource);
+    void load(const char *scene, comp::EntityID entity,
+        comp::ECSWorld& world, ResourceManager& resource);
     void *get_symbol(std::string &&name);
 };
 

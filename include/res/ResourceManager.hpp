@@ -78,39 +78,49 @@ public:
     void garbage_collector();
 
     template<typename Resource>
-    std::shared_ptr<Resource> get_resource(const std::string &resource_path)
+    std::shared_ptr<Resource> get_resource(std::string pack, std::string resource_name)
     {
+        size_t pos = resource_name.find_last_of("\\/");
+        if(pos != std::string::npos)
+        {
+            resource_name = resource_name.substr(pos + 1);
+            pack = resource_name.substr(0, pos);
+        }
         auto &cache = get_cache<Resource>();
-        auto it_res = cache.find(resource_path);
+        auto it_res = cache.find(pack + '/' + resource_name);
         if(it_res != cache.end())
+        {
             if(auto existing = it_res->second.lock())
+            {
                 return std::static_pointer_cast<Resource>(existing);
+            }
+        }
 
-        size_t pos = resource_path.find_last_of("\\/");
-        auto it_pack = _resource_packs.find(resource_path.substr(0, pos));
+        auto it_pack = _resource_packs.find(pack);
         if(it_pack != _resource_packs.end())
         {
             if(!it_pack->second.file.is_open())
             {
-                it_pack->second.file.open(_resource_dir + "/" + it_pack->first + ".mtpck", std::ios::binary);
+                it_pack->second.file.open(_resource_dir + '/' + pack + ".mtpck", std::ios::binary);
             }
             
             std::string res_type_name = Resource::get_type_name();
             uint32_t res_type_size = Resource::get_type_size();
 
-            move_to_resource(it_pack->second.file, resource_path.substr(pos + 1), res_type_name, res_type_size);
+            move_to_resource(it_pack->second.file, resource_name, res_type_name, res_type_size);
             
             std::shared_ptr<Resource> resource = std::make_shared<Resource>(it_pack->second.file, _resource_dir);
 
             if(!resource)
             {
-                util::mtrs_message(util::TypeMessage::ERROR, "in ResourcePack(", it_pack->first, ")");
+                util::mtrs_error("in ResourcePack(", pack, ")");
             }
 
             it_pack->second.resource_count++;
-            cache.emplace(resource_path, std::weak_ptr<Resource>(resource));
+            cache.emplace(pack + '/' +  resource_name, std::weak_ptr<Resource>(resource));
             return resource;
         }
+        mtrs::util::mtrs_error("No package named \"", pack,"\" found");
         return std::shared_ptr<Resource>(nullptr);
     }
 };

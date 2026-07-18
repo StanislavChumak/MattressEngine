@@ -4,6 +4,7 @@
 #include "comp/Component.hpp"
 
 #include <vector>
+#include <unordered_map>
 
 namespace mtrs::comp
 {
@@ -12,7 +13,7 @@ struct KeyButtons : public Component<KeyButtons>
 {
     bool keys[349];
     bool last_keys[349];
-    std::vector<void(*)()> subscribers;
+    std::unordered_map<uint32_t, std::vector<void(*)()>> subscribers;
 
     KeyButtons() = delete;
     ~KeyButtons() = default;
@@ -23,12 +24,14 @@ struct KeyButtons : public Component<KeyButtons>
     
     KeyButtons(void*);
 
+    void subscribe(int key, bool action, void(*callback)());
+    void unsubscribe(int key, bool action, void(*callback)());
+
     static constexpr const char *get_type_name_imp() noexcept { return "KeyButtons"; }
 };
 
 }
 
-/* GLFW keys const */
 #define MTRS_KEY_SPACE              32
 #define MTRS_KEY_APOSTROPHE         39  /* ' */
 #define MTRS_KEY_COMMA              44  /* , */
@@ -80,7 +83,6 @@ struct KeyButtons : public Component<KeyButtons>
 #define MTRS_KEY_WORLD_1            161 /* non-US #1 */
 #define MTRS_KEY_WORLD_2            162 /* non-US #2 */
 
-/* Function keys */
 #define MTRS_KEY_ESCAPE             256
 #define MTRS_KEY_ENTER              257
 #define MTRS_KEY_TAB                258

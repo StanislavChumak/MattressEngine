@@ -1,6 +1,7 @@
 #include "sys/SystemManager.hpp"
 
 #include "sys/core/InputSystem.hpp"
+#include "sys/core/InputSybscrubersSystem.hpp"
 #include "sys/core/ScriptsSystem.hpp"
 #include "sys/core/TransformSystem.hpp"
 
@@ -25,6 +26,7 @@ SystemManager::SystemManager()
 #define UPDATE_SYSTEM(System) {HASH64S(System::get_system_name()), {System::get_prioritet(), System::update}}
     _updates = {
         UPDATE_SYSTEM(InputSystem),
+        UPDATE_SYSTEM(InputSybscrubersSystem),
         UPDATE_SYSTEM(ScriptsSystem),
         UPDATE_SYSTEM(TransformSystem),
 

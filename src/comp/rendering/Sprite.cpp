@@ -24,16 +24,16 @@ Sprite::Sprite(COMPONENT_ARGS)
     std::string path_buffer;
 
     file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, shader));
-    shader = resource.get_resource<res::ShaderProgram>(path_buffer);
+    shader = resource.get_resource<res::ShaderProgram>(scene, path_buffer);
 
     file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, texture));
-    texture = resource.get_resource<res::Texture>(path_buffer);
+    texture = resource.get_resource<res::Texture>(scene, path_buffer);
 
     file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite, atlas));
     
     if(path_buffer != "")
     {
-        atlas = resource.get_resource<res::TextureAtlas>(path_buffer);
+        atlas = resource.get_resource<res::TextureAtlas>(scene, path_buffer);
         sub_texture = atlas->get_sub_texture(0);
     }
     else
@@ -42,7 +42,7 @@ Sprite::Sprite(COMPONENT_ARGS)
         sub_texture = res::TextureAtlas::SubTexture2D();
     }
 
-    std::shared_ptr<res::RenderContext> context = resource.get_resource<res::RenderContext>("system/render_context");
+    auto context = resource.get_resource<res::RenderContext>("system", "render_context");
     context->create_sprite_batch(shader, texture);
 
     layer = sprite.layer;

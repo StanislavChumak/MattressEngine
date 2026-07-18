@@ -19,8 +19,8 @@ ScriptCallback::ScriptCallback(COMPONENT_ARGS)
     std::string path;
     file::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script, script_file));
 
-    script_file = resource.get_resource<res::ScriptFile>(path);
-    script_file->load(entity, world, resource);
+    script_file = resource.get_resource<res::ScriptFile>(scene, path);
+    script_file->load(scene, entity, world, resource);
 }
 
 }

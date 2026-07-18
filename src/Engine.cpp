@@ -15,6 +15,7 @@
 #include "res/asset/Texture.hpp"
 
 #include "sys/core/InputSystem.hpp"
+#include "sys/core/InputSybscrubersSystem.hpp"
 #include "sys/rendering/SpriteRenderSystem.hpp"
 #include "sys/rendering/SpriteMapRenderSystem.hpp"
 #include "sys/rendering/CameraSystem.hpp"
@@ -111,12 +112,14 @@ Core::Core(const Config& config)
     
     if(config.depth) glEnable(GL_DEPTH_TEST);
 
-    sys::SpriteRenderSystem::context = resources.get_resource<res::RenderContext>("system/render_context");
-    sys::SpriteMapRenderSystem::context = resources.get_resource<res::RenderContext>("system/render_context");
+    sys::SpriteRenderSystem::context = resources.get_resource<res::RenderContext>("system", "render_context");
+    sys::SpriteMapRenderSystem::context = resources.get_resource<res::RenderContext>("system", "render_context");
 
     sys::InputSystem::key_buttons = _keyboard;
     sys::InputSystem::mouse_buttons = _mouse;
     sys::InputSystem::mouse_scroll = _scroll;
+
+    sys::InputSybscrubersSystem::callbacks = &_input_callbacks;
 
     sys::CameraSystem::camera = _camera;
 
@@ -140,12 +143,12 @@ void Core::pre_update()
     glfwSetWindowSize(_window->poiter, window_size.x, window_size.y);
     window_size_callback(_window->poiter, window_size.x, window_size.y);
 
-    end = std::chrono::steady_clock::now();
+    _end = std::chrono::steady_clock::now();
 }
 
 void Core::update()
 {
-    start = end;
+    _start = _end;
 
     glfwPollEvents();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -156,13 +159,13 @@ void Core::update()
 
     glfwSwapBuffers(_window->poiter);
 
-    end = std::chrono::steady_clock::now();
-    _delta = end - start;
+    _end = std::chrono::steady_clock::now();
+    _delta = _end - _start;
     if(_delta < _time_frame)
     {
         std::this_thread::sleep_for(_time_frame - _delta);
-        end = std::chrono::steady_clock::now();
-        _delta = end - start;
+        _end = std::chrono::steady_clock::now();
+        _delta = _end - _start;
     }
 }
 
@@ -207,6 +210,19 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     if(core)
     {
         core->_keyboard->keys[key] = action;
+        
+        if(action != 2)
+        {
+            uint32_t key_id = (static_cast<uint32_t>(key) << 1) | action;
+            auto it = core->_keyboard->subscribers.find(key_id);
+            if (it != core->_keyboard->subscribers.end())
+            {
+                core->_input_callbacks.reserve(core->_input_callbacks.size() +
+                    it->second.size());
+                core->_input_callbacks.insert(core->_input_callbacks.end(),
+                    it->second.begin(), it->second.end());
+            }
+        }
     }
 }
 
@@ -216,6 +232,19 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     if (core)
     {
         core->_mouse->buttons[button] = action;
+        
+        if(action != 2)
+        {
+            uint32_t button_id = (static_cast<uint32_t>(button) << 1) | action;
+            auto it = core->_mouse->subscribers.find(button_id);
+            if (it != core->_mouse->subscribers.end())
+            {
+                core->_input_callbacks.reserve(core->_input_callbacks.size() +
+                    it->second.size());
+                core->_input_callbacks.insert(core->_input_callbacks.end(),
+                    it->second.begin(), it->second.end());
+            }
+        }
     }
 }
 
@@ -225,30 +254,25 @@ void scroll_callback(GLFWwindow* window, double x_offset, double y_offset)
     if (core)
     {
         core->_scroll->scroll += glm::dvec2{x_offset, y_offset};
+        core->_input_callbacks.reserve(core->_input_callbacks.size() +
+            core->_scroll->subscribers.size());
+        core->_input_callbacks.insert(core->_input_callbacks.end(),
+            core->_scroll->subscribers.begin(), core->_scroll->subscribers.end());
     }
 }
 
-static glm::uvec2 _pos_buffer;
-static glm::bvec2 _result_buffer;
 void cursor_callback(GLFWwindow *window, double x_pos, double y_pos)
 {
     mtrs::engine::Core *core = static_cast<mtrs::engine::Core*>(glfwGetWindowUserPointer(window));
     if (core)
     {
-        _pos_buffer = {x_pos, y_pos};
-        // _result_buffer = glm::lessThan(_pos_buffer, core->_camera->viewport.get());
-        // if(_result_buffer.x || _result_buffer.y) return;
-        // _result_buffer = glm::lessThan(core->_window->size - core->_camera->viewport, _pos_buffer);
-        // if(_result_buffer.x || _result_buffer.y) return;
-        core->_cursor->window_position.set(std::move(_pos_buffer));
+        core->_cursor->window_position.set({x_pos, y_pos});
         core->_cursor->position.update();
-        //MTRS_INFO(core->_camera->point_scale.get().x, " ", core->_camera->point_scale.get().y);
+        core->_input_callbacks.reserve(core->_input_callbacks.size() +
+            core->_cursor->subscribers.size());
+        core->_input_callbacks.insert(core->_input_callbacks.end(),
+            core->_cursor->subscribers.begin(), core->_cursor->subscribers.end());
     }
 }
 
 }
-
-
-
-
-

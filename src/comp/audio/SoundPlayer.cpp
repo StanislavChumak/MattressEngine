@@ -20,7 +20,7 @@ SoundPlayer::SoundPlayer(COMPONENT_ARGS)
 
     std::string sound_path;
     file::set_string_from_mtrs_file(file, sound_path, DYNAMIC_ARGS(sound_player, sound));
-    sound = resource.get_resource<res::Sound>(sound_path);
+    sound = resource.get_resource<res::Sound>(scene, sound_path);
 
     auto audio = world.single_comp<comp::Audio>();
     sound->init(audio->ptr_engine());

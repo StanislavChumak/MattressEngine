@@ -19,7 +19,6 @@ namespace mtrs::comp
 
 class ECSWorld
 {
-    std::string _current_scene;
     struct Scene
     {
         std::unordered_map<uint64_t, EntityID> local_entities;
@@ -48,8 +47,6 @@ public:
     void remove_scene(std::string scene);
     void turn_on_scene(std::string scene);
     void turn_off_scene(std::string scene);
-
-    std::string current_scene();
 
     void mark_destroy(std::string name);
     void remove_marked();

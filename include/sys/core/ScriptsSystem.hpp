@@ -10,7 +10,7 @@ class ScriptsSystem : public System<ScriptsSystem>
 {
 public:
     static void update_imp(comp::ECSWorld &world, const double &delta);
-    static constexpr int get_prioritet_imp() { return SystemPriority::GAMEPLAY_EARLY; }
+    static constexpr int get_prioritet_imp() { return SystemPriority::PLAYER_CONTROL; }
     static constexpr const char *get_system_name_imp() { return "ScriptsSystem"; }
 };
 

@@ -24,15 +24,15 @@ SpriteMap::SpriteMap(COMPONENT_ARGS)
     std::string path_buffer;
 
     file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, shader));
-    shader = resource.get_resource<res::ShaderProgram>(path_buffer);
+    shader = resource.get_resource<res::ShaderProgram>(scene, path_buffer);
 
     file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, texture));
-    texture = resource.get_resource<res::Texture>(path_buffer);
+    texture = resource.get_resource<res::Texture>(scene, path_buffer);
 
     file::set_string_from_mtrs_file(file, path_buffer, DYNAMIC_ARGS(sprite_map, atlas));
-    atlas = resource.get_resource<res::TextureAtlas>(path_buffer);
+    atlas = resource.get_resource<res::TextureAtlas>(scene, path_buffer);
 
-    std::shared_ptr<res::RenderContext> context = resource.get_resource<res::RenderContext>("system/render_context");
+    auto context = resource.get_resource<res::RenderContext>("system", "render_context");
     context->create_sprite_batch(shader, texture);
 
     std::vector<uint32_t> buffer_types;

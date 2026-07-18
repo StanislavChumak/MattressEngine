@@ -156,7 +156,6 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
     }
 #endif
 
-    _current_scene = scene;    
     for(int i = 0; i < entity_count; i++)
     {
         uint64_t id, offset;
@@ -178,7 +177,7 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
             switch (id_comp)
             {
 #define X(Comp) case util::hash_c_string<uint64_t>(#Comp): \
-_components.add_comp<Comp>(entity, entity, file, *this, resource); \
+_components.add_comp<Comp>(entity, entity, scene.c_str(), file, *this, resource); \
 break;
             COMPONENT_TYPE
 #undef X
@@ -259,11 +258,6 @@ void ECSWorld::turn_off_scene(std::string scene)
         _components.turn_off(entity.second);
     }
     iter->second.turn_on = false;
-}
-
-std::string ECSWorld::current_scene()
-{
-    return _current_scene;
 }
 
 void ECSWorld::mark_destroy(std::string name)

@@ -78,7 +78,7 @@ void ResourceManager::move_to_resource(std::ifstream &file, const std::string &r
         file.seekg(res_type_size, std::ios::cur);
     }
 
-    util::mtrs_error("Failed to get resource(",res_type_name, ": ",
+    util::mtrs_error("Failed to find resource(",res_type_name, ": ",
         res_name,") from resource pack");
     file.close();
 }

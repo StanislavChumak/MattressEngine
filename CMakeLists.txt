@@ -25,6 +25,7 @@ src/util/files/load_external_lib.cpp
 src/sys/SystemManager.cpp
 
 src/sys/core/InputSystem.cpp
+src/sys/core/InputSybscrubersSystem.cpp
 src/sys/core/ScriptsSystem.cpp
 src/sys/core/TransformSystem.cpp
 

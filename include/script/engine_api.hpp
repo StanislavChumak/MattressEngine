@@ -24,6 +24,10 @@ namespace mtrs::comp
 
     struct Window;
     struct Camera;
+    struct KeyButtons;
+    struct MouseButtons;
+    struct MouseScroll;
+    struct Cursor;
 };
 
 namespace mtrs::res
@@ -47,7 +51,7 @@ namespace mtrs
         // util
         void (*message)(mtrs::util::TypeMessage, const char *) = nullptr;
 
-        // ECSworld
+        // ECSWorld
         void *(*world_single_comp)(comp::ECSWorld*, const char *) = nullptr;
         void *(*world_component)(comp::ECSWorld*, const char *, comp::EntityID) = nullptr;
         comp::EntityID (*world_get_entity)(comp::ECSWorld*, const char *, uint64_t) = nullptr;
@@ -63,11 +67,27 @@ namespace mtrs
         void (*camera_update_proj_matrix)(comp::Camera*) = nullptr;
         void (*camera_update_view_matrix)(comp::Camera*) = nullptr;
 
-        // TextureAtlas
-        glm::vec4 (*atlas_get_sub_texture)(const res::TextureAtlas*, size_t) = nullptr;
+        // KeyButtons
+        void (*key_subscribe)(comp::KeyButtons*, int, bool, void(*)());
+        void (*key_unsubscribe)(comp::KeyButtons*, int, bool, void(*)());
+
+        // MouseButtons
+        void (*mouse_subscribe)(comp::MouseButtons*, int, bool, void(*)());
+        void (*mouse_unsubscribe)(comp::MouseButtons*, int, bool, void(*)());
+
+        // MouseScroll
+        void (*scroll_subscribe)(comp::MouseScroll*, void(*)());
+        void (*scroll_unsubscribe)(comp::MouseScroll*, void(*)());
+
+        // Cursor
+        void (*cursor_subscribe)(comp::Cursor*, void(*)());
+        void (*cursor_unsubscribe)(comp::Cursor*, void(*)());
 
         // ScriptFile
         void *(*script_get_symbol)(res::ScriptFile*, const char*) = nullptr;
+
+        // TextureAtlas
+        glm::vec4 (*atlas_get_sub_texture)(const res::TextureAtlas*, size_t) = nullptr;
     };
 };
 

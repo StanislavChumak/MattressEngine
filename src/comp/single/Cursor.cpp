@@ -38,4 +38,20 @@ Cursor::Cursor(Camera *camera)
     camera->size_in_points.add_observer(&glob_pos);
 }
 
+void Cursor::subscribe(void(*callback)())
+{
+    subscribers.push_back(callback);
+}
+
+void Cursor::unsubscribe(void(*callback)())
+{
+    for(auto iter = subscribers.begin(); iter != subscribers.end(); iter++)
+    {
+        if(*iter == callback)
+        {
+            subscribers.erase(iter);
+        }
+    }
+}
+
 }
