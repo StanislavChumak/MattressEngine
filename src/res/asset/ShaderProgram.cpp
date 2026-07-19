@@ -57,31 +57,31 @@ ShaderProgram::ShaderProgram(ASSET_ARGS)
     Shader_rs shader;
     file.read(reinterpret_cast<char*>(&shader), sizeof(shader));
 
-    std::string code_buffer;
+    std::string str_buffer;
 
-    file::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, vertex));
-    code_buffer = shader_path_to_string(dir_resource + std::move(code_buffer));
-    if (code_buffer.empty())
+    file::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, vertex));
+    str_buffer = shader_path_to_string(dir_resource + std::move(str_buffer));
+    if (str_buffer.empty())
     {
         util::mtrs_error("Vertex shader no code");
         return;
     }
     GLuint vertex_id = 0;
-    if(!create_shader(std::move(code_buffer).c_str(), GL_VERTEX_SHADER, vertex_id))
+    if(!create_shader(std::move(str_buffer).c_str(), GL_VERTEX_SHADER, vertex_id))
     {
         util::mtrs_error("Vertex shader compilation failed");
         return;
     }
     
-    file::set_string_from_mtrs_file(file, code_buffer, DYNAMIC_ARGS(shader, fragment));
-    code_buffer = shader_path_to_string(dir_resource + std::move(code_buffer));
-    if (code_buffer.empty())
+    file::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, fragment));
+    str_buffer = shader_path_to_string(dir_resource + std::move(str_buffer));
+    if (str_buffer.empty())
     {
         util::mtrs_error("Fragment shader no code");
         return;
     }
     GLuint fragment_id = 0;
-    if(!create_shader(std::move(code_buffer).c_str(), GL_FRAGMENT_SHADER, fragment_id))
+    if(!create_shader(std::move(str_buffer).c_str(), GL_FRAGMENT_SHADER, fragment_id))
     {
         util::mtrs_error("Fragment shader compilation failed");
         glDeleteShader(vertex_id);

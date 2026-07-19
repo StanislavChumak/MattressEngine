@@ -118,23 +118,21 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
     }
 
 #ifndef FLAG_RELEASE
-    char magic[4];
-    file.read(magic, sizeof(magic));
+    char magic[8];
+    file.read(magic, 8);
 
-    char true_magic[4] = {'m','t','s','c'};
-    for(uint8_t i{}; i < 4; i++)
+    const char *true_magic = "mtrsscn";
+    for(uint8_t i{}; i < 8; i++)
     {
         if(magic[i] != true_magic[i])
         {
             util::mtrs_error("Failed to load scene,",
-                " scene \"",scene,"\" does not have the magic .mtsc");
+                " scene \"",scene,"\" does not have the magic mtrsscn ", magic);
             file.close();
             return;
         }
     }
 #endif
-
-    file.seekg(8, std::ios::beg);
 
     uint32_t entity_count = 0;
     uint32_t data_offset;

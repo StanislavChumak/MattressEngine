@@ -32,6 +32,8 @@ namespace mtrs::comp
 
 namespace mtrs::res
 {
+    class ResourceManager;
+
     class TextureAtlas;
     class ScriptFile;
 };
@@ -46,6 +48,7 @@ namespace mtrs
     struct EngineAPI
     {
         comp::ECSWorld *world;
+        res::ResourceManager *resource;
         const char *scene;
 
         // util
@@ -55,6 +58,10 @@ namespace mtrs
         void *(*world_single_comp)(comp::ECSWorld*, const char *) = nullptr;
         void *(*world_component)(comp::ECSWorld*, const char *, comp::EntityID) = nullptr;
         comp::EntityID (*world_get_entity)(comp::ECSWorld*, const char *, uint64_t) = nullptr;
+        void (*world_load_scene)(comp::ECSWorld*, res::ResourceManager*, const char *, bool) = nullptr;
+        void (*world_remove_scene)(comp::ECSWorld*, const char*) = nullptr;
+        void (*world_turn_on_scene)(comp::ECSWorld*, const char*) = nullptr;
+        void (*world_turn_off_scene)(comp::ECSWorld*, const char*) = nullptr;
 
         // Window
         void (*window_set_icon)(comp::Window*) = nullptr;
@@ -113,10 +120,29 @@ namespace mtrs
             Component::get_type_name(), entity));
     }
 
-
     comp::EntityID get_entity(const char *scene, uint64_t hash_entity)
     {
         return api->world_get_entity(api->world, scene, hash_entity);
+    }
+
+    void load_scene(const char *scene, bool is_turn_on = true)
+    {
+        api->world_load_scene(api->world, api->resource, scene, is_turn_on);
+    }
+
+    void remove_scene(const char *scene)
+    {
+        api->world_remove_scene(api->world, scene);
+    }
+
+    void turn_on_scene(const char *scene)
+    {
+        api->world_turn_on_scene(api->world, scene);
+    }
+
+    void turn_off_scene(const char *scene)
+    {
+        api->world_turn_off_scene(api->world, scene);
     }
 }
 

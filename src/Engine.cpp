@@ -127,6 +127,16 @@ Core::Core(const Config& config)
     _window->set_icon();
 
     _time_frame = std::chrono::duration<double>(1.0 / config.max_fps);
+
+    if(config.start_scene == "")
+    {
+        util::mtrs_warning("You need to select the starting scene ",
+            "in the configuration via the \"start_scene\" parameter");
+    }
+    else
+    {
+        world.load_scene(config.start_scene, resources);
+    }
     
     _is_init = true;
 }

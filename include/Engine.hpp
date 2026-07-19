@@ -34,6 +34,7 @@ namespace engine
         std::string resurce_path = "./";
         std::string scenes_path = "./";
         std::string name_window = "";
+        std::string start_scene = "";
         bool depth = true;
         
         // Window

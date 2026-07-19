@@ -93,6 +93,7 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
 {
     // base
     _api.world = &world;
+    _api.resource = &resource;
     _api.scene = scene;
 
     // util
@@ -100,12 +101,20 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
         { util::detail::show_message(tmsg, msg); };
 
     // ECSWorld
-    _api.world_single_comp = [](comp::ECSWorld* w, const char *c)
+    _api.world_single_comp = [](comp::ECSWorld*w, const char *c)
         { return w->single_comp(c); };
-    _api.world_component = [](comp::ECSWorld* w, const char *c, comp::EntityID e)
+    _api.world_component = [](comp::ECSWorld*w, const char *c, comp::EntityID e)
         { return w->component(c, e); };
-    _api.world_get_entity = [](comp::ECSWorld* w, const char *s, uint64_t h)
+    _api.world_get_entity = [](comp::ECSWorld*w, const char *s, uint64_t h)
         { return w->get_entity(s,h); };
+    _api.world_load_scene = [](comp::ECSWorld*w, res::ResourceManager*r, const char*s, bool is)
+        { w->load_scene(s, *r, is); };
+    _api.world_remove_scene = [](comp::ECSWorld*w, const char*s)
+        { w->remove_scene(s); };
+    _api.world_turn_on_scene = [](comp::ECSWorld*w, const char*s)
+        { w->turn_on_scene(s); };
+    _api.world_turn_off_scene = [](comp::ECSWorld*w, const char*s)
+        { w->turn_off_scene(s); };
 
     // window
     _api.window_set_icon = [](comp::Window*w){ w->set_icon(); };

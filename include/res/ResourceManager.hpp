@@ -50,8 +50,8 @@ private:
                 {
                     if (it_res->second.expired())
                     {
-                        size_t pos = it_res->first.find_last_of("\\/");
-                        _resource_packs[it_res->first.substr(0, pos)].resource_count--;
+                        size_t str_pos = it_res->first.find_last_of("\\/");
+                        _resource_packs[it_res->first.substr(0, str_pos)].resource_count--;
 
                         it_res = wrapper.cache.erase(it_res);
                     }
@@ -80,11 +80,11 @@ public:
     template<typename Resource>
     std::shared_ptr<Resource> get_resource(std::string pack, std::string resource_name)
     {
-        size_t pos = resource_name.find_last_of("\\/");
-        if(pos != std::string::npos)
+        size_t str_pos = resource_name.find_last_of("\\/");
+        if(str_pos != std::string::npos)
         {
-            resource_name = resource_name.substr(pos + 1);
-            pack = resource_name.substr(0, pos);
+            pack = resource_name.substr(0, str_pos);
+            resource_name = resource_name.substr(str_pos + 1);
         }
         auto &cache = get_cache<Resource>();
         auto it_res = cache.find(pack + '/' + resource_name);
@@ -109,7 +109,17 @@ public:
 
             move_to_resource(it_pack->second.file, resource_name, res_type_name, res_type_size);
             
-            std::shared_ptr<Resource> resource = std::make_shared<Resource>(it_pack->second.file, _resource_dir);
+            std::shared_ptr<Resource> resource;
+            str_pos = pack.find_last_of("\\/");
+            if(str_pos == std::string::npos)
+            {
+                resource = std::make_shared<Resource>(it_pack->second.file, _resource_dir);
+            }
+            else
+            {
+                resource = std::make_shared<Resource>(it_pack->second.file,
+                    _resource_dir + pack.substr(0, str_pos + 1));
+            }
 
             if(!resource)
             {
