@@ -30,11 +30,14 @@ ScriptFile::ScriptFile(ASSET_ARGS)
     path = path.substr(0, path.rfind('.'));
 
     _handle = file::load_library(dir_resource + path + file::lib_extension());
+#ifndef FLAG_RELEASE
     if (_handle)
     {
+#endif
         _on_load = reinterpret_cast<decltype(_on_load)>(file::get_symbol(_handle, "on_load"));
-        if(!_on_load) mtrs::util::mtrs_error(file::get_last_error());
         _on_unload = reinterpret_cast<decltype(_on_unload)>(file::get_symbol(_handle, "on_unload"));
+#ifndef FLAG_RELEASE
+        if(!_on_load) mtrs::util::mtrs_error(file::get_last_error());
         if(!_on_unload) mtrs::util::mtrs_error(file::get_last_error());
     }
     else
@@ -42,6 +45,7 @@ ScriptFile::ScriptFile(ASSET_ARGS)
         util::mtrs_error("Failed to load script at path: ", path, "\n",
             file::get_last_error());
     }
+#endif
 }
 
 ScriptFile::ScriptFile(ScriptFile &&other) noexcept
@@ -97,8 +101,12 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
     _api.scene = scene;
 
     // util
+#ifndef FLAG_RELEASE
     _api.message = [](mtrs::util::TypeMessage tmsg, const char *msg)
         { util::detail::show_message(tmsg, msg); };
+#else
+    _api.message = [](mtrs::util::TypeMessage tmsg, const char *msg) {};
+#endif
 
     // ECSWorld
     _api.world_single_comp = [](comp::ECSWorld*w, const char *c)
@@ -162,12 +170,14 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
 
 void *ScriptFile::get_symbol(std::string &&name)
 {
-    if(_handle)
+#ifndef FLAG_RELEASE
+    if(!_handle)
     {
-        return file::get_symbol(_handle, name);
+        mtrs::util::mtrs_error("attempt to get a ", name, " from a script that is not loaded");
+        return nullptr;
     }
-    mtrs::util::mtrs_error("attempt to get a ", name, " from a script that is not loaded");
-    return nullptr;
+#endif
+    return file::get_symbol(_handle, name);
 }
 
 }

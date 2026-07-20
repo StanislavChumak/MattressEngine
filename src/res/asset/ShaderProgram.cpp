@@ -21,11 +21,13 @@ std::string shader_path_to_string(std::string path)
     std::string buffer;
 
     shader.open(path, std::ios::ate | std::ios::binary);
+#ifndef FLAG_RELEASE
     if (!shader.is_open())
     {
         util::mtrs_error("Failed to open shader: ", path);
         return "";
     }
+#endif
     buffer.resize(shader.tellg());
     shader.seekg(0);
 
@@ -39,6 +41,7 @@ bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &sh
     shader_id = glCreateShader(shader_type);
     glShaderSource(shader_id, 1, &sourse, nullptr);
     glCompileShader(shader_id);
+#ifndef FLAG_RELEASE
     GLint success = 0;
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
     if (!success)
@@ -49,6 +52,7 @@ bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &sh
             info_log);
         return false;
     }
+#endif
     return true;
 }
 
@@ -61,37 +65,46 @@ ShaderProgram::ShaderProgram(ASSET_ARGS)
 
     file::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, vertex));
     str_buffer = shader_path_to_string(dir_resource + std::move(str_buffer));
+#ifndef FLAG_RELEASE
     if (str_buffer.empty())
     {
         util::mtrs_error("Vertex shader no code");
         return;
     }
+#endif
     GLuint vertex_id = 0;
     if(!create_shader(std::move(str_buffer).c_str(), GL_VERTEX_SHADER, vertex_id))
     {
+#ifndef FLAG_RELEASE
         util::mtrs_error("Vertex shader compilation failed");
         return;
+#endif
     }
     
     file::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, fragment));
     str_buffer = shader_path_to_string(dir_resource + std::move(str_buffer));
+#ifndef FLAG_RELEASE
     if (str_buffer.empty())
     {
         util::mtrs_error("Fragment shader no code");
         return;
     }
+#endif
     GLuint fragment_id = 0;
     if(!create_shader(std::move(str_buffer).c_str(), GL_FRAGMENT_SHADER, fragment_id))
     {
+#ifndef FLAG_RELEASE
         util::mtrs_error("Fragment shader compilation failed");
         glDeleteShader(vertex_id);
         return;
+#endif
     }
 
     _ID = glCreateProgram();
     glAttachShader(_ID, vertex_id);
     glAttachShader(_ID, fragment_id);
     glLinkProgram(_ID);
+#ifndef FLAG_RELEASE
     GLint success = 0;
     glGetProgramiv(_ID, GL_LINK_STATUS, &success);
     if (!success)
@@ -102,6 +115,7 @@ ShaderProgram::ShaderProgram(ASSET_ARGS)
         _is_compiled = false;
     }
     else
+#endif
     {
         _is_compiled = true;
     }

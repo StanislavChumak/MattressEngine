@@ -11,7 +11,7 @@ namespace mtrs::res
 ResourceManager::ResourceManager(const std::string &executable_path,const std::string &resource_path)
 :_executable_path(executable_path), _resource_dir(resource_path)
 {    
-    std::ofstream system_file( resource_path + "system.mtpck", std::ios::binary);
+    std::ofstream system_file(resource_path + "system.mtpck", std::ios::binary);
     system_file.seekp(0, std::ios::beg);
     system_file.write("mtrspck", 8);
     uint64_t offset = 32, id = HASH64(render_context);
@@ -58,24 +58,22 @@ ResourceManager::~ResourceManager()
 
 }
 
-void ResourceManager::move_to_resource(std::ifstream &file, const std::string &res_name,
+bool ResourceManager::move_to_resource(std::ifstream &file, const std::string &res_name,
         const std::string &res_type_name, uint32_t res_type_size)
 {
-    file.seekg(8, std::ios::beg);
-
     uint64_t res_type_id = util::hash_string<uint64_t>(res_type_name);
     uint64_t res_id = util::hash_string<uint64_t>(res_name);
 
-    uint64_t id = 0, offset = 0;
+    uint64_t id = 0, offset = 8;
     while(!file.eof())
     {
+        file.seekg(offset, std::ios::beg);
         file.read(reinterpret_cast<char*>(&id), sizeof(id));
         file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
         if(id == res_type_id)
         {
             break;
         }
-        file.seekg(offset, std::ios::beg);
     }
 
     int count = (offset - file.tellg()) / (res_type_size + sizeof(id));
@@ -84,14 +82,15 @@ void ResourceManager::move_to_resource(std::ifstream &file, const std::string &r
         file.read(reinterpret_cast<char*>(&id), sizeof(id));
         if(id == res_id)
         {
-            return;
+            return true;
         }
         file.seekg(res_type_size, std::ios::cur);
     }
-
-    util::mtrs_error("Failed to find resource(",res_type_name, ": ",
-        res_name,") from resource pack");
+#ifndef FLAG_RELEASE
+    util::mtrs_error("Failed to find resource (",res_type_name, ": ", res_name,")");
+#endif
     file.close();
+    return false;
 }
 
 void ResourceManager::garbage_collector()

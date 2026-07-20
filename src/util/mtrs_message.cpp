@@ -1,3 +1,4 @@
+#ifndef FLAG_RELEASE
 #include "util/mtrs_message.hpp"
 
 #include <iostream>
@@ -25,3 +26,5 @@ void show_message(TypeMessage tmsg, std::string&& message)
 }
 
 }
+
+#endif

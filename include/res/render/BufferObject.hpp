@@ -8,7 +8,7 @@ namespace mtrs::res
 
 class BufferObject
 {
-    friend class RenderContext;
+    friend class SpriteBatch;
 
     uint32_t _id;
     uint32_t _mode;

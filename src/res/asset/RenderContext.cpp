@@ -5,6 +5,8 @@
 #include "res/asset/ShaderProgram.hpp"
 #include "res/asset/Texture.hpp"
 
+#include <algorithm>
+
 namespace mtrs::res
 {
 
@@ -12,8 +14,8 @@ RenderContext::RenderContext(ASSET_ARGS)
 {
     const float quad[] = {
         -0.5f, -0.5f,  0.0f, 0.0f,
-        0.5f, -0.5f,  1.0f, 0.0f,
-        0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  1.0f, 1.0f,
         -0.5f,  0.5f,  0.0f, 1.0f
     };
     _quad_VBO.init(GL_ARRAY_BUFFER, quad, sizeof(quad), GL_STATIC_DRAW);
@@ -50,66 +52,69 @@ uint32_t RenderContext::get_type_size_imp() noexcept
     return 0;
 }
 
-void RenderContext::create_sprite_batch(std::shared_ptr<const ShaderProgram> shader, std::shared_ptr<const Texture> texture)
+void RenderContext::create_sprite_batch(std::shared_ptr<const ShaderProgram> shader,
+    std::shared_ptr<const Texture> texture)
 {
-    uint64_t id = shader->id() | uint64_t(texture->id()) << 32;
+    uint64_t id = shader->id() | (uint64_t(texture->id()) << 32);
 
     if (_batches.find(id) != _batches.end()) return;
 
-    SpriteBatch &batch = _batches.emplace(id, SpriteBatch()).first->second;
-    _keys.push_back(id);
+    _batches.emplace(id, SpriteBatch(_quad_VBO, _quad_EBO, std::move(shader), std::move(texture)));
+    _iters_batches.push_back(_batches.find(id));
+}
 
-    batch._shader = std::move(shader);
-    batch._texture = std::move(texture);
+void RenderContext::submit_batch(uint64_t id, float layer, InstanceData date)
+{
+    _batches.at(id).instances[layer].push_back(std::move(date));
+}
 
-    for(uint8_t i = 0; i < SpriteBatch::BUFFER_COUNT; i++)
+void RenderContext::draw()
+{
+    _iters_instences.reserve(_iters_batches.size());
+    for(auto &iter : _iters_batches)
     {
-        const uint64_t max_instances = batch._texture->max_instances();
-        batch._instance_vbo[i]._mode = GL_ARRAY_BUFFER;
-        glBindBuffer(GL_ARRAY_BUFFER, batch._instance_vbo[i]._id);
-        glBufferStorage(GL_ARRAY_BUFFER, max_instances * sizeof(InstanceData), nullptr,
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-
-        batch._mapped_buffers[i] = reinterpret_cast<InstanceData*>(glMapBufferRange(
-            GL_ARRAY_BUFFER, 0, max_instances * sizeof(InstanceData),
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
+        if(!iter->second.instances.empty())
+        {
+            iter->second.begin_batch();
+            _iters_instences.push_back({iter->second, iter->second.instances.begin()});
+        }
     }
 
-    batch._vao.set_vertex_buffer(0, _quad_VBO, sizeof(float) * 4, 0);
-    batch._vao.add_attrib_float(0, 0, 2, 0);
-    batch._vao.add_attrib_float(1, 0, 2, sizeof(float)*2);
-
-    batch._vao.set_vertex_buffer(1, batch._instance_vbo[0], sizeof(InstanceData), 0);
-    batch._vao.add_attrib_float (2, 1, 2, offsetof(InstanceData, position));
-    batch._vao.add_attrib_float (3, 1, 2, offsetof(InstanceData, size));
-    batch._vao.add_attrib_float (4, 1, 1, offsetof(InstanceData, rotation));
-    batch._vao.add_attrib_float (5, 1, 2, offsetof(InstanceData, lb_uv));
-    batch._vao.add_attrib_float (6, 1, 2, offsetof(InstanceData, rt_uv));
-    batch._vao.add_attrib_byteN (7, 1, 4, offsetof(InstanceData, color));
-    batch._vao.add_attrib_float (8, 1, 1, offsetof(InstanceData, layer));
-    glVertexArrayBindingDivisor(batch._vao.id(), 1, 1);
-
-    glVertexArrayElementBuffer(batch._vao.id(), _quad_EBO.id());
-}
-
-void RenderContext::begin_batches()
-{
-    for(auto &key : _keys)
+    float layer;
+    while(!_iters_instences.empty())
     {
-        _batches.at(key).begin_batch();
+        layer = _iters_instences.begin()->second->first;
+        for(auto iter = _iters_instences.begin(); iter < _iters_instences.end(); iter++)
+        {
+            if(iter->second->first < layer)
+            {
+                layer = iter->second->first;
+            }
+        }
+
+        for(auto iter = _iters_instences.begin(); iter < _iters_instences.end();)
+        {
+            if(iter->second->first == layer)
+            {
+                iter->first.draw_instances(iter->second->second);
+                iter->second++;
+                if(iter->second == iter->first.instances.end())
+                {
+                    std::iter_swap(_iters_instences.end() - 1, iter);
+                    _iters_instences.pop_back();
+                }
+                else iter++;
+            }
+            else iter++;
+        }        
     }
-}
-
-void RenderContext::submit_batch(uint64_t id, InstanceData date)
-{
-    _batches.at(id).submit(std::move(date));
-}
-
-void RenderContext::end_batches()
-{
-    for(auto &key : _keys)
+    
+    for(auto &iter : _iters_batches)
     {
-        _batches.at(key).end_batch();
+        if(!iter->second.instances.empty())
+        {
+            iter->second.end_batch();
+        }
     }
 }
 

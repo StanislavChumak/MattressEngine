@@ -29,7 +29,9 @@ std::unordered_set<std::string> get_files_from_folder(const std::string &dirPath
     }
     catch (const fs::filesystem_error& e)
     {
+#ifndef FLAG_RELEASE
         util::mtrs_error(e.what());
+#endif
     }
     return files;
 }

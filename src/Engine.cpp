@@ -31,15 +31,19 @@ Core::Core(const Config& config)
 : resources(config.executable_path, config.resurce_path)
 , world(config.executable_path, config.scenes_path)
 {
+#ifndef FLAG_RELEASE
     if(!config.fixed_horizontal && !config.fixed_vertical)
     {
         util::mtrs_error("Only one side can be non-fixed, correct the configuration");
     }
+#endif
 
     if (!glfwInit())
     {
+#ifndef FLAG_RELEASE
         util::mtrs_error("Failed GLFW init");
         _is_init = false;
+#endif
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -50,6 +54,7 @@ Core::Core(const Config& config)
 
     _window->poiter = glfwCreateWindow(window_size.x, window_size.y, _window->name, nullptr, nullptr);
 
+#ifndef FLAG_RELEASE
     if (!_window->poiter)
     {
         const char *description;
@@ -63,6 +68,7 @@ Core::Core(const Config& config)
         glfwTerminate();
         _is_init = false;
     }
+#endif
     glfwMakeContextCurrent(_window->poiter);
 
     glfwSetWindowUserPointer(_window->poiter, this);
@@ -75,9 +81,11 @@ Core::Core(const Config& config)
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
+#ifndef FLAG_RELEASE
         util::mtrs_error("Couidn't load opengl");
         glfwTerminate();
         _is_init = false;
+#endif
     }
 
     glfwSwapInterval(0);
@@ -90,27 +98,31 @@ Core::Core(const Config& config)
     _mouse = world.single_comp<comp::MouseButtons>(nullptr);
     _scroll = world.single_comp<comp::MouseScroll>(nullptr);
 
+#ifndef FLAG_RELEASE
     util::mtrs_info("Renderer: ", glGetString(GL_RENDERER));
     util::mtrs_info("OpenGL version: ", glGetString(GL_VERSION));
     util::mtrs_info("GLSL Version: ", glGetString(GL_SHADING_LANGUAGE_VERSION));
+#endif
 
     comp::Audio *audio = world.single_comp<comp::Audio>(nullptr);
     if(audio)
     {
         audio->sound_scale = config.saund_location_scale;
+#ifndef FLAG_RELEASE
         if(!audio->is_init)
         {
             util::mtrs_error("Failed to init sound engine");
             glfwTerminate();
             _is_init = false;
         }
+#endif
     }
     
     if(!config.display_cursor) glfwSetInputMode(_window->poiter, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
     glClearColor(config.clear_color[0], config.clear_color[1], config.clear_color[2], config.clear_color[3]);
     
-    if(config.depth) glEnable(GL_DEPTH_TEST);
+    if(config.blend) { glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);}
 
     sys::SpriteRenderSystem::context = resources.get_resource<res::RenderContext>("system", "render_context");
     sys::SpriteMapRenderSystem::context = resources.get_resource<res::RenderContext>("system", "render_context");
@@ -128,12 +140,14 @@ Core::Core(const Config& config)
 
     _time_frame = std::chrono::duration<double>(1.0 / config.max_fps);
 
+#ifndef FLAG_RELEASE
     if(config.start_scene == "")
     {
         util::mtrs_warning("You need to select the starting scene ",
             "in the configuration via the \"start_scene\" parameter");
     }
     else
+#endif
     {
         world.load_scene(config.start_scene, resources);
     }

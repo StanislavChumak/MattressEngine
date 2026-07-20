@@ -35,12 +35,13 @@ void Window::set_icon()
             channels = 3;
         }
         icon_window[i].pixels = stbi_load(icon[i].c_str(), &icon_window[i].width, &icon_window[i].height, &channels, 0);
-
+#ifndef FLAG_RELEASE
         if(!icon_window[i].pixels)
         {
             util::mtrs_error("Failed to load icon: ", icon[i]);
             return;
         }
+#endif
     }
 
     glfwSetWindowIcon(poiter, icon.size(), icon_window);

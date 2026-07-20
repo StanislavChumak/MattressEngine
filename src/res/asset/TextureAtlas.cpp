@@ -143,11 +143,13 @@ uint32_t TextureAtlas::get_type_size_imp() noexcept
 
 TextureAtlas::SubTexture2D TextureAtlas::get_sub_texture(const size_t index) const
 {
+#ifndef FLAG_RELEASE
     if (index >= _atlas.size())
     {
         util::mtrs_error("Fatal find subTexture \"", index , "\"");
         return _atlas[0];
     }
+#endif
     return _atlas[index];
 }
 

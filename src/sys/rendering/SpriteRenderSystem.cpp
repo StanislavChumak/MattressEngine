@@ -25,7 +25,6 @@ mtrs::res::InstanceData sprite_to_instance(mtrs::comp::Transform *transform, mtr
     date.lb_uv = sprite->sub_texture.lb_vertex;
     date.rt_uv = sprite->sub_texture.rt_vertex;
     date.color = sprite->color;
-    date.layer = sprite->layer;
 
     return date;
 }
@@ -37,17 +36,15 @@ std::shared_ptr<res::RenderContext> SpriteRenderSystem::context;
 
 void SpriteRenderSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
-    context->begin_batches();
-
     for(auto [entity, transform, sprite] : world.view<comp::Transform, comp::Sprite>())
     {
         if(!sprite->visibility) continue;
 
         u_int64_t id = sprite->shader->id() | u_int64_t(sprite->texture->id()) << 32;
-        context->submit_batch(id, sprite_to_instance(transform, sprite));
+        context->submit_batch(id, sprite->layer, sprite_to_instance(transform, sprite));
     }
 
-    context->end_batches();
+    context->draw();
 }
 
 }

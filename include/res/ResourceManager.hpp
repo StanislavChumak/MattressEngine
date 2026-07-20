@@ -28,7 +28,7 @@ private:
 
     std::vector<std::function<void()>> _garbage_collectors;
 
-    void move_to_resource(std::ifstream &file, const std::string &res_name,
+    bool move_to_resource(std::ifstream &file, const std::string &res_name,
         const std::string &res_type_name, uint32_t res_type_size);
 
     template<typename Resource>
@@ -107,7 +107,13 @@ public:
             std::string res_type_name = Resource::get_type_name();
             uint32_t res_type_size = Resource::get_type_size();
 
-            move_to_resource(it_pack->second.file, resource_name, res_type_name, res_type_size);
+            if(!move_to_resource(it_pack->second.file, resource_name, res_type_name, res_type_size))
+            {
+#ifndef FLAG_RELEASE
+                util::mtrs_error("from resource pack (", pack, ")");
+                return std::shared_ptr<Resource>(nullptr);
+#endif
+            }
             
             std::shared_ptr<Resource> resource;
             str_pos = pack.find_last_of("\\/");
@@ -120,17 +126,21 @@ public:
                 resource = std::make_shared<Resource>(it_pack->second.file,
                     _resource_dir + pack.substr(0, str_pos + 1));
             }
-
+#ifndef FLAG_RELEASE
             if(!resource)
             {
-                util::mtrs_error("in ResourcePack(", pack, ")");
+                util::mtrs_error("failed to initialize resource (", res_type_name, ": ",
+                    resource_name, ") from resource pack (", pack, ")");
+                return std::shared_ptr<Resource>(nullptr);
             }
-
+#endif
             it_pack->second.resource_count++;
             cache.emplace(pack + '/' +  resource_name, std::weak_ptr<Resource>(resource));
             return resource;
         }
+#ifndef FLAG_RELEASE
         mtrs::util::mtrs_error("No package named \"", pack,"\" found");
+#endif
         return std::shared_ptr<Resource>(nullptr);
     }
 };

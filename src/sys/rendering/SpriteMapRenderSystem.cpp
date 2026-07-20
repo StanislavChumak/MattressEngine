@@ -25,7 +25,6 @@ mtrs::res::InstanceData map_cell_to_instance(mtrs::comp::Transform *transform, m
     data.lb_uv = map->cell_types[cell.type].lb_vertex;
     data.rt_uv = map->cell_types[cell.type].rt_vertex;
     data.color = map->color;
-    data.layer = map->layer;
 
     return data;
 }
@@ -37,7 +36,6 @@ std::shared_ptr<res::RenderContext> SpriteMapRenderSystem::context;
 
 void SpriteMapRenderSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {
-    context->begin_batches();
 
     for(auto [entity, transform, map] : world.view<comp::Transform, comp::SpriteMap>())
     {
@@ -46,11 +44,11 @@ void SpriteMapRenderSystem::update_imp(comp::ECSWorld &world, const double &delt
         uint64_t id = map->shader->id() | uint64_t(map->texture->id()) << 32;
         for(auto &cell : map->cell_map)
         {
-            context->submit_batch(id, map_cell_to_instance(transform, map, cell));
+            context->submit_batch(id, map->layer, map_cell_to_instance(transform, map, cell));
         }
     }
 
-    context->end_batches();
+    context->draw();
 }
 
 }

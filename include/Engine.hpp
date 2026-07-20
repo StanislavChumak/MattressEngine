@@ -35,7 +35,7 @@ namespace engine
         std::string scenes_path = "./";
         std::string name_window = "";
         std::string start_scene = "";
-        bool depth = true;
+        bool blend = true;
         
         // Window
         glm::uvec2 size_in_points;

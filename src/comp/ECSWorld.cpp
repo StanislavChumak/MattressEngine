@@ -117,9 +117,9 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
         file.open(file_name, std::ios::binary);
     }
 
-#ifndef FLAG_RELEASE
     char magic[8];
     file.read(magic, 8);
+#ifndef FLAG_RELEASE
 
     const char *true_magic = "mtrsscn";
     for(uint8_t i{}; i < 8; i++)
@@ -169,7 +169,7 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
         }
 
         uint64_t id_comp;
-        while(file.tellg() != offset)
+        while(file.tellg() < offset)
         {
             FILE_READ(file, id_comp);
             switch (id_comp)
@@ -179,10 +179,12 @@ _components.add_comp<Comp>(entity, entity, scene.c_str(), file, *this, resource)
 break;
             COMPONENT_TYPE
 #undef X
+#ifndef FLAG_RELEASE
             default:
                 util::mtrs_error("unknown component by id ", id_comp);
                 file.close();
                 return;
+#endif
             }
         }
     }

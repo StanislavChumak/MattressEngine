@@ -39,12 +39,14 @@ Texture::Texture(ASSET_ARGS)
     int channels = 0;
     unsigned char *pixels = stbi_load(path.c_str(), &_width, &_height, &channels, 0);
 
+#ifndef FLAG_RELEASE
     if (!pixels)
     {
         util::mtrs_error("Failed to load texture: ", path);
         return;
     }
-    
+#endif
+
     switch (channels)
     {
     case 4:

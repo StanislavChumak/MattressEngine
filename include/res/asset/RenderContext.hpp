@@ -20,7 +20,8 @@ class RenderContext : public Asset<RenderContext>
     BufferObject _quad_EBO;
 
     std::unordered_map<uint64_t, SpriteBatch> _batches;
-    std::vector<uint64_t> _keys;
+    std::vector<decltype(_batches)::iterator> _iters_batches;
+    std::vector<std::pair<SpriteBatch&, decltype(SpriteBatch::instances)::iterator>> _iters_instences;
     
 public:
     RenderContext(ASSET_ARGS);
@@ -33,10 +34,10 @@ public:
     static std::string get_type_name_imp() noexcept;
     static uint32_t get_type_size_imp() noexcept;
 
-    void create_sprite_batch(std::shared_ptr<const ShaderProgram> shader, std::shared_ptr<const Texture> texture);
-    void begin_batches();
-    void submit_batch(uint64_t id, InstanceData date);
-    void end_batches();
+    void create_sprite_batch(std::shared_ptr<const ShaderProgram> shader,
+        std::shared_ptr<const Texture> texture);
+    void submit_batch(uint64_t id, float layer, InstanceData date);
+    void draw();
 };
 
 }

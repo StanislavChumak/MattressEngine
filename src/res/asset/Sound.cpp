@@ -99,11 +99,12 @@ bool Sound::init(void *audio_engine)
     {
         ma_result result = ma_sound_init_from_file(engine, _path.c_str(), 
             _flag, nullptr, nullptr, &sound);
-
+#ifndef FLAG_RELEASE
         if(result != MA_SUCCESS)
         {
             util::mtrs_error("Failed init sould to path ", _path, " ", result);
         }
+#endif
     }
     return true;
 }
