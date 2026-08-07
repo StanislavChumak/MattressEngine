@@ -11,7 +11,7 @@
     #define EXPORT __attribute__((visibility("default")))
 #endif
 
-namespace mtrs::file
+namespace mtrs::util
 {
 
 #if defined(_WIN32)

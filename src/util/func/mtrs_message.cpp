@@ -1,5 +1,5 @@
 #ifndef FLAG_RELEASE
-#include "util/mtrs_message.hpp"
+#include "util/func/mtrs_message.hpp"
 
 #include <iostream>
 

@@ -1,23 +1,24 @@
 #ifndef SCRIPT_FILE_HPP
 #define SCRIPT_FILE_HPP
 
-#include "res/asset/Asset.hpp"
-#include "util/files/load_external_lib.hpp"
+#include "res/Resource.hpp"
+
+#include "util/func/files/load_external_lib.hpp"
 #include "script/engine_api.hpp"
 
 namespace mtrs::res
 {
 class ResourceManager;
 
-class ScriptFile : public Asset<ScriptFile>
+class ScriptFile : public Resource<ScriptFile>
 {
     EngineAPI _api;
-    file::LibHandle _handle = nullptr;
+    util::LibHandle _handle = nullptr;
     void (*_on_load)(mtrs::comp::EntityID, EngineAPI*) = nullptr;
     void (*_on_unload)() = nullptr;
 
 public:
-    ScriptFile(ASSET_ARGS);
+    ScriptFile(RESOURCE_ARGS);
     ScriptFile() = delete;
     ScriptFile(const ScriptFile&) = delete;
     ScriptFile &operator=(const ScriptFile&) = delete;
@@ -25,7 +26,7 @@ public:
     ScriptFile &operator=(ScriptFile &&other) noexcept;
     ~ScriptFile();
 
-    static std::string get_type_name_imp() noexcept;
+    static const char *get_type_name_imp() noexcept;
     static uint32_t get_type_size_imp() noexcept;
 
     void load(const char *scene, comp::EntityID entity,

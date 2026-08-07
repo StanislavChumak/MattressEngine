@@ -2,34 +2,28 @@
 
 #include "glad/glad.h"
 
-#include "res/asset/ShaderProgram.hpp"
-#include "res/asset/Texture.hpp"
-
 #include <cstring>
 
 #ifndef FLAG_RELEASE
-    #include "util/mtrs_message.hpp"
+    #include "util/func/mtrs_message.hpp"
 #endif
 
 namespace mtrs::res
 {
 
 SpriteBatch::SpriteBatch(const BufferObject &quad_VBO, const BufferObject &quad_EBO,
-    std::shared_ptr<const ShaderProgram> shader, std::shared_ptr<const Texture> texture)
+    uint32_t shader, uint32_t texture, uint64_t max_instances)
+: _shader(shader), _texture(texture), _max_instances(max_instances)
 {
-    _shader = std::move(shader);
-    _texture = std::move(texture);
-
     for(uint8_t i = 0; i < SpriteBatch::BUFFER_COUNT; i++)
     {
-        const uint64_t max_instances = _texture->max_instances();
         _instance_vbo[i]._mode = GL_ARRAY_BUFFER;
         glBindBuffer(GL_ARRAY_BUFFER, _instance_vbo[i]._id);
-        glBufferStorage(GL_ARRAY_BUFFER, max_instances * sizeof(InstanceData), nullptr,
+        glBufferStorage(GL_ARRAY_BUFFER, _max_instances * sizeof(InstanceData), nullptr,
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
         _mapped_buffers[i] = reinterpret_cast<InstanceData*>(glMapBufferRange(
-            GL_ARRAY_BUFFER, 0, max_instances * sizeof(InstanceData),
+            GL_ARRAY_BUFFER, 0, _max_instances * sizeof(InstanceData),
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT));
     }
 
@@ -53,6 +47,7 @@ SpriteBatch::SpriteBatch(SpriteBatch &&other) noexcept
 {
     _vao = std::move(other._vao);
     instances = std::move(other.instances);
+    layers = std::move(other.layers);
     for(u_char i = 0; i < BUFFER_COUNT; i++)
     {
         _instance_vbo[i] = std::move(other._instance_vbo[i]);
@@ -61,9 +56,10 @@ SpriteBatch::SpriteBatch(SpriteBatch &&other) noexcept
         other._mapped_buffers[i] = nullptr;
         other._fences[i] = 0;
     }
-    _shader = std::move(other._shader);
-    _texture = std::move(other._texture);
     _current_buffer_index = other._current_buffer_index;
+    _shader = other._shader;
+    _texture = other._texture;
+    _max_instances = other._max_instances;
 }
 
 SpriteBatch &SpriteBatch::operator=(SpriteBatch &&other) noexcept
@@ -72,6 +68,7 @@ SpriteBatch &SpriteBatch::operator=(SpriteBatch &&other) noexcept
     {
         _vao = std::move(other._vao);
         instances = std::move(other.instances);
+        layers = std::move(other.layers);
         for(u_char i = 0; i < BUFFER_COUNT; i++)
         {
             _instance_vbo[i] = std::move(other._instance_vbo[i]);
@@ -80,9 +77,10 @@ SpriteBatch &SpriteBatch::operator=(SpriteBatch &&other) noexcept
             other._mapped_buffers[i] = nullptr;
             other._fences[i] = 0;
         }
-        _shader = std::move(other._shader);
-        _texture = std::move(other._texture);
         _current_buffer_index = other._current_buffer_index;
+        _shader = other._shader;
+        _texture = other._texture;
+        _max_instances = other._max_instances;
     }
     return *this;
 }
@@ -101,10 +99,10 @@ void SpriteBatch::begin_batch()
     _current_buffer_index %= BUFFER_COUNT;
 
 #ifndef FLAG_RELEASE
-    if(instances.size() > _texture->max_instances())
+    if(instances.size() > _max_instances)
     {
         util::mtrs_warning("The number of instances is ", instances.size(),
-            ", which has exceeded the MAX_INSTANCES limit of ", _texture->max_instances(),
+            ", which has exceeded the MAX_INSTANCES limit of ", _max_instances,
             " in the SpriteBatch resource.");
     }
 #endif
@@ -121,43 +119,39 @@ void SpriteBatch::begin_batch()
     }
 }
 
-void SpriteBatch::draw_instances(const std::vector<InstanceData> &instances)
+void SpriteBatch::draw_layer(float layer)
 {
-    if(this->instances.empty()) return;
+    if(instances.empty()) return;
+    auto iter = instances.find(layer);
+    if(iter == instances.end()) return;
 
-    std::memcpy(_mapped_buffers[_current_buffer_index], instances.data(),
-        instances.size() * sizeof(InstanceData));
+    std::memcpy(_mapped_buffers[_current_buffer_index], iter->second.data(),
+        iter->second.size() * sizeof(InstanceData));
     
     _vao.bind();
     _vao.set_vertex_buffer(1, _instance_vbo[_current_buffer_index], sizeof(InstanceData), 0);
     
-    _shader->use();
-    _texture->bind();
+    glUseProgram(_shader);
+    glBindTexture(GL_TEXTURE_2D, _texture);
     
-    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (GLsizei)instances.size());
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, (GLsizei)iter->second.size());
 }
 
 void SpriteBatch::end_batch()
 {
-    if(instances.empty()) return;
-
     _fences[_current_buffer_index] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
     size_t count;
-    for(auto iter = instances.begin(); iter != instances.end(); iter++)
+    for(auto &layer : layers)
     {
-        count = iter->second.size();
-        iter->second.clear();
+        auto &inst = instances.find(layer)->second;
+        count = inst.size();
+        inst.clear();
         if(count)
         {
-            iter->second.reserve(count);
+            inst.reserve(count);
         }
     }
-}
-
-void SpriteBatch::flush()
-{
-
 }
 
 }

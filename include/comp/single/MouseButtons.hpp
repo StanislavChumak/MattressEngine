@@ -16,13 +16,13 @@ struct MouseButtons : public Component<MouseButtons>
     std::unordered_map<uint32_t, std::vector<void(*)()>> subscribers;
 
     MouseButtons() = delete;
-    ~MouseButtons() = default;
     MouseButtons(const MouseButtons&) = delete;
     MouseButtons &operator=(const MouseButtons&) = delete;
     MouseButtons(MouseButtons&&) = delete;
     MouseButtons &operator=(MouseButtons&&) = delete;
     
     MouseButtons(void*);
+    ~MouseButtons() = default;
 
     void subscribe(int button, bool action, void(*callback)());
     void unsubscribe(int button, bool action, void(*callback)());

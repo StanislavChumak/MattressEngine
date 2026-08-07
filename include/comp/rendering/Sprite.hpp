@@ -2,7 +2,7 @@
 #define SPRITE_HPP
 
 #include "comp/Component.hpp"
-#include "res/asset/TextureAtlas.hpp"
+#include "res/render/SubTexture.hpp"
 
 #include "glm/vec4.hpp"
 
@@ -12,6 +12,7 @@ namespace mtrs::res
 {
     class Texture;
     class ShaderProgram;
+    class TextureAtlas;
 }
 
 namespace mtrs::comp
@@ -23,7 +24,7 @@ struct Sprite : public Component<Sprite>
     std::shared_ptr<res::Texture> texture;
     std::shared_ptr<res::TextureAtlas> atlas;
 
-    res::TextureAtlas::SubTexture2D sub_texture;
+    res::SubTexture sub_texture;
     
     glm::uvec2 size;
     glm::tvec4<uint8_t, glm::precision::highp> color{255, 255, 255, 255};

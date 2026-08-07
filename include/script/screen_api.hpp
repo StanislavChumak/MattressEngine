@@ -10,9 +10,9 @@ typedef mtrs::comp::Camera Camera;
 
 extern mtrs::EngineAPI *api;
 
-void Window::set_icon()
+void Window::set_icon(const char *const *paths, uint64_t count)
 {
-    api->window_set_icon(this);
+    api->window_set_icon(this, paths, count);
 }
 
 void Window::set_position(glm::uvec2 position)

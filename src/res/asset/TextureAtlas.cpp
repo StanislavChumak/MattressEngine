@@ -1,50 +1,53 @@
 #include "res/asset/TextureAtlas.hpp"
 
-#include "dynamic_field.def"
-#include "res_struct/TextureAtlas.struct"
-#include "util/mtrs_message.hpp"
+#include "res/ResourceManager.hpp"
+#include "res/asset/Texture.hpp"
+
+#include "util/func/files/data_mtrs_file.hpp"
+#include "util/func/mtrs_message.hpp"
 
 #include <fstream>
+
+#include "dynamic_field.def"
+#include "res_struct/TextureAtlas.struct"
 
 namespace mtrs::res
 {
 
-std::vector<TextureAtlas::SubTexture2D> get_classic_atlas(TextureAtlas_rs atlas)
+std::vector<SubTexture> get_classic_atlas(glm::uvec2 size, glm::uvec2 sub_size)
 {
-    std::vector<TextureAtlas::SubTexture2D> sub_textures;
+    std::vector<SubTexture> sub_textures;
 
-    uint64_t current_offset_x = 0;
-    uint64_t current_offset_y = atlas.height;
-    uint32_t count = (atlas.height / atlas.sub_height) * (atlas.width / atlas.sub_width);
+    glm::uvec2 current_offset = glm::uvec2{0, size.y};
+    uint32_t count = (size.y / sub_size.y) * (size.x / sub_size.x);
 
     sub_textures.clear();
     sub_textures.reserve(count);
     for(size_t i = 0; i < count; i++)
     {
-        glm::vec2 left_bottom(static_cast<float>(current_offset_x + 0.01f) / atlas.width,
-            static_cast<float>(current_offset_y - atlas.sub_height + 0.01f) / atlas.height);
-        glm::vec2 rigth_top(static_cast<float>(current_offset_x + atlas.sub_width - 0.01f) / atlas.width, 
-            static_cast<float>(current_offset_y - 0.01f) / atlas.height);
+        glm::vec2 left_bottom(static_cast<float>(current_offset.x + 0.01f) / size.x,
+            static_cast<float>(current_offset.y - sub_size.y + 0.01f) / size.y);
+        glm::vec2 rigth_top(static_cast<float>(current_offset.x + sub_size.x - 0.01f) / size.x, 
+            static_cast<float>(current_offset.y - 0.01f) / size.y);
 
-        sub_textures.push_back(TextureAtlas::SubTexture2D{left_bottom, rigth_top});
+        sub_textures.push_back(SubTexture{left_bottom, rigth_top});
 
-        current_offset_x += atlas.sub_width;
-        if (current_offset_x >= atlas.width)
+        current_offset.x += sub_size.x;
+        if (current_offset.x >= size.x)
         {
-            current_offset_x = 0;
-            current_offset_y -= atlas.sub_height;
+            current_offset.x = 0;
+            current_offset.y -= sub_size.y;
         }
     }
 
     return sub_textures;
 }
 
-std::vector<TextureAtlas::SubTexture2D> get_spiral_atlas(TextureAtlas_rs atlas)
+std::vector<SubTexture> get_spiral_atlas(glm::uvec2 size, glm::uvec2 sub_size)
 {
-    std::vector<TextureAtlas::SubTexture2D> sub_textures;
+    std::vector<SubTexture> sub_textures;
 
-    uint64_t current_offset_x = 0;
-    uint64_t current_offset_y = atlas.height;
+    glm::uvec2 current_offset = glm::uvec2{0, size.y};
 
     enum class Direction
     {
@@ -57,56 +60,62 @@ std::vector<TextureAtlas::SubTexture2D> get_spiral_atlas(TextureAtlas_rs atlas)
     Direction direction = Direction::Right;
 
     sub_textures.clear();
-    while (atlas.sub_width > 0 && atlas.sub_height > 0)
+    while (sub_size.x > 0 && sub_size.y > 0)
     {
-        glm::vec2 left_bottom(static_cast<float>(current_offset_x + 0.01f) / atlas.width,
-            static_cast<float>(current_offset_y - atlas.sub_height + 0.01f) / atlas.height);
-        glm::vec2 rigth_top(static_cast<float>(current_offset_x + atlas.sub_width - 0.01f) / atlas.width, 
-            static_cast<float>(current_offset_y - 0.01f) / atlas.height);
+        glm::vec2 left_bottom(static_cast<float>(current_offset.x + 0.01f) / size.x,
+            static_cast<float>(current_offset.y - sub_size.y + 0.01f) / size.y);
+        glm::vec2 rigth_top(static_cast<float>(current_offset.x + sub_size.x - 0.01f) / size.x, 
+            static_cast<float>(current_offset.y - 0.01f) / size.y);
 
-        sub_textures.push_back(TextureAtlas::SubTexture2D{left_bottom, rigth_top});
+        sub_textures.push_back(SubTexture{left_bottom, rigth_top});
 
         switch (direction)
         {
         case Direction::Right:
-            current_offset_x += atlas.sub_width;
+            current_offset.x += sub_size.x;
             direction = Direction::Botton;
             break;
         case Direction::Botton:
-            current_offset_x += atlas.sub_width / 2;
-            current_offset_y -= atlas.sub_height;
+            current_offset.x += sub_size.x / 2;
+            current_offset.y -= sub_size.y;
             direction = Direction::Left;
             break;
         case Direction::Left:
-            current_offset_x -= atlas.sub_width / 2;
-            current_offset_y -= atlas.sub_height / 2;
+            current_offset.x -= sub_size.x / 2;
+            current_offset.y -= sub_size.y / 2;
             direction = Direction::Top;
             break;
         case Direction::Top:
-            current_offset_y += atlas.sub_height / 2;
+            current_offset.y += sub_size.y / 2;
             direction = Direction::Right;
             break;
         }
 
-        atlas.sub_height /= 2;
-        atlas.sub_width /= 2;
+        sub_size.y /= 2;
+        sub_size.x /= 2;
     }
     
     return sub_textures;
 }
 
-TextureAtlas::TextureAtlas(ASSET_ARGS)
+TextureAtlas::TextureAtlas(RESOURCE_ARGS)
 {
     TextureAtlas_rs atlas;
     file.read(reinterpret_cast<char*>(&atlas), sizeof(atlas));
 
+    std::string texture_name;
+    util::set_string_from_mtrs_file(file, texture_name, DYNAMIC_ARGS(atlas, texture));
+    auto texture = resources.get_resource<Texture>(dir_pack + pack, texture_name);
+
     if(atlas.spirality)
     {
-        _atlas = get_spiral_atlas(atlas);
+        _atlas = get_spiral_atlas({texture->width(), texture->height()},
+            {atlas.sub_width, atlas.sub_height});
     }
     else
     {
-        _atlas = get_classic_atlas(atlas);
+        _atlas = get_classic_atlas({texture->width(), texture->height()},
+            {atlas.sub_width, atlas.sub_height});
     }
 }
 
@@ -131,7 +140,7 @@ TextureAtlas::~TextureAtlas()
     _atlas.clear();
 }
 
-std::string TextureAtlas::get_type_name_imp() noexcept
+const char *TextureAtlas::get_type_name_imp() noexcept
 {
     return "atlases";
 }
@@ -141,7 +150,7 @@ uint32_t TextureAtlas::get_type_size_imp() noexcept
     return sizeof(TextureAtlas_rs);
 }
 
-TextureAtlas::SubTexture2D TextureAtlas::get_sub_texture(const size_t index) const
+SubTexture TextureAtlas::get_sub_texture(const size_t index) const
 {
 #ifndef FLAG_RELEASE
     if (index >= _atlas.size())

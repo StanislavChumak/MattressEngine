@@ -1,15 +1,16 @@
 #ifndef SOUND_HPP
 #define SOUND_HPP
 
-#include "res/asset/Asset.hpp"
+#include "res/Resource.hpp"
+
+#include <string>
 
 namespace mtrs::res
 {
 
-class Sound : public Asset<Sound>
+class Sound : public Resource<Sound>
 {
-    struct Impl;
-    Impl *_impl;
+    struct Impl *_impl;
     std::string _path;
     uint32_t _flag;
     size_t _distance;
@@ -20,7 +21,7 @@ class Sound : public Asset<Sound>
     void *get_free_sound();
 
 public:
-    Sound(ASSET_ARGS);
+    Sound(RESOURCE_ARGS);
     Sound() = delete;
     Sound(const Sound&) = delete;
     Sound &operator=(const Sound&) = delete;
@@ -28,7 +29,7 @@ public:
     Sound &operator=(Sound &&other) noexcept;
     ~Sound();
 
-    static std::string get_type_name_imp() noexcept;
+    static const char *get_type_name_imp() noexcept;
     static uint32_t get_type_size_imp() noexcept;
 
     bool init(void *audio_engine);

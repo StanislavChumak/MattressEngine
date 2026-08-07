@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13.0 FATAL_ERROR)
 
-project(mattres VERSION 1.1.0)
+project(mattress VERSION 1.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,10 +16,11 @@ add_library(${PROJECT_NAME} STATIC
 
 src/Engine.cpp
 
-src/util/mtrs_message.cpp
-src/util/files/get_folder.cpp
-src/util/files/data_mtrs_file.cpp
-src/util/files/load_external_lib.cpp
+src/util/func/mtrs_message.cpp
+src/util/func/files/get_folder.cpp
+src/util/func/files/data_mtrs_file.cpp
+src/util/func/files/load_external_lib.cpp
+src/util/func/text/utf8_to_utf32.cpp
 
 # Systems
 src/sys/SystemManager.cpp
@@ -30,11 +31,13 @@ src/sys/core/ScriptsSystem.cpp
 src/sys/core/TransformSystem.cpp
 
 src/sys/rendering/CameraSystem.cpp
-src/sys/rendering/SpriteRenderSystem.cpp
+src/sys/rendering/SpriteSubmitSystem.cpp
 src/sys/rendering/AnimatorSystem.cpp
 src/sys/rendering/StateAnimatorSystem.cpp
-src/sys/rendering/SpriteMapRenderSystem.cpp
+src/sys/rendering/SpriteMapSubmitSystem.cpp
 src/sys/rendering/MapAnimatorSystem.cpp
+src/sys/rendering/TextSubmitSystem.cpp
+src/sys/rendering/RenderSystem.cpp
 
 src/sys/audio/LocationAudioSystem.cpp
 
@@ -42,11 +45,11 @@ src/sys/audio/LocationAudioSystem.cpp
 src/res/ResourceManager.cpp
 
 src/res/asset/ScriptFile.cpp
-src/res/asset/RenderContext.cpp
 src/res/asset/ShaderProgram.cpp
 src/res/asset/Texture.cpp
 src/res/asset/TextureAtlas.cpp
 src/res/asset/Sound.cpp
+src/res/asset/Font.cpp
 
 src/res/render/SpriteBatch.cpp
 src/res/render/BufferObject.cpp
@@ -59,6 +62,8 @@ src/comp/collections/ComponentManager.cpp
 
 src/comp/single/Window.cpp
 src/comp/single/Camera.cpp
+src/comp/single/Render.cpp
+src/comp/single/GlyphDecoder.cpp
 src/comp/single/States.cpp
 src/comp/single/Cursor.cpp
 src/comp/single/KeyButtons.cpp
@@ -76,6 +81,8 @@ src/comp/rendering/Animator.cpp
 src/comp/rendering/StateAnimator.cpp
 src/comp/rendering/SpriteMap.cpp
 src/comp/rendering/MapAnimator.cpp
+
+src/comp/ui/Label.cpp
 
 src/comp/audio/SoundPlayer.cpp
 

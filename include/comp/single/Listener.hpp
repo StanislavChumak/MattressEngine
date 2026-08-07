@@ -13,13 +13,13 @@ struct Listener : public Component<Listener>
     Transform *target;
 
     Listener() = delete;
-    ~Listener() = default;
     Listener(const Listener&) = delete;
     Listener &operator=(const Listener&) = delete;
     Listener(Listener&&) = delete;
     Listener &operator=(Listener&&) = delete;
-
+    
     Listener(void*);
+    ~Listener() = default;
 
     static constexpr const char *get_type_name_imp() noexcept { return "Listener"; }
 };

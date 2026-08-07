@@ -16,13 +16,13 @@ struct KeyButtons : public Component<KeyButtons>
     std::unordered_map<uint32_t, std::vector<void(*)()>> subscribers;
 
     KeyButtons() = delete;
-    ~KeyButtons() = default;
     KeyButtons(const KeyButtons&) = delete;
     KeyButtons &operator=(const KeyButtons&) = delete;
     KeyButtons(KeyButtons&&) = delete;
     KeyButtons &operator=(KeyButtons&&) = delete;
     
     KeyButtons(void*);
+    ~KeyButtons() = default;
 
     void subscribe(int key, bool action, void(*callback)());
     void unsubscribe(int key, bool action, void(*callback)());

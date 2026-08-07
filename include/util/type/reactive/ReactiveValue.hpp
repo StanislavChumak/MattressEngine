@@ -4,8 +4,8 @@
 #include "ReactiveBase.hpp"
 #include "PullNode.hpp"
 
-#include "util/concept.hpp"
-#include "util/mtrs_message.hpp"
+#include "util/type/concept.hpp"
+#include "util/func/mtrs_message.hpp"
 
 namespace mtrs::react
 {

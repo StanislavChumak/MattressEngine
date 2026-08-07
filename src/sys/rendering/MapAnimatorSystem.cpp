@@ -3,6 +3,7 @@
 #include "comp/ECSWorld.hpp"
 #include "comp/rendering/SpriteMap.hpp"
 #include "comp/rendering/MapAnimator.hpp"
+#include "res/asset/TextureAtlas.hpp"
 
 namespace mtrs::sys
 {

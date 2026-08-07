@@ -3,6 +3,7 @@
 #include "comp/ECSWorld.hpp"
 #include "comp/single/Window.hpp"
 #include "comp/single/Camera.hpp"
+#include "comp/single/GlyphDecoder.hpp"
 #include "comp/single/KeyButtons.hpp"
 #include "comp/single/MouseButtons.hpp"
 #include "comp/single/MouseScroll.hpp"
@@ -10,9 +11,9 @@
 
 #include "res/asset/TextureAtlas.hpp"
 
-#include "util/files/data_mtrs_file.hpp"
+#include "util/func/files/data_mtrs_file.hpp"
 #include "util/hash.hpp"
-#include "util/mtrs_message.hpp"
+#include "util/func/mtrs_message.hpp"
 
 #include "dynamic_field.def"
 #include "res_struct/ScriptFile.struct"
@@ -20,30 +21,30 @@
 namespace mtrs::res
 {
 
-ScriptFile::ScriptFile(ASSET_ARGS)
+ScriptFile::ScriptFile(RESOURCE_ARGS)
 {
     ScriptFile_sc script_file;
     file.read(reinterpret_cast<char*>(&script_file), sizeof(script_file));
 
     std::string path;
-    file::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script_file, path));
+    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script_file, path));
     path = path.substr(0, path.rfind('.'));
 
-    _handle = file::load_library(dir_resource + path + file::lib_extension());
+    _handle = util::load_library(dir_pack + path + util::lib_extension());
 #ifndef FLAG_RELEASE
     if (_handle)
     {
 #endif
-        _on_load = reinterpret_cast<decltype(_on_load)>(file::get_symbol(_handle, "on_load"));
-        _on_unload = reinterpret_cast<decltype(_on_unload)>(file::get_symbol(_handle, "on_unload"));
+        _on_load = reinterpret_cast<decltype(_on_load)>(util::get_symbol(_handle, "on_load"));
+        _on_unload = reinterpret_cast<decltype(_on_unload)>(util::get_symbol(_handle, "on_unload"));
 #ifndef FLAG_RELEASE
-        if(!_on_load) mtrs::util::mtrs_error(file::get_last_error());
-        if(!_on_unload) mtrs::util::mtrs_error(file::get_last_error());
+        if(!_on_load) mtrs::util::mtrs_error(util::get_last_error());
+        if(!_on_unload) mtrs::util::mtrs_error(util::get_last_error());
     }
     else
     {
         util::mtrs_error("Failed to load script at path: ", path, "\n",
-            file::get_last_error());
+            util::get_last_error());
     }
 #endif
 }
@@ -77,12 +78,12 @@ ScriptFile::~ScriptFile()
     if(_handle)
     {
         _on_unload();
-        file::free_library(_handle);
+        util::free_library(_handle);
         _handle = nullptr;
     }
 }
 
-std::string ScriptFile::get_type_name_imp() noexcept
+const char *ScriptFile::get_type_name_imp() noexcept
 {
     return "scripts";
 }
@@ -124,8 +125,9 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
     _api.world_turn_off_scene = [](comp::ECSWorld*w, const char*s)
         { w->turn_off_scene(s); };
 
+
     // window
-    _api.window_set_icon = [](comp::Window*w){ w->set_icon(); };
+    _api.window_set_icon = [](comp::Window*w, const char *const *p, uint64_t c){ w->set_icon(p, c); };
     _api.window_set_position = [](comp::Window*w, glm::uvec2 v){ w->set_position(v); };
     _api.window_set_full_screen = [](comp::Window*w, bool is){ w->set_full_screen(is); };
     _api.window_get_position = [](comp::Window*w){ return w->get_position(); };
@@ -135,11 +137,9 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
     _api.camera_update_proj_matrix = [](comp::Camera*c){ c->update_proj_matrix(); };
     _api.camera_update_view_matrix = [](comp::Camera*c){ c->update_view_matrix(); };
 
-    // script file
-    _api.script_get_symbol = [](res::ScriptFile *s, const char *n){ return s->get_symbol(n); };
-
-    // texture atlas
-    _api.atlas_get_sub_texture = [](const res::TextureAtlas *a, size_t i){ return glm::vec4(a->get_sub_texture(i)); };
+    // glyph decoder
+    _api.decoder_submit_font = [](comp::GlyphDecoder*d, const char*p){ d->submit_font(p); };
+    _api.decoder_decode_text = [](comp::GlyphDecoder*d, const char32_t*s){ return d->decode_text(s); };
 
     // key buttons
     _api.key_subscribe = [](mtrs::comp::KeyButtons *keybord, int key, bool action, void (*callback)())
@@ -165,6 +165,13 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
     _api.cursor_unsubscribe = [](mtrs::comp::Cursor *cursor, void (*callback)())
         { cursor->unsubscribe(callback); };
 
+    
+    // script file
+    _api.script_get_symbol = [](res::ScriptFile *s, const char *n){ return s->get_symbol(n); };
+
+    // texture atlas
+    _api.atlas_get_sub_texture = [](const res::TextureAtlas *a, size_t i){ return a->get_sub_texture(i); };
+
     _on_load(entity, &_api);
 }
 
@@ -177,7 +184,7 @@ void *ScriptFile::get_symbol(std::string &&name)
         return nullptr;
     }
 #endif
-    return file::get_symbol(_handle, name);
+    return util::get_symbol(_handle, name);
 }
 
 }

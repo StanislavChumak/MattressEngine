@@ -4,6 +4,8 @@
 
 #include "comp/single/Window.hpp"
 #include "comp/single/Camera.hpp"
+#include "comp/single/Render.hpp"
+#include "comp/single/GlyphDecoder.hpp"
 #include "comp/single/Audio.hpp"
 #include "comp/single/States.hpp"
 #include "comp/single/Cursor.hpp"
@@ -11,16 +13,15 @@
 #include "comp/single/MouseButtons.hpp"
 #include "comp/single/MouseScroll.hpp"
 
-#include "res/asset/RenderContext.hpp"
-#include "res/asset/Texture.hpp"
-
 #include "sys/core/InputSystem.hpp"
 #include "sys/core/InputSybscrubersSystem.hpp"
-#include "sys/rendering/SpriteRenderSystem.hpp"
-#include "sys/rendering/SpriteMapRenderSystem.hpp"
+#include "sys/rendering/RenderSystem.hpp"
+#include "sys/rendering/SpriteSubmitSystem.hpp"
+#include "sys/rendering/SpriteMapSubmitSystem.hpp"
+#include "sys/rendering/TextSubmitSystem.hpp"
 #include "sys/rendering/CameraSystem.hpp"
 
-#include "util/mtrs_message.hpp"
+#include "util/func/mtrs_message.hpp"
 
 #include <thread>
 
@@ -124,9 +125,14 @@ Core::Core(const Config& config)
     
     if(config.blend) { glEnable(GL_BLEND); glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);}
 
-    sys::SpriteRenderSystem::context = resources.get_resource<res::RenderContext>("system", "render_context");
-    sys::SpriteMapRenderSystem::context = resources.get_resource<res::RenderContext>("system", "render_context");
+    world.single_comp<comp::GlyphDecoder>(resources);
 
+    comp::Render *render = world.single_comp<comp::Render>(nullptr);
+    sys::RenderSystem::render = render;
+    sys::SpriteSubmitSystem::render = render;
+    sys::SpriteMapSubmitSystem::render = render;
+    sys::TextSubmitSystem::render = render;
+    
     sys::InputSystem::key_buttons = _keyboard;
     sys::InputSystem::mouse_buttons = _mouse;
     sys::InputSystem::mouse_scroll = _scroll;
@@ -135,8 +141,7 @@ Core::Core(const Config& config)
 
     sys::CameraSystem::camera = _camera;
 
-    _window->icon = config.icon_window;
-    _window->set_icon();
+    _window->set_icon(config.icon_window.data(), config.icon_window.size());
 
     _time_frame = std::chrono::duration<double>(1.0 / config.max_fps);
 
@@ -195,8 +200,6 @@ void Core::update()
 
 void Core::shutdown()
 {
-    sys::SpriteRenderSystem::context.reset();
-    sys::SpriteMapRenderSystem::context.reset();
     world.clear_all();
     resources.garbage_collector();
     glfwTerminate();

@@ -7,25 +7,25 @@
 #define  STBI_ONLY_JPEG
 #include "stb_image.h"
 
-#include "util/files/data_mtrs_file.hpp"
-#include "util/mtrs_message.hpp"
+#include "util/func/files/data_mtrs_file.hpp"
+#include "util/func/mtrs_message.hpp"
+
+#include <fstream>
 
 #include "dynamic_field.def"
 #include "res_struct/Texture.struct"
 
-#include <fstream>
-
 namespace mtrs::res
 {
 
-Texture::Texture(ASSET_ARGS)
+Texture::Texture(RESOURCE_ARGS)
 {
     Texture_rs texture;
     file.read(reinterpret_cast<char*>(&texture), sizeof(texture));
     
     std::string path;
-    file::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(texture, path));
-    path = dir_resource + path;
+    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(texture, path));
+    path = dir_pack + path;
 
     _max_instances = texture.max_instances;
 
@@ -100,7 +100,7 @@ Texture::~Texture()
     glDeleteTextures(1, &_ID);
 }
 
-std::string Texture::get_type_name_imp() noexcept
+const char *Texture::get_type_name_imp() noexcept
 {
     return "textures";
 }
@@ -130,12 +130,12 @@ uint64_t Texture::max_instances() const noexcept
     return _max_instances;
 }
 
-int32_t Texture::width() const noexcept
+int Texture::width() const noexcept
 {
     return _width;
 }
 
-int32_t Texture::height() const noexcept
+int Texture::height() const noexcept
 {
     return _height;
 }

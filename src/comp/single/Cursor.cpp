@@ -28,7 +28,8 @@ Cursor::Cursor(Camera *camera)
         glm::vec4 clip_pos((float)(cursor->x / pnts_sz->x) * 2.0f - 1.0f,
             1.0f - (float)(cursor->y / pnts_sz->y) * 2.0f, 0.0f, 1.0f);
         return glm::vec2(glm::inverse(*proj * *view) * clip_pos);
-    }, &position, &camera->size_in_points, mat4_to_node(&camera->matrices.proj), mat4_to_node(&camera->matrices.view))
+    }, &position, &camera->size_in_points, 
+            mat4_to_node(&camera->_matrices.proj), mat4_to_node(&camera->_matrices.view))
 {
     window_position.add_observer(&position);
     camera->viewport.add_observer(&position);

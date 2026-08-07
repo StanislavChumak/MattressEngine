@@ -6,21 +6,16 @@
 namespace mtrs::comp
 {
 
-struct Audio::Impl
+struct Impl
 {
     ma_engine engine;
 };
-
-void *Audio::ptr_engine()
-{
-    return &impl->engine;
-}
 
 Audio::Audio(void*)
 {
     ma_engine_config config = ma_engine_config_init();
     config.listenerCount = 1;
-    impl = new Audio::Impl();
+    impl = new Impl();
     if (ma_engine_init(&config, &impl->engine) == MA_SUCCESS)
     {
         is_init = true;

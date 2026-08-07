@@ -5,7 +5,7 @@
 
 #include "comp/single/Camera.hpp"
 
-#include "util/reactive/ReactiveValue.hpp"
+#include "util/type/reactive/ReactiveValue.hpp"
 
 namespace mtrs::comp
 {
@@ -18,13 +18,13 @@ struct Cursor : public Component<Cursor>
     std::vector<void(*)()> subscribers;
 
     Cursor() = delete;
-    ~Cursor() = default;
     Cursor(const Cursor &) = delete;
     Cursor &operator=(const Cursor&) = delete;
     Cursor(Cursor &&other) = delete;
     Cursor &operator=(Cursor &&other) = delete;
-
+    
     Cursor(Camera *camera);
+    ~Cursor() = default;
 
     void subscribe(void(*callback)());
     void unsubscribe(void(*callback)());

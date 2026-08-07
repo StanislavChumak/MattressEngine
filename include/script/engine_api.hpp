@@ -2,7 +2,7 @@
 #define ENGINE_API_HPP
 
 #ifdef SCRIPT
-    #include "util/mtrs_message.hpp"
+    #include "util/func/mtrs_message.hpp"
 #else
     #include <cstdint>
 #endif
@@ -24,6 +24,7 @@ namespace mtrs::comp
 
     struct Window;
     struct Camera;
+    struct GlyphDecoder;
     struct KeyButtons;
     struct MouseButtons;
     struct MouseScroll;
@@ -36,6 +37,9 @@ namespace mtrs::res
 
     class TextureAtlas;
     class ScriptFile;
+
+    struct SubTexture;
+    struct Text;
 };
 
 namespace mtrs::util
@@ -64,7 +68,7 @@ namespace mtrs
         void (*world_turn_off_scene)(comp::ECSWorld*, const char*) = nullptr;
 
         // Window
-        void (*window_set_icon)(comp::Window*) = nullptr;
+        void (*window_set_icon)(comp::Window*, const char *const *, uint64_t) = nullptr;
         void (*window_set_position)(comp::Window*, glm::uvec2) = nullptr;
         void (*window_set_full_screen)(comp::Window*, bool) = nullptr;
         glm::ivec2 (*window_get_position)(comp::Window*) = nullptr;
@@ -73,6 +77,10 @@ namespace mtrs
         void (*camera_update_UBO)(comp::Camera*) = nullptr;
         void (*camera_update_proj_matrix)(comp::Camera*) = nullptr;
         void (*camera_update_view_matrix)(comp::Camera*) = nullptr;
+
+        // GlyphDecoder
+        void (*decoder_submit_font)(comp::GlyphDecoder *, const char*);
+        res::Text (*decoder_decode_text)(comp::GlyphDecoder *, const char32_t*);
 
         // KeyButtons
         void (*key_subscribe)(comp::KeyButtons*, int, bool, void(*)());
@@ -94,7 +102,7 @@ namespace mtrs
         void *(*script_get_symbol)(res::ScriptFile*, const char*) = nullptr;
 
         // TextureAtlas
-        glm::vec4 (*atlas_get_sub_texture)(const res::TextureAtlas*, size_t) = nullptr;
+        res::SubTexture (*atlas_get_sub_texture)(const res::TextureAtlas*, size_t) = nullptr;
     };
 };
 

@@ -1,7 +1,7 @@
 #ifndef RESOURCE_MANAGER_HPP
 #define RESOURCE_MANAGER_HPP
 
-#include "util/mtrs_message.hpp"
+#include "util/func/mtrs_message.hpp"
 
 #include <unordered_map>
 #include <memory>
@@ -86,6 +86,7 @@ public:
             pack = resource_name.substr(0, str_pos);
             resource_name = resource_name.substr(str_pos + 1);
         }
+        if(pack.find(_resource_dir) == 0) pack = pack.substr(_resource_dir.length());
         auto &cache = get_cache<Resource>();
         auto it_res = cache.find(pack + '/' + resource_name);
         if(it_res != cache.end())
@@ -99,7 +100,13 @@ public:
         auto it_pack = _resource_packs.find(pack);
         if(it_pack != _resource_packs.end())
         {
-            if(!it_pack->second.file.is_open())
+            bool file_is_open = it_pack->second.file.is_open();
+            std::streampos file_pos;
+            if(file_is_open)
+            {
+                file_pos = it_pack->second.file.tellg();
+            }
+            else
             {
                 it_pack->second.file.open(_resource_dir + '/' + pack + ".mtpck", std::ios::binary);
             }
@@ -116,16 +123,19 @@ public:
             }
             
             std::shared_ptr<Resource> resource;
-            str_pos = pack.find_last_of("\\/");
-            if(str_pos == std::string::npos)
+            str_pos = pack.find_last_of("\\/") + 1;
+            resource = std::make_shared<Resource>(_resource_dir + pack.substr(0, str_pos),
+                pack.substr(str_pos), it_pack->second.file, *this);
+
+            if(file_is_open)
             {
-                resource = std::make_shared<Resource>(it_pack->second.file, _resource_dir);
+                it_pack->second.file.seekg(file_pos);
             }
             else
             {
-                resource = std::make_shared<Resource>(it_pack->second.file,
-                    _resource_dir + pack.substr(0, str_pos + 1));
+                it_pack->second.file.close();
             }
+
 #ifndef FLAG_RELEASE
             if(!resource)
             {
@@ -139,7 +149,7 @@ public:
             return resource;
         }
 #ifndef FLAG_RELEASE
-        mtrs::util::mtrs_error("No package named \"", pack,"\" found");
+        if(pack != "null") mtrs::util::mtrs_error("No package named \"", pack,"\" found");
 #endif
         return std::shared_ptr<Resource>(nullptr);
     }

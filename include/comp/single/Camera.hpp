@@ -17,36 +17,39 @@
 #endif
 #include "comp/single/Window.hpp"
 
-#include "util/reactive/ReactiveStruct.hpp"
+#include "util/type/reactive/ReactiveStruct.hpp"
 
 namespace mtrs::comp
 {
 
 struct Camera : public Component<Camera>
 {
-    react::ReactiveStruct<glm::uvec2, 3> size_in_points;
-    react::ReactiveStruct<glm::uvec4, 1, glm::uvec2, glm::uvec2> viewport;
-    react::ReactiveStruct<glm::vec2, 1, glm::uvec2, glm::uvec4, glm::uvec2> point_scale;
-    
-    res::BufferObject UBO, ui_UBO;
+    friend struct Cursor;
+private:
+    res::BufferObject _UBO, _ui_UBO;
     struct {
         glm::mat4 proj;
         glm::mat4 view;
-    } matrices;
-    glm::mat4 ui_projection;
+    } _matrices;
+    glm::mat4 _ui_projection;
+
+public:
+    react::ReactiveStruct<glm::uvec2, 3> size_in_points;
+    react::ReactiveStruct<glm::uvec4, 1, glm::uvec2, glm::uvec2> viewport;
+    react::ReactiveStruct<glm::vec2, 1, glm::uvec2, glm::uvec4, glm::uvec2> point_scale;
 
     const glm::mat4 *target_matrix = nullptr;
 
     const glm::bvec2 fixed_sides;
 
     Camera() = delete;
-    ~Camera() = default;
     Camera(const Camera &) = delete;
     Camera &operator=(const Camera&) = delete;
     Camera(Camera&&) = delete;
     Camera &operator=(Camera&&) = delete;
-
+    
     Camera(Window *window, glm::bvec2 fixed_sides, glm::uvec2 size_in_points);
+    ~Camera() = default;
 
     void update_UBO();
 

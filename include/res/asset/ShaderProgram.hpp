@@ -3,18 +3,18 @@
 
 #include <glm/fwd.hpp>
 
-#include "res/asset/Asset.hpp"
+#include "res/Resource.hpp"
 
 namespace mtrs::res
 {
 
-class ShaderProgram : public Asset<ShaderProgram>
+class ShaderProgram : public Resource<ShaderProgram>
 {
     bool _is_compiled = false;
     uint32_t _ID = 0;
 
 public:
-    ShaderProgram(ASSET_ARGS);
+    ShaderProgram(RESOURCE_ARGS);
     ShaderProgram() = delete;
     ShaderProgram(const ShaderProgram&) = delete;
     ShaderProgram &operator=(const ShaderProgram&) = delete;
@@ -22,7 +22,7 @@ public:
     ShaderProgram &operator=(ShaderProgram &&other) noexcept;
     ~ShaderProgram();
 
-    static std::string get_type_name_imp() noexcept;
+    static const char *get_type_name_imp() noexcept;
     static uint32_t get_type_size_imp() noexcept;
 
     bool is_compiled() const noexcept;

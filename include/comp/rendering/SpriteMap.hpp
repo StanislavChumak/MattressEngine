@@ -2,7 +2,7 @@
 #define SPRITE_MAP_HPP
 
 #include "comp/Component.hpp"
-#include "res/asset/TextureAtlas.hpp"
+#include "res/render/SubTexture.hpp"
 
 #include "glm/vec4.hpp"
 
@@ -12,6 +12,7 @@ namespace mtrs::res
 {
     class Texture;
     class ShaderProgram;
+    class TextureAtlas;
 }
 
 namespace mtrs::comp
@@ -23,7 +24,7 @@ struct SpriteMap : public Component<SpriteMap>
     std::shared_ptr<res::Texture> texture;
     std::shared_ptr<res::TextureAtlas> atlas;
 
-    std::vector<res::TextureAtlas::SubTexture2D> cell_types;
+    std::vector<res::SubTexture> cell_types;
 
     struct MapCell
     {

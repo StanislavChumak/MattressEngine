@@ -40,7 +40,7 @@ namespace engine
         // Window
         glm::uvec2 size_in_points;
         unsigned int start_point_size = 1;
-        std::vector<std::string> icon_window;
+        std::vector<const char*> icon_window;
         float clear_color[4] = {0.2f, 0.0f, 0.3f, 1.f};
         bool display_cursor = true;
 

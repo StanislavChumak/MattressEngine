@@ -1,12 +1,12 @@
-#include "util/files/get_folder.hpp"
+#include "util/func/files/get_folder.hpp"
 
-#include "util/mtrs_message.hpp"
+#include "util/func/mtrs_message.hpp"
 
 #include <filesystem>
 
 namespace fs = std::filesystem;
 
-namespace mtrs::file
+namespace mtrs::util
 {
 
 std::unordered_set<std::string> get_files_from_folder(const std::string &dirPath, const std::string &extension)

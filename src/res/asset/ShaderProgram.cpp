@@ -4,13 +4,13 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "util/files/data_mtrs_file.hpp"
-#include "util/mtrs_message.hpp"
+#include "util/func/files/data_mtrs_file.hpp"
+#include "util/func/mtrs_message.hpp"
+
+#include <fstream>
 
 #include "dynamic_field.def"
 #include "res_struct/Shader.struct"
-
-#include <fstream>
 
 namespace mtrs::res
 {
@@ -56,15 +56,15 @@ bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &sh
     return true;
 }
 
-ShaderProgram::ShaderProgram(ASSET_ARGS)
+ShaderProgram::ShaderProgram(RESOURCE_ARGS)
 {
     Shader_rs shader;
     file.read(reinterpret_cast<char*>(&shader), sizeof(shader));
 
     std::string str_buffer;
 
-    file::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, vertex));
-    str_buffer = shader_path_to_string(dir_resource + std::move(str_buffer));
+    util::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, vertex));
+    str_buffer = shader_path_to_string(dir_pack + std::move(str_buffer));
 #ifndef FLAG_RELEASE
     if (str_buffer.empty())
     {
@@ -81,8 +81,8 @@ ShaderProgram::ShaderProgram(ASSET_ARGS)
 #endif
     }
     
-    file::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, fragment));
-    str_buffer = shader_path_to_string(dir_resource + std::move(str_buffer));
+    util::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, fragment));
+    str_buffer = shader_path_to_string(dir_pack + std::move(str_buffer));
 #ifndef FLAG_RELEASE
     if (str_buffer.empty())
     {
@@ -151,7 +151,7 @@ ShaderProgram::~ShaderProgram()
     glDeleteProgram(_ID);
 }
 
-std::string ShaderProgram::get_type_name_imp() noexcept
+const char *ShaderProgram::get_type_name_imp() noexcept
 {
     return "shaders";
 }

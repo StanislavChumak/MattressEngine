@@ -8,10 +8,7 @@ namespace mtrs::comp
 
 struct Audio : public Component<Audio>
 {
-    struct Impl;
-    Impl *impl;
-
-    void *ptr_engine();
+    struct Impl *impl;
 
     bool is_init = false;
 
@@ -22,13 +19,13 @@ struct Audio : public Component<Audio>
     bool cache_volume_dirty = false;
 
     Audio() = delete;
-    ~Audio();
     Audio(const Audio &) = delete;
     Audio &operator=(const Audio&) = delete;
     Audio(Audio&&) = delete;
     Audio &operator=(Audio&&) = delete;
-
+    
     Audio(void*);
+    ~Audio();
 };
 
 }

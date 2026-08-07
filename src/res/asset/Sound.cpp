@@ -2,8 +2,8 @@
 
 #include "miniaudio.h"
 
-#include "util/files/data_mtrs_file.hpp"
-#include "util/mtrs_message.hpp"
+#include "util/func/files/data_mtrs_file.hpp"
+#include "util/func/mtrs_message.hpp"
 
 #include <vector>
 
@@ -13,20 +13,20 @@
 namespace mtrs::res
 {
 
-struct Sound::Impl
+struct Impl
 {
     std::vector<ma_sound> sounds;
 };
 
-Sound::Sound(ASSET_ARGS)
+Sound::Sound(RESOURCE_ARGS)
 {
     Sound_sc sound;
     file.read(reinterpret_cast<char*>(&sound), sizeof(sound));
 
-    file::set_string_from_mtrs_file(file, _path, DYNAMIC_ARGS(sound, path));
-    _path = dir_resource + _path;
+    util::set_string_from_mtrs_file(file, _path, DYNAMIC_ARGS(sound, path));
+    _path = dir_pack + _path;
 
-    _impl = new Sound::Impl();
+    _impl = new Impl();
 
     _flag = 0;
     _flag |= (sound.flag & 1u) ? MA_SOUND_FLAG_LOOPING : 0;
@@ -79,9 +79,9 @@ Sound::~Sound()
     delete _impl;
 }
 
-std::string Sound::get_type_name_imp() noexcept
+const char *Sound::get_type_name_imp() noexcept
 {
-    return std::string("sounds");
+    return "sounds";
 }
 
 uint32_t Sound::get_type_size_imp() noexcept

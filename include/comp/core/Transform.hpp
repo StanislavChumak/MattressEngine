@@ -5,8 +5,8 @@
 #include "glm/mat4x4.hpp"
 #include "comp/Component.hpp"
 
-#include "util/reactive/ReactiveStruct.hpp"
-#include "util/reactive/ReactiveSet.hpp"
+#include "util/type/reactive/ReactiveStruct.hpp"
+#include "util/type/reactive/ReactiveSet.hpp"
 
 namespace mtrs::comp
 {

@@ -1,8 +1,6 @@
 #include "res/ResourceManager.hpp"
 
-#include "res/asset/RenderContext.hpp"
-
-#include "util/files/get_folder.hpp"
+#include "util/func/files/get_folder.hpp"
 #include "util/hash.hpp"
 
 namespace mtrs::res
@@ -10,17 +8,8 @@ namespace mtrs::res
 
 ResourceManager::ResourceManager(const std::string &executable_path,const std::string &resource_path)
 :_executable_path(executable_path), _resource_dir(resource_path)
-{    
-    std::ofstream system_file(resource_path + "system.mtpck", std::ios::binary);
-    system_file.seekp(0, std::ios::beg);
-    system_file.write("mtrspck", 8);
-    uint64_t offset = 32, id = HASH64(render_context);
-    system_file.write(reinterpret_cast<char*>(&id), sizeof(id));
-    system_file.write(reinterpret_cast<char*>(&offset), sizeof(offset));
-    system_file.write(reinterpret_cast<char*>(&id), sizeof(id));
-    system_file.close();
-
-    auto files = file::get_files_from_folder(_resource_dir, ".mtpck");
+{
+    auto files = util::get_files_from_folder(_resource_dir, ".mtpck");
     _resource_packs.reserve(files.size());
     _resource_pack_iters.reserve(files.size());
 

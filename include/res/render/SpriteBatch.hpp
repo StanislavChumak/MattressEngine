@@ -7,17 +7,12 @@
 #include "BufferObject.hpp"
 #include "VertexArrayObject.hpp"
 
-#include <map>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 
 namespace mtrs::res
 {
-
-class ShaderProgram;
-class Texture;
-
-class RenderContext;
 
 struct InstanceData
 {
@@ -40,15 +35,17 @@ class SpriteBatch
     GLsync _fences[BUFFER_COUNT] = {0};
     uint8_t _current_buffer_index = 0;
     
-    std::shared_ptr<const ShaderProgram> _shader;
-    std::shared_ptr<const Texture> _texture;
+    uint32_t _shader;
+    uint32_t _texture;
+    uint64_t _max_instances;
     
 public:
-    std::map<float, std::vector<InstanceData>> instances;
+    std::unordered_map<float, std::vector<InstanceData>> instances;
+    std::vector<float> layers;
 
     SpriteBatch() = delete;
     SpriteBatch(const BufferObject &quad_VBO, const BufferObject &quad_EBO,
-        std::shared_ptr<const ShaderProgram> shader, std::shared_ptr<const Texture> texture);
+        uint32_t shader, uint32_t texture, uint64_t max_instances);
     SpriteBatch(const SpriteBatch&) = delete;
     SpriteBatch &operator=(const SpriteBatch&) = delete;
     SpriteBatch(SpriteBatch &&other) noexcept;
@@ -56,9 +53,8 @@ public:
     ~SpriteBatch() noexcept;
 
     void begin_batch();
-    void draw_instances(const std::vector<InstanceData> &instances);
+    void draw_layer(float layer);
     void end_batch();
-    void flush();
 };
 
 }

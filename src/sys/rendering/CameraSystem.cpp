@@ -5,8 +5,7 @@
 
 namespace mtrs::sys
 {
-
-    comp::Camera *CameraSystem::camera;
+comp::Camera *CameraSystem::camera;
 
 void CameraSystem::update_imp(comp::ECSWorld &world, const double &delta)
 {

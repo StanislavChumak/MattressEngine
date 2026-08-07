@@ -1,7 +1,7 @@
 #include "comp/rendering/StateAnimator.hpp"
 
-#include "util/files/data_mtrs_file.hpp"
-#include "util/mtrs_message.hpp"
+#include "util/func/files/data_mtrs_file.hpp"
+#include "util/func/mtrs_message.hpp"
 #include "util/hash.hpp"
 
 #include <fstream>
@@ -24,7 +24,7 @@ StateAnimator::StateAnimator(COMPONENT_ARGS)
     current_state.first = 0;
 
     std::vector<StateAnimator_sc::State> buffer;
-    file::set_array_from_mtrs_file(file, buffer, DYNAMIC_ARGS(state_anim, states));
+    util::set_array_from_mtrs_file(file, buffer, DYNAMIC_ARGS(state_anim, states));
 
     for(auto &state : buffer)
     {

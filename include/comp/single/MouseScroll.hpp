@@ -17,13 +17,13 @@ struct MouseScroll : public Component<MouseScroll>
     std::vector<void(*)()> subscribers;
 
     MouseScroll() = delete;
-    ~MouseScroll() = default;
     MouseScroll(const MouseScroll&) = delete;
     MouseScroll &operator=(const MouseScroll&) = delete;
     MouseScroll(MouseScroll&&) = delete;
     MouseScroll &operator=(MouseScroll&&) = delete;
     
     MouseScroll(void*);
+    ~MouseScroll() = default;
 
     void subscribe(void(*callback)());
     void unsubscribe(void(*callback)());

@@ -1,6 +1,6 @@
 #include "comp/rendering/MapAnimator.hpp"
 
-#include "util/files/data_mtrs_file.hpp"
+#include "util/func/files/data_mtrs_file.hpp"
 
 #include <fstream>
 
@@ -16,7 +16,7 @@ MapAnimator::MapAnimator(COMPONENT_ARGS)
     file.read(reinterpret_cast<char*>(&map_animator), sizeof(map_animator));
 
     std::vector<MapAnimator_sc::Range> ranges;
-    file::set_array_from_mtrs_file(file, ranges, DYNAMIC_ARGS(map_animator, ranges));
+    util::set_array_from_mtrs_file(file, ranges, DYNAMIC_ARGS(map_animator, ranges));
     cell_animators.resize(ranges.size());
     auto iter = cell_animators.begin();
     for(auto &range : ranges)
@@ -26,7 +26,7 @@ MapAnimator::MapAnimator(COMPONENT_ARGS)
         iter++;
     }
     
-    file::set_array_from_mtrs_file(file, durations, DYNAMIC_ARGS(map_animator, durations));
+    util::set_array_from_mtrs_file(file, durations, DYNAMIC_ARGS(map_animator, durations));
 }
 
 }

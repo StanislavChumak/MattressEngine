@@ -4,29 +4,29 @@
 #define  STBI_ONLY_JPEG
 #include "stb_image.h"
 
-#include "util/mtrs_message.hpp"
+#include "util/func/mtrs_message.hpp"
 
 namespace mtrs::comp
 {
 
 Window::Window(const glm::uvec2 &size, const char *name)
 : size(size), name(name)
-, monitor(glfwGetPrimaryMonitor())
-, mode(glfwGetVideoMode(monitor))
-, buffer_position(0)
+, _monitor(glfwGetPrimaryMonitor())
+, _mode(glfwGetVideoMode(_monitor))
+, _buffer_position(0)
 {
 
 }
 
-void Window::set_icon()
+void Window::set_icon(const char *const *paths, uint64_t count)
 {
-    GLFWimage icon_window[icon.size()];
+    GLFWimage icon_window[count];
 
     int channels;
-    for(size_t i = 0; i < icon.size(); i++)
+    for(size_t i = 0; i < count; i++)
     {
-        auto s = icon[i].substr(icon[i].length()-4);
-        if(icon[i].substr(icon[i].length()-4) == ".png")
+        auto s = std::string(paths[i]);
+        if(s.substr(s.length() - 4) == ".png")
         {
             channels = 4;
         }
@@ -34,17 +34,18 @@ void Window::set_icon()
         {
             channels = 3;
         }
-        icon_window[i].pixels = stbi_load(icon[i].c_str(), &icon_window[i].width, &icon_window[i].height, &channels, 0);
+        icon_window[i].pixels = stbi_load(paths[i],
+            &icon_window[i].width, &icon_window[i].height, &channels, 0);
 #ifndef FLAG_RELEASE
         if(!icon_window[i].pixels)
         {
-            util::mtrs_error("Failed to load icon: ", icon[i]);
+            util::mtrs_error("Failed to load icon: ", paths[i]);
             return;
         }
 #endif
     }
 
-    glfwSetWindowIcon(poiter, icon.size(), icon_window);
+    glfwSetWindowIcon(poiter, count, icon_window);
     for(auto &icon : icon_window)
     {
         stbi_image_free(icon.pixels);
@@ -60,14 +61,14 @@ void Window::set_full_screen(bool is_full_screen)
 {
     if(is_full_screen)
     {
-        glfwGetWindowPos(poiter, &buffer_position.x, &buffer_position.y);
-        glfwGetWindowSize(poiter, &buffer_size.x, &buffer_size.y);
-        glfwSetWindowMonitor(poiter, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        glfwGetWindowPos(poiter, &_buffer_position.x, &_buffer_position.y);
+        glfwGetWindowSize(poiter, &_buffer_size.x, &_buffer_size.y);
+        glfwSetWindowMonitor(poiter, _monitor, 0, 0, _mode->width, _mode->height, _mode->refreshRate);
     }
     else
     {
-        glfwSetWindowMonitor(poiter, NULL, buffer_position.x, buffer_position.y,
-            buffer_size.x, buffer_size.y, GLFW_DONT_CARE);
+        glfwSetWindowMonitor(poiter, NULL, _buffer_position.x, _buffer_position.y,
+            _buffer_size.x, _buffer_size.y, GLFW_DONT_CARE);
     }
 }
 

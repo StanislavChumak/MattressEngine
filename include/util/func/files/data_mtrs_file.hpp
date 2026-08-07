@@ -8,7 +8,7 @@
 
 #define DYNAMIC_ARGS(struct, field) (struct).field##_offset, (struct).field##_size 
 
-namespace mtrs::file
+namespace mtrs::util
 {
 
 void set_string_from_mtrs_file(std::ifstream &file, std::string &dest, uint32_t offset, uint32_t size);

@@ -2,7 +2,7 @@
 
 #include "glad/glad.h"
 
-#include "util/mtrs_message.hpp"
+#include "util/func/mtrs_message.hpp"
 
 namespace mtrs::res
 {

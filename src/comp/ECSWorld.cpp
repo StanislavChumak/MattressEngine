@@ -12,11 +12,14 @@
 #include "comp/rendering/SpriteMap.hpp"
 #include "comp/rendering/MapAnimator.hpp"
 
+#include "comp/ui/Label.hpp"
+
 #include "comp/audio/SoundPlayer.hpp"
 
 #include "comp/single/Window.hpp"
 #include "comp/single/Camera.hpp"
 #include "comp/single/States.hpp"
+#include "comp/single/GlyphDecoder.hpp"
 #include "comp/single/Audio.hpp"
 #include "comp/single/Listener.hpp"
 #include "comp/single/Cursor.hpp"
@@ -24,8 +27,8 @@
 #include "comp/single/MouseButtons.hpp"
 #include "comp/single/MouseScroll.hpp"
 
-#include "util/files/get_folder.hpp"
-#include "util/mtrs_message.hpp"
+#include "util/func/files/get_folder.hpp"
+#include "util/func/mtrs_message.hpp"
 #include "util/hash.hpp"
 
 #include "comp_struct/comp_type.def"
@@ -34,6 +37,7 @@
 X(Window)\
 X(Camera)\
 X(States)\
+X(GlyphDecoder)\
 X(Audio)\
 X(Listener)\
 X(Cursor)\
@@ -49,7 +53,7 @@ namespace mtrs::comp
 ECSWorld::ECSWorld(const std::string &executable_path,const std::string &scenes_path)
 : _scenes_path(scenes_path)
 {
-    auto files = file::get_files_from_folder(scenes_path, ".mtscn");
+    auto files = util::get_files_from_folder(scenes_path, ".mtscn");
     _scenes.reserve(files.size());
     std::string name;
     for(auto &file : files)

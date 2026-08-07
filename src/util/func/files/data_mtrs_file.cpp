@@ -1,6 +1,6 @@
-#include "util/files/data_mtrs_file.hpp"
+#include "util/func/files/data_mtrs_file.hpp"
 
-namespace mtrs::file
+namespace mtrs::util
 {
 
 std::string get_string_from_mtrs_file(std::ifstream &file, uint32_t offset, uint32_t size)

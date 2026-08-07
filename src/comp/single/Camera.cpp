@@ -45,36 +45,36 @@ namespace mtrs::comp
             });
         }
 
-        UBO.init(GL_UNIFORM_BUFFER, &matrices, sizeof(matrices), GL_DYNAMIC_DRAW);
-        UBO.bind_base(0);
+        _UBO.init(GL_UNIFORM_BUFFER, &_matrices, sizeof(_matrices), GL_DYNAMIC_DRAW);
+        _UBO.bind_base(0);
 
-        ui_UBO.init(GL_UNIFORM_BUFFER, &ui_projection, sizeof(ui_projection), GL_DYNAMIC_DRAW);
-        ui_UBO.bind_base(1);
+        _ui_UBO.init(GL_UNIFORM_BUFFER, &_ui_projection, sizeof(_ui_projection), GL_DYNAMIC_DRAW);
+        _ui_UBO.bind_base(1);
 
-        matrices.view = glm::mat4{1.f};
+        _matrices.view = glm::mat4{1.f};
 
         update_proj_matrix();
     }
 
     void Camera::update_UBO()
     {
-        UBO.update(&matrices, sizeof(matrices), 0);
-        ui_UBO.update(&ui_projection, sizeof(ui_projection), 0);
+        _UBO.update(&_matrices, sizeof(_matrices), 0);
+        _ui_UBO.update(&_ui_projection, sizeof(_ui_projection), 0);
     }
 
     void Camera::update_proj_matrix()
     {
         const glm::uvec2 &pnts_sz = size_in_points.get();
-        matrices.proj = glm::ortho(pnts_sz.x * -0.5f, pnts_sz.x * 0.5f,
+        _matrices.proj = glm::ortho(pnts_sz.x * -0.5f, pnts_sz.x * 0.5f,
             pnts_sz.y * -0.5f, pnts_sz.y * 0.5f, -100.f, 100.f);
-        ui_projection = glm::ortho(0.f, (float)pnts_sz.x,
+        _ui_projection = glm::ortho(0.f, (float)pnts_sz.x,
             (float)pnts_sz.y, 0.f, -100.f, 100.f);
         update_UBO();
     }
 
     void Camera::update_view_matrix()
     {
-        matrices.view = glm::inverse(*target_matrix);
-        UBO.update(&matrices, sizeof(matrices), 0);
+        _matrices.view = glm::inverse(*target_matrix);
+        _UBO.update(&_matrices, sizeof(_matrices), 0);
     }
 }
