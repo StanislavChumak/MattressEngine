@@ -2,7 +2,7 @@
 #define ENGINE_API_HPP
 
 #ifdef SCRIPT
-    #include "util/func/mtrs_message.hpp"
+    #include "util/fun/msg/mtrs_message.hpp"
 #else
     #include <cstdint>
 #endif
@@ -42,7 +42,7 @@ namespace mtrs::res
     struct Text;
 };
 
-namespace mtrs::util
+namespace mtrs::msg
 {
     enum class TypeMessage;
 }
@@ -56,7 +56,7 @@ namespace mtrs
         const char *scene;
 
         // util
-        void (*message)(mtrs::util::TypeMessage, const char *) = nullptr;
+        void (*message)(mtrs::msg::TypeMessage, const char *) = nullptr;
 
         // ECSWorld
         void *(*world_single_comp)(comp::ECSWorld*, const char *) = nullptr;
@@ -155,7 +155,7 @@ namespace mtrs
 }
 
 
-namespace mtrs::util::detail
+namespace mtrs::msg::detail
 {
 
 void show_message(TypeMessage tmsg, std::string&& message)

@@ -14,8 +14,8 @@
 #include "sys/rendering/MapAnimatorSystem.hpp"
 #include "sys/rendering/TextSubmitSystem.hpp"
 
-#include "util/hash.hpp"
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/math/hash.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 
 #include <algorithm>
 
@@ -25,8 +25,8 @@ namespace mtrs::sys
 SystemManager::SystemManager()
 : _cache_dirty(true)
 {
-#define UPDATE_SYSTEM(System) {HASH64S(System::get_system_name()), \
-    {System::get_prioritet(), System::update}}
+#define UPDATE_SYSTEM(System) { math::hash64(System::get_system_name()), \
+    {System::get_prioritet(), System::update} }
     
     _updates = {
         UPDATE_SYSTEM(InputSystem),

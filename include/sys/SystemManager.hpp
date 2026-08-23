@@ -2,7 +2,7 @@
 #define SYSTEM_MANAGER_HPP
 
 #include "System.hpp"
-#include "util/hash.hpp"
+#include "util/fun/math/hash.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -43,11 +43,11 @@ public:
     }
 
     template<typename System> void turn_on_system()
-    { turn_on_system(HASH64S(System::get_system_name())); }
+    { turn_on_system(math::hash64(System::get_system_name())); }
     template<typename System> void turn_off_system()
-    { turn_off_system(HASH64S(System::get_system_name())); }
+    { turn_off_system(math::hash64(System::get_system_name())); }
     template<typename System> bool is_turn_on_system()
-    { return is_turn_on_system(HASH64S(System::get_system_name())); }
+    { return is_turn_on_system(math::hash64(System::get_system_name())); }
 };
 
 }

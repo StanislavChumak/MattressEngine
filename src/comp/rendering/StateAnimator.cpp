@@ -1,34 +1,32 @@
 #include "comp/rendering/StateAnimator.hpp"
 
-#include "util/func/files/data_mtrs_file.hpp"
-#include "util/func/mtrs_message.hpp"
-#include "util/hash.hpp"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/fun/math/hash.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
+#include "util/type/prs/comp/StateAnimator.hpp"
 
 #include <fstream>
 #include <vector>
-
-#include "dynamic_field.def"
-#include "comp_struct/StateAnimator.struct"
 
 namespace mtrs::comp
 {
 
 StateAnimator::StateAnimator(COMPONENT_ARGS)
 {
-    StateAnimator_sc state_anim;
+    prs::StateAnimator state_anim;
     file.read(reinterpret_cast<char*>(&state_anim), sizeof(state_anim));
 
-    size_t count = state_anim.states_size / sizeof(StateAnimator_sc::State);
+    size_t count = state_anim.states_size / sizeof(prs::StateAnimator::State);
     states.reserve(count);
 
     current_state.first = 0;
 
-    std::vector<StateAnimator_sc::State> buffer;
-    util::set_array_from_mtrs_file(file, buffer, DYNAMIC_ARGS(state_anim, states));
+    std::vector<prs::StateAnimator::State> buffer;
+    prs::set_mtrs_to_var(file, buffer, DEFERRED_ARGS(state_anim, states));
 
     for(auto &state : buffer)
     {
-        uint32_t id = state.id_state;
+        uint32_t id = state.id;
         states.emplace(id, State{state.offset, state.count});
         if(current_state.first == 0) current_state.first = id; 
     }
@@ -37,14 +35,14 @@ StateAnimator::StateAnimator(COMPONENT_ARGS)
 void StateAnimator::set_state(std::string state)
 {
 #ifndef FLAG_RELEASE
-    auto iter = states.find(util::hash_string<uint32_t>(state));
+    auto iter = states.find(math::hash32(state));
     if(iter == states.end())
     {
-        util::mtrs_error("Animator does not have a state named: ", state);
+        msg::mtrs_error("Animator does not have a state named: ", state);
         return;
     }
 #endif
-    current_state.first = util::hash_string<uint32_t>(state);
+    current_state.first = math::hash32(state);
     current_state.second = state;
     dirty = true;
 }

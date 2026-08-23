@@ -5,7 +5,7 @@
 
 #include "comp/single/Camera.hpp"
 
-#include "util/type/reactive/ReactiveValue.hpp"
+#include "util/type/react/ReactiveValue.hpp"
 
 namespace mtrs::comp
 {

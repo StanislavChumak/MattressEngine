@@ -13,7 +13,7 @@
 
 #include "comp/Component.hpp"
 
-#include "util/type/reactive/ReactiveStruct.hpp"
+#include "util/type/react/ReactiveStruct.hpp"
 
 #include "glm/vec2.hpp"
 

@@ -2,9 +2,9 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 
-#include <fstream>
+#include "util/type/prs/comp/Transform.hpp"
 
-#include "comp_struct/Transform.struct"
+#include <fstream>
 
 namespace mtrs::comp
 {
@@ -18,7 +18,7 @@ Transform::Transform(COMPONENT_ARGS)
         return m;
     }, &position, &scale_size, &rotation, nullptr)
 {
-    Trancform_sc transform;
+    prs::Transform transform;
     file.read(reinterpret_cast<char*>(&transform), sizeof(transform));
     position.set({transform.pos_x, transform.pos_y});
     scale_size.set({transform.scale_size_x, transform.scale_size_y});

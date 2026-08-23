@@ -4,9 +4,7 @@
 
 #include <cstring>
 
-#ifndef FLAG_RELEASE
-    #include "util/func/mtrs_message.hpp"
-#endif
+#include "util/fun/msg/mtrs_message.hpp"
 
 namespace mtrs::res
 {
@@ -101,7 +99,7 @@ void SpriteBatch::begin_batch()
 #ifndef FLAG_RELEASE
     if(instances.size() > _max_instances)
     {
-        util::mtrs_warning("The number of instances is ", instances.size(),
+        msg::mtrs_warning("The number of instances is ", instances.size(),
             ", which has exceeded the MAX_INSTANCES limit of ", _max_instances,
             " in the SpriteBatch resource.");
     }

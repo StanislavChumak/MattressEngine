@@ -3,13 +3,11 @@
 #include "res/ResourceManager.hpp"
 #include "res/asset/Texture.hpp"
 
-#include "util/func/files/data_mtrs_file.hpp"
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
+#include "util/type/prs/res/TextureAtlas.hpp"
 
 #include <fstream>
-
-#include "dynamic_field.def"
-#include "res_struct/TextureAtlas.struct"
 
 namespace mtrs::res
 {
@@ -100,11 +98,11 @@ std::vector<SubTexture> get_spiral_atlas(glm::uvec2 size, glm::uvec2 sub_size)
 
 TextureAtlas::TextureAtlas(RESOURCE_ARGS)
 {
-    TextureAtlas_rs atlas;
+    prs::TextureAtlas atlas;
     file.read(reinterpret_cast<char*>(&atlas), sizeof(atlas));
 
     std::string texture_name;
-    util::set_string_from_mtrs_file(file, texture_name, DYNAMIC_ARGS(atlas, texture));
+    prs::set_mtrs_to_var(file, texture_name, DEFERRED_ARGS(atlas, texture));
     auto texture = resources.get_resource<Texture>(dir_pack + pack, texture_name);
 
     if(atlas.spirality)
@@ -147,7 +145,7 @@ const char *TextureAtlas::get_type_name_imp() noexcept
 
 uint32_t TextureAtlas::get_type_size_imp() noexcept
 {
-    return sizeof(TextureAtlas_rs);
+    return sizeof(prs::TextureAtlas);
 }
 
 SubTexture TextureAtlas::get_sub_texture(const size_t index) const
@@ -155,7 +153,7 @@ SubTexture TextureAtlas::get_sub_texture(const size_t index) const
 #ifndef FLAG_RELEASE
     if (index >= _atlas.size())
     {
-        util::mtrs_error("Fatal find subTexture \"", index , "\"");
+        msg::mtrs_error("Fatal find subTexture \"", index , "\"");
         return _atlas[0];
     }
 #endif

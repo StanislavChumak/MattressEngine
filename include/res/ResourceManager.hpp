@@ -1,7 +1,7 @@
 #ifndef RESOURCE_MANAGER_HPP
 #define RESOURCE_MANAGER_HPP
 
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 
 #include <unordered_map>
 #include <memory>
@@ -117,7 +117,7 @@ public:
             if(!move_to_resource(it_pack->second.file, resource_name, res_type_name, res_type_size))
             {
 #ifndef FLAG_RELEASE
-                util::mtrs_error("from resource pack (", pack, ")");
+                msg::mtrs_error("from resource pack (", pack, ")");
                 return std::shared_ptr<Resource>(nullptr);
 #endif
             }
@@ -139,7 +139,7 @@ public:
 #ifndef FLAG_RELEASE
             if(!resource)
             {
-                util::mtrs_error("failed to initialize resource (", res_type_name, ": ",
+                msg::mtrs_error("failed to initialize resource (", res_type_name, ": ",
                     resource_name, ") from resource pack (", pack, ")");
                 return std::shared_ptr<Resource>(nullptr);
             }
@@ -149,7 +149,7 @@ public:
             return resource;
         }
 #ifndef FLAG_RELEASE
-        if(pack != "null") mtrs::util::mtrs_error("No package named \"", pack,"\" found");
+        if(pack != "null") msg::mtrs_error("No package named \"", pack,"\" found");
 #endif
         return std::shared_ptr<Resource>(nullptr);
     }

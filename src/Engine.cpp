@@ -21,7 +21,7 @@
 #include "sys/rendering/TextSubmitSystem.hpp"
 #include "sys/rendering/CameraSystem.hpp"
 
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 
 #include <thread>
 
@@ -35,14 +35,14 @@ Core::Core(const Config& config)
 #ifndef FLAG_RELEASE
     if(!config.fixed_horizontal && !config.fixed_vertical)
     {
-        util::mtrs_error("Only one side can be non-fixed, correct the configuration");
+        msg::mtrs_error("Only one side can be non-fixed, correct the configuration");
     }
 #endif
 
     if (!glfwInit())
     {
 #ifndef FLAG_RELEASE
-        util::mtrs_error("Failed GLFW init");
+        msg::mtrs_error("Failed GLFW init");
         _is_init = false;
 #endif
     }
@@ -63,7 +63,7 @@ Core::Core(const Config& config)
 
         if (description)
         {
-            util::mtrs_error("Failed to create GLFW window: ", code);
+            msg::mtrs_error("Failed to create GLFW window: ", code);
         }
         
         glfwTerminate();
@@ -83,7 +83,7 @@ Core::Core(const Config& config)
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
 #ifndef FLAG_RELEASE
-        util::mtrs_error("Couidn't load opengl");
+        msg::mtrs_error("Couidn't load opengl");
         glfwTerminate();
         _is_init = false;
 #endif
@@ -100,9 +100,9 @@ Core::Core(const Config& config)
     _scroll = world.single_comp<comp::MouseScroll>(nullptr);
 
 #ifndef FLAG_RELEASE
-    util::mtrs_info("Renderer: ", glGetString(GL_RENDERER));
-    util::mtrs_info("OpenGL version: ", glGetString(GL_VERSION));
-    util::mtrs_info("GLSL Version: ", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    msg::mtrs_info("Renderer: ", glGetString(GL_RENDERER));
+    msg::mtrs_info("OpenGL version: ", glGetString(GL_VERSION));
+    msg::mtrs_info("GLSL Version: ", glGetString(GL_SHADING_LANGUAGE_VERSION));
 #endif
 
     comp::Audio *audio = world.single_comp<comp::Audio>(nullptr);
@@ -112,7 +112,7 @@ Core::Core(const Config& config)
 #ifndef FLAG_RELEASE
         if(!audio->is_init)
         {
-            util::mtrs_error("Failed to init sound engine");
+            msg::mtrs_error("Failed to init sound engine");
             glfwTerminate();
             _is_init = false;
         }
@@ -148,7 +148,7 @@ Core::Core(const Config& config)
 #ifndef FLAG_RELEASE
     if(config.start_scene == "")
     {
-        util::mtrs_warning("You need to select the starting scene ",
+        msg::mtrs_warning("You need to select the starting scene ",
             "in the configuration via the \"start_scene\" parameter");
     }
     else

@@ -4,7 +4,7 @@
 #include "res/asset/Font.hpp"
 
 #ifndef FLAG_RELEASE
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 #endif
 
 namespace mtrs::comp
@@ -42,7 +42,7 @@ std::pair<const std::string&, const res::Glyph&> GlyphDecoder::glyph(char32_t sy
 #ifndef FLAG_RELEASE
     if(iter == _glyph_map.end())
     {
-        util::mtrs_error("GlyphDecoder doesn't have a single Font",
+        msg::mtrs_error("GlyphDecoder doesn't have a single Font",
             "that represents a character with Unicode ", (uint32_t)symbol);
     }
 #endif

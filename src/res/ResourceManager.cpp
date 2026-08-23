@@ -1,7 +1,7 @@
 #include "res/ResourceManager.hpp"
 
-#include "util/func/files/get_folder.hpp"
-#include "util/hash.hpp"
+#include "util/fun/fs/get_folder.hpp"
+#include "util/fun/math/hash.hpp"
 
 namespace mtrs::res
 {
@@ -9,7 +9,7 @@ namespace mtrs::res
 ResourceManager::ResourceManager(const std::string &executable_path,const std::string &resource_path)
 :_executable_path(executable_path), _resource_dir(resource_path)
 {
-    auto files = util::get_files_from_folder(_resource_dir, ".mtpck");
+    auto files = fs::get_files_from_folder(_resource_dir, ".mtpck");
     _resource_packs.reserve(files.size());
     _resource_pack_iters.reserve(files.size());
 
@@ -50,8 +50,8 @@ ResourceManager::~ResourceManager()
 bool ResourceManager::move_to_resource(std::ifstream &file, const std::string &res_name,
         const std::string &res_type_name, uint32_t res_type_size)
 {
-    uint64_t res_type_id = util::hash_string<uint64_t>(res_type_name);
-    uint64_t res_id = util::hash_string<uint64_t>(res_name);
+    uint64_t res_type_id = math::hash64(res_type_name);
+    uint64_t res_id = math::hash64(res_name);
 
     uint64_t id = 0, offset = 8;
     while(!file.eof())
@@ -76,7 +76,7 @@ bool ResourceManager::move_to_resource(std::ifstream &file, const std::string &r
         file.seekg(res_type_size, std::ios::cur);
     }
 #ifndef FLAG_RELEASE
-    util::mtrs_error("Failed to find resource (",res_type_name, ": ", res_name,")");
+    msg::mtrs_error("Failed to find resource (",res_type_name, ": ", res_name,")");
 #endif
     file.close();
     return false;

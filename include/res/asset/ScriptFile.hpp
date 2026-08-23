@@ -3,7 +3,7 @@
 
 #include "res/Resource.hpp"
 
-#include "util/func/files/load_external_lib.hpp"
+#include "util/fun/fs/load_external_lib.hpp"
 #include "script/engine_api.hpp"
 
 namespace mtrs::res
@@ -13,7 +13,7 @@ class ResourceManager;
 class ScriptFile : public Resource<ScriptFile>
 {
     EngineAPI _api;
-    util::LibHandle _handle = nullptr;
+    fs::LibHandle _handle = nullptr;
     void (*_on_load)(mtrs::comp::EntityID, EngineAPI*) = nullptr;
     void (*_on_unload)() = nullptr;
 

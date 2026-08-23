@@ -4,11 +4,10 @@
 #include "res/render/SubTexture.hpp"
 #include "res/asset/Texture.hpp"
 
-#include "util/func/files/data_mtrs_file.hpp"
-#include "util/func/text/utf8_to_utf32.hpp"
-
-#include "dynamic_field.def"
-#include "res_struct/Font.struct"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
+#include "util/fun/str/utf8_to_utf32.hpp"
+#include "util/type/prs/res/Font.hpp"
 
 #include <fstream>
 
@@ -17,18 +16,18 @@ namespace mtrs::res
 
 Font::Font(RESOURCE_ARGS)
 {
-    Font_sc font;
+    prs::Font font;
     file.read(reinterpret_cast<char*>(&font), sizeof(font));
 
     std::string str_buffer;
 
-    util::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(font, texture));
+    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(font, texture));
     texture = resources.get_resource<Texture>(dir_pack + pack, std::move(str_buffer));
 
-    util::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(font, symbols));
-    _symbols = util::utf8_to_utf32(std::move(str_buffer));
+    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(font, symbols));
+    _symbols = str::utf8_to_utf32(std::move(str_buffer));
 
-    util::set_array_from_mtrs_file(file, _symbol_widths, DYNAMIC_ARGS(font, symbol_widths));
+    prs::set_mtrs_to_var(file, _symbol_widths, DEFERRED_ARGS(font, symbol_widths));
 
     _symbol_height = font.symbol_height;
 }
@@ -60,7 +59,7 @@ const char *Font::get_type_name_imp() noexcept
 
 uint32_t Font::get_type_size_imp() noexcept
 {
-    return sizeof(Font_sc);
+    return sizeof(prs::Font);
 }
 
 Font::Iterator::Iterator(const std::shared_ptr<Texture> &texture, const std::u32string &symbols,

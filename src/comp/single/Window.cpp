@@ -4,7 +4,7 @@
 #define  STBI_ONLY_JPEG
 #include "stb_image.h"
 
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 
 namespace mtrs::comp
 {
@@ -39,7 +39,7 @@ void Window::set_icon(const char *const *paths, uint64_t count)
 #ifndef FLAG_RELEASE
         if(!icon_window[i].pixels)
         {
-            util::mtrs_error("Failed to load icon: ", paths[i]);
+            msg::mtrs_error("Failed to load icon: ", paths[i]);
             return;
         }
 #endif

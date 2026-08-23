@@ -7,24 +7,22 @@
 #define  STBI_ONLY_JPEG
 #include "stb_image.h"
 
-#include "util/func/files/data_mtrs_file.hpp"
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/type/prs/res/Texture.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 
 #include <fstream>
-
-#include "dynamic_field.def"
-#include "res_struct/Texture.struct"
 
 namespace mtrs::res
 {
 
 Texture::Texture(RESOURCE_ARGS)
 {
-    Texture_rs texture;
+    prs::Texture texture;
     file.read(reinterpret_cast<char*>(&texture), sizeof(texture));
     
     std::string path;
-    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(texture, path));
+    prs::set_mtrs_to_var(file, path, DEFERRED_ARGS(texture, path));
     path = dir_pack + path;
 
     _max_instances = texture.max_instances;
@@ -42,7 +40,7 @@ Texture::Texture(RESOURCE_ARGS)
 #ifndef FLAG_RELEASE
     if (!pixels)
     {
-        util::mtrs_error("Failed to load texture: ", path);
+        msg::mtrs_error("Failed to load texture: ", path);
         return;
     }
 #endif
@@ -78,19 +76,20 @@ Texture::Texture(Texture &&other) noexcept
     _width = other._width;
     _height = other._height;
     _number = other._number;
+    _max_instances = other._max_instances;
 }
 
 Texture &Texture::operator=(Texture &&other) noexcept
 {
     if(this != &other)
     {
-        glDeleteTextures(1, &_ID);
         _ID = other._ID;
         other._ID = 0;
         _mode = other._mode;
         _width = other._width;
         _height = other._height;
         _number = other._number;
+        _max_instances = other._max_instances;
     }
     return *this;
 }
@@ -107,7 +106,7 @@ const char *Texture::get_type_name_imp() noexcept
 
 uint32_t Texture::get_type_size_imp() noexcept
 {
-    return sizeof(Texture_rs);
+    return sizeof(prs::Texture);
 }
 
 void Texture::bind() const

@@ -2,7 +2,7 @@
 
 #include "glad/glad.h"
 
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 
 namespace mtrs::res
 {
@@ -51,7 +51,7 @@ void BufferObject::update(const void *data, const int64_t size, const int64_t of
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_error("Attempt to update uninitialized buffer");
+        msg::mtrs_error("Attempt to update uninitialized buffer");
         return;
     }
 #endif
@@ -63,7 +63,7 @@ void BufferObject::bind() const
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_error("Attempt to bind uninitialized buffer");
+        msg::mtrs_error("Attempt to bind uninitialized buffer");
         return;
     }
 #endif
@@ -75,7 +75,7 @@ void BufferObject::bind_base(const uint32_t index)
 #ifndef FLAG_RELEASE
     if (_id == 0)
     {
-        util::mtrs_error("Attempt to update uninitialized buffer");
+        msg::mtrs_error("Attempt to update uninitialized buffer");
         return;
     }
 #endif

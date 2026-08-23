@@ -17,7 +17,7 @@
 #endif
 #include "comp/single/Window.hpp"
 
-#include "util/type/reactive/ReactiveStruct.hpp"
+#include "util/type/react/ReactiveStruct.hpp"
 
 namespace mtrs::comp
 {

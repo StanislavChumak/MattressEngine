@@ -2,13 +2,11 @@
 
 #include "miniaudio.h"
 
-#include "util/func/files/data_mtrs_file.hpp"
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
+#include "util/type/prs/res/Sound.hpp"
 
 #include <vector>
-
-#include "dynamic_field.def"
-#include "res_struct/Sound.struct"
 
 namespace mtrs::res
 {
@@ -20,10 +18,10 @@ struct Impl
 
 Sound::Sound(RESOURCE_ARGS)
 {
-    Sound_sc sound;
+    prs::Sound sound;
     file.read(reinterpret_cast<char*>(&sound), sizeof(sound));
 
-    util::set_string_from_mtrs_file(file, _path, DYNAMIC_ARGS(sound, path));
+    prs::set_mtrs_to_var(file, _path, DEFERRED_ARGS(sound, path));
     _path = dir_pack + _path;
 
     _impl = new Impl();
@@ -86,7 +84,7 @@ const char *Sound::get_type_name_imp() noexcept
 
 uint32_t Sound::get_type_size_imp() noexcept
 {
-    return sizeof(Sound_sc);
+    return sizeof(prs::Sound);
 }
 
 bool Sound::init(void *audio_engine)
@@ -102,7 +100,7 @@ bool Sound::init(void *audio_engine)
 #ifndef FLAG_RELEASE
         if(result != MA_SUCCESS)
         {
-            util::mtrs_error("Failed init sould to path ", _path, " ", result);
+            msg::mtrs_error("Failed init sould to path ", _path, " ", result);
         }
 #endif
     }

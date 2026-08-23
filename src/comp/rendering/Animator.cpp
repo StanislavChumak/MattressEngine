@@ -1,21 +1,19 @@
 #include "comp/rendering/Animator.hpp"
 
-#include "util/func/files/data_mtrs_file.hpp"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/type/prs/comp/Animator.hpp"
 
 #include <fstream>
-
-#include "dynamic_field.def"
-#include "comp_struct/Animator.struct"
 
 namespace mtrs::comp
 {
 
 Animator::Animator(COMPONENT_ARGS)
 {
-    Animator_sc animator;
+    prs::Animator animator;
     file.read(reinterpret_cast<char*>(&animator), sizeof(animator));
 
-    util::set_array_from_mtrs_file(file, durations, DYNAMIC_ARGS(animator, durations));
+    prs::set_mtrs_to_var(file, durations, DEFERRED_ARGS(animator, durations));
     count_frame = durations.size();
 }
 

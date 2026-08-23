@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.13.0 FATAL_ERROR)
 
-project(mattress VERSION 1.1.0)
+project(MattressEngine)
+set(LIB_NAME "mattress")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,19 +9,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -march=native")
 
 if (WIN32)
-    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
+    set_target_properties(${LIB_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
     set(CMAKE_EXE_LINKER_FLAGS "-static -static-libgcc -static-libstdc++")
 endif()
 
-add_library(${PROJECT_NAME} STATIC
+add_subdirectory(external/utils mtrsutils)
+add_subdirectory(external/glad glad)
+add_subdirectory(external/glfw glfw)
+add_subdirectory(external/glm glm)
+
+add_library(${LIB_NAME} STATIC
 
 src/Engine.cpp
-
-src/util/func/mtrs_message.cpp
-src/util/func/files/get_folder.cpp
-src/util/func/files/data_mtrs_file.cpp
-src/util/func/files/load_external_lib.cpp
-src/util/func/text/utf8_to_utf32.cpp
 
 # Systems
 src/sys/SystemManager.cpp
@@ -88,23 +88,19 @@ src/comp/audio/SoundPlayer.cpp
 
 )
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+set_property(TARGET ${LIB_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(${LIB_NAME} PRIVATE
     $<$<CONFIG:Release>:FLAG_RELEASE>
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/external/mtrsstruct
-    ${PROJECT_SOURCE_DIR}/external/single-files
+target_include_directories(${LIB_NAME}
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/mtrsstruct
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/single-files
 )
 
-add_subdirectory(external/glad glad)
-target_link_libraries(${PROJECT_NAME} PUBLIC glad)
-
-add_subdirectory(external/glfw glfw)
-target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
-
-add_subdirectory(external/glm glm)
-target_link_libraries(${PROJECT_NAME} PUBLIC glm)
+target_link_libraries(${LIB_NAME} PUBLIC mtrsutils)
+target_link_libraries(${LIB_NAME} PUBLIC glad)
+target_link_libraries(${LIB_NAME} PUBLIC glfw)
+target_link_libraries(${LIB_NAME} PUBLIC glm)

@@ -11,46 +11,45 @@
 
 #include "res/asset/TextureAtlas.hpp"
 
-#include "util/func/files/data_mtrs_file.hpp"
-#include "util/hash.hpp"
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/fun/math/hash.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
 
-#include "dynamic_field.def"
-#include "res_struct/ScriptFile.struct"
+#include "util/type/prs/res/ScriptFile.hpp"
 
 namespace mtrs::res
 {
 
 ScriptFile::ScriptFile(RESOURCE_ARGS)
 {
-    ScriptFile_sc script_file;
+    prs::ScriptFile script_file;
     file.read(reinterpret_cast<char*>(&script_file), sizeof(script_file));
 
     std::string path;
-    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script_file, path));
+    prs::set_mtrs_to_var(file, path, DEFERRED_ARGS(script_file, path));
     path = path.substr(0, path.rfind('.'));
 
-    _handle = util::load_library(dir_pack + path + util::lib_extension());
+    _handle = fs::load_library(dir_pack + path + fs::lib_extension());
 #ifndef FLAG_RELEASE
     if (_handle)
     {
 #endif
-        _on_load = reinterpret_cast<decltype(_on_load)>(util::get_symbol(_handle, "on_load"));
-        _on_unload = reinterpret_cast<decltype(_on_unload)>(util::get_symbol(_handle, "on_unload"));
+        _on_load = reinterpret_cast<decltype(_on_load)>(fs::get_symbol(_handle, "on_load"));
+        _on_unload = reinterpret_cast<decltype(_on_unload)>(fs::get_symbol(_handle, "on_unload"));
 #ifndef FLAG_RELEASE
-        if(!_on_load) mtrs::util::mtrs_error(util::get_last_error());
-        if(!_on_unload) mtrs::util::mtrs_error(util::get_last_error());
+        if(!_on_load) msg::mtrs_error(fs::get_last_error());
+        if(!_on_unload) msg::mtrs_error(fs::get_last_error());
     }
     else
     {
-        util::mtrs_error("Failed to load script at path: ", path, "\n",
-            util::get_last_error());
+        msg::mtrs_error("Failed to load script at path: ", path, "\n", fs::get_last_error());
     }
 #endif
 }
 
 ScriptFile::ScriptFile(ScriptFile &&other) noexcept
 {
+    _api = std::move(other._api);
     _handle = other._handle;
     other._handle = nullptr;
     _on_load = other._on_load;
@@ -63,6 +62,7 @@ ScriptFile &ScriptFile::operator=(ScriptFile &&other) noexcept
 {
     if(this != &other)
     {
+        _api = std::move(other._api);
         _handle = other._handle;
         other._handle = nullptr;
         _on_load = other._on_load;
@@ -78,7 +78,7 @@ ScriptFile::~ScriptFile()
     if(_handle)
     {
         _on_unload();
-        util::free_library(_handle);
+        fs::free_library(_handle);
         _handle = nullptr;
     }
 }
@@ -90,7 +90,7 @@ const char *ScriptFile::get_type_name_imp() noexcept
 
 uint32_t ScriptFile::get_type_size_imp() noexcept
 {
-    return sizeof(ScriptFile_sc);
+    return sizeof(prs::ScriptFile);
 }
 
 void ScriptFile::load(const char *scene, comp::EntityID entity,
@@ -103,8 +103,8 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
 
     // util
 #ifndef FLAG_RELEASE
-    _api.message = [](mtrs::util::TypeMessage tmsg, const char *msg)
-        { util::detail::show_message(tmsg, msg); };
+    _api.message = [](msg::TypeMessage tmsg, const char *msg)
+        { msg::detail::show_message(tmsg, msg); };
 #else
     _api.message = [](mtrs::util::TypeMessage tmsg, const char *msg) {};
 #endif
@@ -180,11 +180,11 @@ void *ScriptFile::get_symbol(std::string &&name)
 #ifndef FLAG_RELEASE
     if(!_handle)
     {
-        mtrs::util::mtrs_error("attempt to get a ", name, " from a script that is not loaded");
+        msg::mtrs_error("attempt to get a ", name, " from a script that is not loaded");
         return nullptr;
     }
 #endif
-    return util::get_symbol(_handle, name);
+    return fs::get_symbol(_handle, name);
 }
 
 }

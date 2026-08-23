@@ -3,21 +3,19 @@
 #include "res/ResourceManager.hpp"
 #include "res/asset/ScriptFile.hpp"
 
-#include "util/func/files/data_mtrs_file.hpp"
-
-#include "dynamic_field.def"
-#include "comp_struct/ScriptCallback.struct"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/type/prs/comp/ScriptCallback.hpp"
 
 namespace mtrs::comp
 {
 
 ScriptCallback::ScriptCallback(COMPONENT_ARGS)
 {
-    ScriptCallback_sc script;
+    prs::ScriptCallback script;
     file.read(reinterpret_cast<char*>(&script), sizeof(script));
 
     std::string path;
-    util::set_string_from_mtrs_file(file, path, DYNAMIC_ARGS(script, script_file));
+    prs::set_mtrs_to_var(file, path, DEFERRED_ARGS(script, script_file));
 
     script_file = resource.get_resource<res::ScriptFile>(scene, path);
     script_file->load(scene, entity, world, resource);

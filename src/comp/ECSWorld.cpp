@@ -27,13 +27,13 @@
 #include "comp/single/MouseButtons.hpp"
 #include "comp/single/MouseScroll.hpp"
 
-#include "util/func/files/get_folder.hpp"
-#include "util/func/mtrs_message.hpp"
-#include "util/hash.hpp"
+#include "util/fun/fs/get_folder.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
+#include "util/fun/math/hash.hpp"
 
-#include "comp_struct/comp_type.def"
+#include "util/type/prs/comp/comp_types.hpp"
 
-#define SINGLE_COMPONENT_TYPE \
+#define SINGLE_COMPONENT_TYPES \
 X(Window)\
 X(Camera)\
 X(States)\
@@ -53,7 +53,7 @@ namespace mtrs::comp
 ECSWorld::ECSWorld(const std::string &executable_path,const std::string &scenes_path)
 : _scenes_path(scenes_path)
 {
-    auto files = util::get_files_from_folder(scenes_path, ".mtscn");
+    auto files = fs::get_files_from_folder(scenes_path, ".mtscn");
     _scenes.reserve(files.size());
     std::string name;
     for(auto &file : files)
@@ -98,14 +98,14 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
 #ifndef FLAG_RELEASE
     if(iter == _scenes.end())
     {
-        util::mtrs_error("Failed to load scene,",
+        msg::mtrs_error("Failed to load scene,",
             " there is no scene named \"", scene,"\" in the list");
         return;
     }
 
     if(iter->second.init)
     {
-        util::mtrs_warning("Attempting to load already loaded scene: ", scene);
+        msg::mtrs_warning("Attempting to load already loaded scene: ", scene);
         return;
     }
 #endif
@@ -130,7 +130,7 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
     {
         if(magic[i] != true_magic[i])
         {
-            util::mtrs_error("Failed to load scene,",
+            msg::mtrs_error("Failed to load scene,",
                 " scene \"",scene,"\" does not have the magic mtrsscn ", magic);
             file.close();
             return;
@@ -151,7 +151,7 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
 #ifndef FLAG_RELEASE
     if(file.tellg() != data_offset)
     {
-        util::mtrs_error("Failed to load scene,",
+        msg::mtrs_error("Failed to load scene,",
             " data_offset does not match the value ", data_offset);
         file.close();
         return;
@@ -178,14 +178,14 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
             FILE_READ(file, id_comp);
             switch (id_comp)
             {
-#define X(Comp) case util::hash_c_string<uint64_t>(#Comp): \
+#define X(Comp) case math::hash64(#Comp): \
 _components.add_comp<Comp>(entity, entity, scene.c_str(), file, *this, resource); \
 break;
-            COMPONENT_TYPE
+            COMPONENT_TYPES
 #undef X
 #ifndef FLAG_RELEASE
             default:
-                util::mtrs_error("unknown component by id ", id_comp);
+                msg::mtrs_error("unknown component by id ", id_comp);
                 file.close();
                 return;
 #endif
@@ -196,7 +196,7 @@ break;
 #ifndef FLAG_RELEASE
     if(file.tellg() != std::streampos(free_date_offset))
     {
-        util::mtrs_error("the cursor is at position ", free_date_offset,
+        msg::mtrs_error("the cursor is at position ", free_date_offset,
             " for the name \"free_date_offset\",",
             "but the document indicates position ", file.tellg());
         file.close();
@@ -214,7 +214,7 @@ void ECSWorld::remove_scene(std::string scene)
 #ifndef FLAG_RELEASE
     if(iter == _scenes.end())
     {
-        util::mtrs_error("Failed to remove scene,",
+        msg::mtrs_error("Failed to remove scene,",
             "there is no scene named \"",scene,"\" in the list");
         return;
     }
@@ -233,7 +233,7 @@ void ECSWorld::turn_on_scene(std::string scene)
 #ifndef FLAG_RELEASE
     if(iter == _scenes.end())
     {
-        util::mtrs_error("Failed to turn on scene,",
+        msg::mtrs_error("Failed to turn on scene,",
             " there is no scene named \"",scene,"\" in the list");
         return;
     }
@@ -251,7 +251,7 @@ void ECSWorld::turn_off_scene(std::string scene)
 #ifndef FLAG_RELEASE
     if(iter == _scenes.end())
     {
-        util::mtrs_error("Failed to turn off scene,",
+        msg::mtrs_error("Failed to turn off scene,",
             " there is no scene named \"",scene,"\" in the list");
         return;
     }
@@ -266,7 +266,7 @@ void ECSWorld::turn_off_scene(std::string scene)
 
 void ECSWorld::mark_destroy(std::string name)
 {
-    _destroy_queue.push_back(util::hash_string<uint64_t>(name));
+    _destroy_queue.push_back(math::hash64(name));
 }
 
 void ECSWorld::remove_marked()
@@ -296,11 +296,11 @@ void ECSWorld::clear_all()
 
 void *ECSWorld::single_comp(const char *comp)
 {
-    switch(util::hash_c_string<uint64_t>(comp))
+    switch(math::hash64(comp))
     {
-#define X(Comp) case util::hash_c_string<uint64_t>(#Comp): \
+#define X(Comp) case math::hash64(#Comp): \
 return single_comp<Comp>();
-        SINGLE_COMPONENT_TYPE
+        SINGLE_COMPONENT_TYPES
 #undef X
     }
     return nullptr;
@@ -308,11 +308,11 @@ return single_comp<Comp>();
 
 void *ECSWorld::component(const char *comp, EntityID entity)
 {
-    switch(util::hash_c_string<uint64_t>(comp))
+    switch(math::hash64(comp))
     {
-#define X(Comp) case util::hash_c_string<uint64_t>(#Comp): \
+#define X(Comp) case math::hash64(#Comp): \
 return component<Comp>(entity);
-        COMPONENT_TYPE
+        COMPONENT_TYPES
 #undef X
     }
     return nullptr;
@@ -324,7 +324,7 @@ EntityID ECSWorld::get_entity(const char *scene, uint64_t hash_entity)
 #ifndef FLAG_RELEASE
     if(scene_iter == _scenes.end())
     {
-        util::mtrs_error("Failed to find entity,",
+        msg::mtrs_error("Failed to find entity,",
             " there is no scene named \"",scene,"\" in the list");
         return NULL_ENTITY;
     }
@@ -334,7 +334,7 @@ EntityID ECSWorld::get_entity(const char *scene, uint64_t hash_entity)
 #ifndef FLAG_RELEASE
     if(entity_iter == scene_iter->second.local_entities.end())
     {
-        util::mtrs_error("Failed to find entity,",
+        msg::mtrs_error("Failed to find entity,",
             " there is no entity with hash ",hash_entity," in the scene ",scene);
         return NULL_ENTITY;
     }

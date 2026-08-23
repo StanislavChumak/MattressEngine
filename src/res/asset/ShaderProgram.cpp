@@ -4,13 +4,11 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "util/func/files/data_mtrs_file.hpp"
-#include "util/func/mtrs_message.hpp"
+#include "util/fun/prs/mtrs_file.hpp"
+#include "util/fun/msg/mtrs_message.hpp"
+#include "util/type/prs/res/Shader.hpp"
 
 #include <fstream>
-
-#include "dynamic_field.def"
-#include "res_struct/Shader.struct"
 
 namespace mtrs::res
 {
@@ -24,7 +22,7 @@ std::string shader_path_to_string(std::string path)
 #ifndef FLAG_RELEASE
     if (!shader.is_open())
     {
-        util::mtrs_error("Failed to open shader: ", path);
+        msg::mtrs_error("Failed to open shader: ", path);
         return "";
     }
 #endif
@@ -36,10 +34,10 @@ std::string shader_path_to_string(std::string path)
     return buffer;
 }
 
-bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &shader_id)
+bool create_shader(const char *source, const uint32_t &shader_type, uint32_t &shader_id)
 {
     shader_id = glCreateShader(shader_type);
-    glShaderSource(shader_id, 1, &sourse, nullptr);
+    glShaderSource(shader_id, 1, &source, nullptr);
     glCompileShader(shader_id);
 #ifndef FLAG_RELEASE
     GLint success = 0;
@@ -48,7 +46,7 @@ bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &sh
     {
         GLchar info_log[1024];
         glGetShaderInfoLog(shader_id, 1024, nullptr, info_log);
-        util::mtrs_error("Shader (type: ", shader_type, ") compilation failed:\n",
+        msg::mtrs_error("Shader (type: ", shader_type, ") compilation failed:\n",
             info_log);
         return false;
     }
@@ -58,17 +56,17 @@ bool create_shader(const char *sourse, const uint32_t &shader_type, uint32_t &sh
 
 ShaderProgram::ShaderProgram(RESOURCE_ARGS)
 {
-    Shader_rs shader;
+    prs::Shader shader;
     file.read(reinterpret_cast<char*>(&shader), sizeof(shader));
 
     std::string str_buffer;
 
-    util::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, vertex));
+    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(shader, vertex));
     str_buffer = shader_path_to_string(dir_pack + std::move(str_buffer));
 #ifndef FLAG_RELEASE
     if (str_buffer.empty())
     {
-        util::mtrs_error("Vertex shader no code");
+        msg::mtrs_error("Vertex shader no code");
         return;
     }
 #endif
@@ -76,17 +74,17 @@ ShaderProgram::ShaderProgram(RESOURCE_ARGS)
     if(!create_shader(std::move(str_buffer).c_str(), GL_VERTEX_SHADER, vertex_id))
     {
 #ifndef FLAG_RELEASE
-        util::mtrs_error("Vertex shader compilation failed");
+        msg::mtrs_error("Vertex shader compilation failed");
         return;
 #endif
     }
     
-    util::set_string_from_mtrs_file(file, str_buffer, DYNAMIC_ARGS(shader, fragment));
+    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(shader, fragment));
     str_buffer = shader_path_to_string(dir_pack + std::move(str_buffer));
 #ifndef FLAG_RELEASE
     if (str_buffer.empty())
     {
-        util::mtrs_error("Fragment shader no code");
+        msg::mtrs_error("Fragment shader no code");
         return;
     }
 #endif
@@ -94,7 +92,7 @@ ShaderProgram::ShaderProgram(RESOURCE_ARGS)
     if(!create_shader(std::move(str_buffer).c_str(), GL_FRAGMENT_SHADER, fragment_id))
     {
 #ifndef FLAG_RELEASE
-        util::mtrs_error("Fragment shader compilation failed");
+        msg::mtrs_error("Fragment shader compilation failed");
         glDeleteShader(vertex_id);
         return;
 #endif
@@ -111,7 +109,7 @@ ShaderProgram::ShaderProgram(RESOURCE_ARGS)
     {
         GLchar info_log[1024];
         glGetProgramInfoLog(_ID, 1024, nullptr, info_log);
-        util::mtrs_error("Program linking failed:\n", info_log);
+        msg::mtrs_error("Program linking failed:\n", info_log);
         _is_compiled = false;
     }
     else
@@ -158,7 +156,7 @@ const char *ShaderProgram::get_type_name_imp() noexcept
 
 uint32_t ShaderProgram::get_type_size_imp() noexcept
 {
-    return sizeof(Shader_rs);
+    return sizeof(prs::Shader);
 }
 
 bool ShaderProgram::is_compiled() const noexcept
@@ -186,7 +184,8 @@ void ShaderProgram::set_matrix4(const char *name, const glm::mat4 &matrix) const
     glUniformMatrix4fv(glGetUniformLocation(_ID, name), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-bool ShaderProgram::has_uniform(const char *name) const {
+bool ShaderProgram::has_uniform(const char *name) const
+{
     return glGetUniformLocation(_ID, name) != -1;
 }
 
