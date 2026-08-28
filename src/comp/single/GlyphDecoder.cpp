@@ -44,6 +44,7 @@ std::pair<const std::string&, const res::Glyph&> GlyphDecoder::glyph(char32_t sy
     {
         msg::mtrs_error("GlyphDecoder doesn't have a single Font",
             "that represents a character with Unicode ", (uint32_t)symbol);
+        return {"null/", {' ', {{},{}}, {}}};
     }
 #endif
     return std::pair<const std::string&, const res::Glyph&>
@@ -53,6 +54,7 @@ std::pair<const std::string&, const res::Glyph&> GlyphDecoder::glyph(char32_t sy
 res::Text GlyphDecoder::decode_text(std::u32string string)
 {
     res::Text text;
+    if(string.empty()) return text;
     text.string = std::move(string);
 
     auto g = glyph(text.string[0]);

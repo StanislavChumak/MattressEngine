@@ -27,10 +27,10 @@ struct Sprite : public Component<Sprite>
     res::SubTexture sub_texture;
     
     glm::uvec2 size;
-    glm::tvec4<uint8_t, glm::precision::highp> color{255, 255, 255, 255};
-    float layer = 0.f;
+    glm::tvec4<uint8_t, glm::precision::highp> color;
+    float layer;
 
-    bool visibility =  true;
+    bool visibility;
 
     Sprite() = delete;
     Sprite(COMPONENT_ARGS);

@@ -19,9 +19,9 @@ void AnimatorSystem::update_imp(comp::ECSWorld &world, const double &delta)
             animator->current_animation_time -= animator->durations[animator->current_frame];
             animator->current_frame++;
 
-            if (animator->current_frame == animator->count_frame + animator->offset)
+            if (animator->current_frame == animator->count_frame + animator->frame_offset)
             {
-                animator->current_frame = animator->offset;
+                animator->current_frame = animator->frame_offset;
             }
 
             sprite->sub_texture = sprite->atlas->get_sub_texture(animator->current_frame);

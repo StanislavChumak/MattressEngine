@@ -34,10 +34,10 @@ struct SpriteMap : public Component<SpriteMap>
     std::vector<MapCell> cell_map;
 
     glm::uvec2 cell_size;
-    glm::tvec4<uint8_t, glm::precision::highp> color{255, 255, 255, 255};
-    float layer = 0.f;
+    glm::tvec4<uint8_t, glm::precision::highp> color;
+    float layer;
 
-    bool visibility = true;
+    bool visibility;
 
     SpriteMap() = delete;
     SpriteMap(COMPONENT_ARGS);

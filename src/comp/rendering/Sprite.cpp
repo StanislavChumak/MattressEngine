@@ -57,6 +57,8 @@ Sprite::Sprite(COMPONENT_ARGS)
     size.y = sprite.size_y;
 
     std::memcpy(&color, &sprite.color, 4);
+
+    visibility = sprite.visibility;
 }
 
 }

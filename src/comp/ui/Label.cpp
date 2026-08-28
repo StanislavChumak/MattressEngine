@@ -35,6 +35,8 @@ Label::Label(COMPONENT_ARGS)
     size.y = label.size_y;
 
     std::memcpy(&color, &label.color, 4);
+
+    visibility = label.visibility;
 }
 
 }

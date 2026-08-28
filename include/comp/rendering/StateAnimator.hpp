@@ -17,7 +17,7 @@ struct StateAnimator : public Component<StateAnimator>
         size_t count;
     };
     std::unordered_map<uint32_t, State> states;
-    std::pair<uint32_t, std::string> current_state;
+    uint32_t current_state;
     bool dirty = true;
 
     StateAnimator() = delete;

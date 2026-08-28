@@ -53,6 +53,8 @@ SpriteMap::SpriteMap(COMPONENT_ARGS)
     cell_size.y = sprite_map.cell_size_y;
 
     std::memcpy(&color, &sprite_map.color, 4);
+
+    visibility = sprite_map.visibility;
 }
 
 }

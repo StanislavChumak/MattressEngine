@@ -10,12 +10,12 @@ namespace mtrs::comp
 
 struct Animator : public Component<Animator>
 {
-    size_t count_frame = 0;
-    size_t offset = 0;
+    uint32_t frame_offset;
+    uint32_t count_frame;
     
     std::vector<float> durations;
 
-    size_t current_frame = 0;
+    uint32_t current_frame = 0;
     float current_animation_time = 0;
 
     Animator() = delete;

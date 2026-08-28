@@ -13,14 +13,14 @@ MapAnimator::MapAnimator(COMPONENT_ARGS)
     prs::MapAnimator map_animator;
     file.read(reinterpret_cast<char*>(&map_animator), sizeof(map_animator));
 
-    std::vector<prs::MapAnimator::Range> ranges;
-    prs::set_mtrs_to_var(file, ranges, DEFERRED_ARGS(map_animator, ranges));
-    cell_animators.resize(ranges.size());
-    auto iter = cell_animators.begin();
-    for(auto &range : ranges)
+    std::vector<prs::MapAnimator::CellAnimator> cell_animators;
+    prs::set_mtrs_to_var(file, cell_animators, DEFERRED_ARGS(map_animator, cell_animators));
+    this->cell_animators.resize(cell_animators.size());
+    auto iter = this->cell_animators.begin();
+    for(auto &anim : cell_animators)
     {
-        iter->count_frame = range.size;
-        iter->offset = range.offset;
+        iter->count_frame = anim.count_frame;
+        iter->frame_offset = anim.frame_offset;
         iter++;
     }
     

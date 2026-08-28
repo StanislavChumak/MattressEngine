@@ -19,7 +19,7 @@ StateAnimator::StateAnimator(COMPONENT_ARGS)
     size_t count = state_anim.states_size / sizeof(prs::StateAnimator::State);
     states.reserve(count);
 
-    current_state.first = 0;
+    current_state = 0;
 
     std::vector<prs::StateAnimator::State> buffer;
     prs::set_mtrs_to_var(file, buffer, DEFERRED_ARGS(state_anim, states));
@@ -28,7 +28,7 @@ StateAnimator::StateAnimator(COMPONENT_ARGS)
     {
         uint32_t id = state.id;
         states.emplace(id, State{state.offset, state.count});
-        if(current_state.first == 0) current_state.first = id; 
+        if(current_state == 0) current_state = id; 
     }
 }
 
@@ -41,9 +41,10 @@ void StateAnimator::set_state(std::string state)
         msg::mtrs_error("Animator does not have a state named: ", state);
         return;
     }
+    current_state = iter->first;
+#elif
+    current_state = math::hash32(state);
 #endif
-    current_state.first = math::hash32(state);
-    current_state.second = state;
     dirty = true;
 }
 

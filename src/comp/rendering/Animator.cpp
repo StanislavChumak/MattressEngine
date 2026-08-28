@@ -14,7 +14,8 @@ Animator::Animator(COMPONENT_ARGS)
     file.read(reinterpret_cast<char*>(&animator), sizeof(animator));
 
     prs::set_mtrs_to_var(file, durations, DEFERRED_ARGS(animator, durations));
-    count_frame = durations.size();
+    count_frame = animator.count_frame;
+    frame_offset = animator.frame_offset;
 }
 
 }

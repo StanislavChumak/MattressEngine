@@ -14,8 +14,8 @@ struct MapAnimator : public Component<MapAnimator>
 
     struct CellAnimator
     {
+        size_t frame_offset = 0;
         size_t count_frame = 0;
-        size_t offset = 0;
 
         size_t current_frame = 0;
         float current_animation_time = 0;

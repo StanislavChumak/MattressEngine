@@ -28,7 +28,7 @@ struct Label : public Component<Label>
     glm::tvec4<uint8_t, glm::precision::highp> color;
     float layer;
 
-    bool visibility =  true;
+    bool visibility;
 
     Label() = delete;
     Label(COMPONENT_ARGS);
