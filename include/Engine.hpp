@@ -35,6 +35,8 @@ namespace engine
         std::string scenes_path = "./";
         std::string name_window = "";
         std::string start_scene = "";
+        uint64_t scenes_cache_limit = 5;
+        uint64_t packs_cache_limit = 5;
         bool blend = true;
         
         // Window
@@ -78,7 +80,7 @@ namespace engine
 
         std::chrono::duration<double> _time_frame;
         std::chrono::duration<double> _delta;
-        std::chrono::_V2::steady_clock::time_point _start, _end;
+        std::chrono::steady_clock::time_point _start, _end;
 
         friend void window_size_callback(GLFWwindow *window, int width, int height);
         friend void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -93,7 +95,6 @@ namespace engine
 
         Core(const Config& config);
         bool is_init() { return _is_init; }
-        void garbage_collection();
         void pre_update();
         void update();
         void shutdown();

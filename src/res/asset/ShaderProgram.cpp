@@ -6,8 +6,9 @@
 
 #include "util/fun/prs/mtrs_file.hpp"
 #include "util/fun/msg/mtrs_message.hpp"
-#include "util/type/prs/res/Shader.hpp"
+#include "util/type/prs/res/ShaderProgram.hpp"
 
+#include <string>
 #include <fstream>
 
 namespace mtrs::res
@@ -56,12 +57,12 @@ bool create_shader(const char *source, const uint32_t &shader_type, uint32_t &sh
 
 ShaderProgram::ShaderProgram(RESOURCE_ARGS)
 {
-    prs::Shader shader;
-    file.read(reinterpret_cast<char*>(&shader), sizeof(shader));
+    prs::ShaderProgram shader;
+    std::memcpy(&shader, file_data, sizeof(shader));
 
     std::string str_buffer;
 
-    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(shader, vertex));
+    prs::set_mtrs_to_var(file_ddata[shader.vertex], str_buffer);
     str_buffer = shader_path_to_string(dir_pack + std::move(str_buffer));
 #ifndef FLAG_RELEASE
     if (str_buffer.empty())
@@ -79,7 +80,7 @@ ShaderProgram::ShaderProgram(RESOURCE_ARGS)
 #endif
     }
     
-    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(shader, fragment));
+    prs::set_mtrs_to_var(file_ddata[shader.fragment], str_buffer);
     str_buffer = shader_path_to_string(dir_pack + std::move(str_buffer));
 #ifndef FLAG_RELEASE
     if (str_buffer.empty())
@@ -149,14 +150,9 @@ ShaderProgram::~ShaderProgram()
     glDeleteProgram(_ID);
 }
 
-const char *ShaderProgram::get_type_name_imp() noexcept
+uint32_t ShaderProgram::get_prs_size_imp() noexcept
 {
-    return "shaders";
-}
-
-uint32_t ShaderProgram::get_type_size_imp() noexcept
-{
-    return sizeof(prs::Shader);
+    return sizeof(prs::ShaderProgram);
 }
 
 bool ShaderProgram::is_compiled() const noexcept

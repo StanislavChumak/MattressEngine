@@ -26,7 +26,7 @@ public:
     SparseSet() = default;
 
     template<typename ...Args>
-    TypeComponent &add(EntityID entity, Args&& ...args)
+    TypeComponent *add(EntityID entity, Args&& ...args)
     {
         if (entity >= _sparse.size())
         {
@@ -36,14 +36,14 @@ public:
         if (_sparse[entity] != NULL_ENTITY)
         {
             _dense[_sparse[entity]] = std::make_unique<TypeComponent>(args...);
-            return *_dense[_sparse[entity]];
+            return _dense[_sparse[entity]].get();
         }
         
         _sparse[entity] = _size;
         _entities.push_back(entity);
         _dense.push_back(std::make_unique<TypeComponent>(args...));
         _size++;
-        return *_dense[_sparse[entity]];
+        return _dense[_sparse[entity]].get();
     }
 
     TypeComponent *get(EntityID entity)

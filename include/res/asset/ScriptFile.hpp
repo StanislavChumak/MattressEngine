@@ -26,8 +26,8 @@ public:
     ScriptFile &operator=(ScriptFile &&other) noexcept;
     ~ScriptFile();
 
-    static const char *get_type_name_imp() noexcept;
-    static uint32_t get_type_size_imp() noexcept;
+    static constexpr const char *get_type_name_imp() noexcept { return "ScriptFile"; }
+    static uint32_t get_prs_size_imp() noexcept;
 
     void load(const char *scene, comp::EntityID entity,
         comp::ECSWorld& world, ResourceManager& resource);

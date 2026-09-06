@@ -22,6 +22,7 @@ struct ScriptUpdate : public Component<ScriptUpdate>
     ScriptUpdate(COMPONENT_ARGS);
 
     static constexpr const char *get_type_name_imp() noexcept { return "ScriptUpdate"; }
+    static uint32_t get_prs_size_imp() noexcept;
 };
 
 }

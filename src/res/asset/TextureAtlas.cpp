@@ -7,7 +7,7 @@
 #include "util/fun/msg/mtrs_message.hpp"
 #include "util/type/prs/res/TextureAtlas.hpp"
 
-#include <fstream>
+#include <string>
 
 namespace mtrs::res
 {
@@ -99,10 +99,10 @@ std::vector<SubTexture> get_spiral_atlas(glm::uvec2 size, glm::uvec2 sub_size)
 TextureAtlas::TextureAtlas(RESOURCE_ARGS)
 {
     prs::TextureAtlas atlas;
-    file.read(reinterpret_cast<char*>(&atlas), sizeof(atlas));
+    std::memcpy(&atlas, file_data, sizeof(atlas));
 
     std::string texture_name;
-    prs::set_mtrs_to_var(file, texture_name, DEFERRED_ARGS(atlas, texture));
+    prs::set_mtrs_to_var(file_ddata[atlas.texture], texture_name);
     auto texture = resources.get_resource<Texture>(dir_pack + pack, texture_name);
 
     if(atlas.spirality)
@@ -138,12 +138,7 @@ TextureAtlas::~TextureAtlas()
     _atlas.clear();
 }
 
-const char *TextureAtlas::get_type_name_imp() noexcept
-{
-    return "atlases";
-}
-
-uint32_t TextureAtlas::get_type_size_imp() noexcept
+uint32_t TextureAtlas::get_prs_size_imp() noexcept
 {
     return sizeof(prs::TextureAtlas);
 }

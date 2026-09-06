@@ -2,42 +2,42 @@
 
 #include "util/fun/fs/get_folder.hpp"
 #include "util/fun/math/hash.hpp"
+#include "util/fun/prs/read.hpp"
+
+#include "util/type/prs/res/res_types.hpp"
+#include "res/asset/ScriptFile.hpp"
+#include "res/asset/ShaderProgram.hpp"
+#include "res/asset/Texture.hpp"
+#include "res/asset/TextureAtlas.hpp"
+#include "res/asset/Sound.hpp"
+#include "res/asset/Font.hpp"
+
+#include <algorithm>
 
 namespace mtrs::res
 {
 
-ResourceManager::ResourceManager(const std::string &executable_path,const std::string &resource_path)
-:_executable_path(executable_path), _resource_dir(resource_path)
+ResourceManager::ResourceManager(const std::string &executable_path,const std::string &resource_path,
+    uint64_t limit_cache)
+: _file_manager(fs::get_files_from_folder(resource_path, ".mtpck"), limit_cache)
+, _executable_path(executable_path), _resource_dir(resource_path)
 {
-    auto files = fs::get_files_from_folder(_resource_dir, ".mtpck");
-    _resource_packs.reserve(files.size());
-    _resource_pack_iters.reserve(files.size());
-
-    std::string name;
-    for(auto &file : files)
-    {
-        name = file.substr(_resource_dir.size(), (file.size() - _resource_dir.size() - 6));
-        _resource_packs.emplace(name, ResourcePack{std::ifstream(), 0});
-        _resource_pack_iters.push_back(_resource_packs.find(name));
-    }
 }
 
 ResourceManager::ResourceManager(ResourceManager &&other) noexcept
+: _file_manager(std::move(other._file_manager))
 {
     _executable_path = std::move(other._executable_path);
-    _resource_packs = std::move(other._resource_packs);
-    _resource_pack_iters = std::move(other._resource_pack_iters);
-    _garbage_collectors = std::move(other._garbage_collectors);
+    _resource_dir = std::move(other._resource_dir);
 }
 
 ResourceManager &ResourceManager::operator=(ResourceManager &&other) noexcept
 {
     if(this != &other)
     {
+        _file_manager = std::move(other._file_manager);
         _executable_path = std::move(other._executable_path);
-        _resource_packs = std::move(other._resource_packs);
-        _resource_pack_iters = std::move(other._resource_pack_iters);
-        _garbage_collectors = std::move(other._garbage_collectors);
+        _resource_dir = std::move(other._resource_dir);
     }
     return *this;
 }
@@ -47,56 +47,95 @@ ResourceManager::~ResourceManager()
 
 }
 
-bool ResourceManager::move_to_resource(std::ifstream &file, const std::string &res_name,
-        const std::string &res_type_name, uint32_t res_type_size)
+size_t ResourceManager::get_pos_resource(char *data, size_t end, const std::string &res_name,
+        const std::string &prs_name, uint32_t prs_size)
 {
-    uint64_t res_type_id = math::hash64(res_type_name);
+    uint64_t res_type_id = math::hash64(prs_name);
     uint64_t res_id = math::hash64(res_name);
 
-    uint64_t id = 0, offset = 8;
-    while(!file.eof())
+    size_t cur = 8;
+
+    uint64_t id = 0, group_end = 0;
+    while(cur < end)
     {
-        file.seekg(offset, std::ios::beg);
-        file.read(reinterpret_cast<char*>(&id), sizeof(id));
-        file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
+        read(id, data, cur);
+        read(group_end, data, cur);
         if(id == res_type_id)
         {
+            while(cur < group_end && cur < end)
+            {
+                read(id, data, cur);
+                if(id == res_id)
+                {
+                    return cur;
+                }
+                cur += prs_size;
+            }
             break;
         }
-    }
-
-    int count = (offset - file.tellg()) / (res_type_size + sizeof(id));
-    for(int i = 0; i < count; i++)
-    {
-        file.read(reinterpret_cast<char*>(&id), sizeof(id));
-        if(id == res_id)
-        {
-            return true;
-        }
-        file.seekg(res_type_size, std::ios::cur);
+        cur = group_end;
     }
 #ifndef FLAG_RELEASE
-    msg::mtrs_error("Failed to find resource (",res_type_name, ": ", res_name,")");
+    msg::mtrs_error("Failed to find resource (",prs_name, ": ", res_name,")");
 #endif
-    file.close();
-    return false;
+    return 0;
 }
 
-void ResourceManager::garbage_collector()
+void ResourceManager::update(const double &delta)
 {
-    for(auto &collector : _garbage_collectors)
-    {
-        collector();
-    }
+    {\
+    auto &cache = get_cache<Texture>();\
+    for(auto it_keys = cache.keys.begin(); it_keys != cache.keys.end();)\
+    {\
+        auto it_map = cache.map.find(*it_keys);\
+        if(it_map->second.expired())\
+        {\
+           cache.map.erase(it_map);\
+           std::iter_swap(it_keys, cache.keys.end() - 1);\
+           cache.keys.pop_back();\
+        }\
+        else\
+        {\
+            it_keys++;\
+        }\
+    }\
+}
+#define X(Res)\
+{\
+    auto &cache = get_cache<Res>();\
+    for(auto it_keys = cache.keys.begin(); it_keys != cache.keys.end();)\
+    {\
+        auto it_map = cache.map.find(*it_keys);\
+        if(it_map->second.expired())\
+        {\
+           cache.map.erase(it_map);\
+           std::iter_swap(it_keys, cache.keys.end() - 1);\
+           cache.keys.pop_back();\
+        }\
+        else\
+        {\
+            it_keys++;\
+        }\
+    }\
+}
+    RESOURCE_TYPES
+#undef X
 
-    for(auto &iter : _resource_pack_iters)
-    {
-        if(iter->second.resource_count == 0 && iter->second.file.is_open())
-        {
-            _resource_packs[iter->first].file.close();
-        }
-    }
-    
+    _file_manager.update(delta);
+}
+
+void ResourceManager::clear_all()
+{
+#define X(Res)\
+{\
+    auto &cache = get_cache<Res>();\
+    cache.map.clear();\
+    cache.keys.clear();\
+}
+    RESOURCE_TYPES
+#undef X
+
+    _file_manager.clear();
 }
 
 }

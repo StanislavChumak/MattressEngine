@@ -6,21 +6,28 @@
 #include "util/fun/prs/mtrs_file.hpp"
 #include "util/type/prs/comp/ScriptUpdate.hpp"
 
+#include <cstring>
+
 namespace mtrs::comp
 {
 
 ScriptUpdate::ScriptUpdate(COMPONENT_ARGS)
 {
     prs::ScriptUpdate script;
-    file.read(reinterpret_cast<char*>(&script), sizeof(script));
+    std::memcpy(&script, file_data, sizeof(script));
 
     std::string path;
-    prs::set_mtrs_to_var(file, path, DEFERRED_ARGS(script, script_file));
+    prs::set_mtrs_to_var(file_ddata[script.script_file], path);
 
     script_file = resource.get_resource<res::ScriptFile>(scene, path);
     script_file->load(scene, entity, world, resource);
     
     update = reinterpret_cast<decltype(update)>(script_file->get_symbol("update"));
+}
+
+uint32_t ScriptUpdate::get_prs_size_imp() noexcept
+{
+    return sizeof(prs::ScriptUpdate);
 }
 
 }

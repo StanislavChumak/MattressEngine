@@ -26,6 +26,7 @@ struct StateAnimator : public Component<StateAnimator>
     void set_state(std::string state);
 
     static constexpr const char *get_type_name_imp() noexcept { return "StateAnimator"; }
+    static uint32_t get_prs_size_imp() noexcept;
 };
 
 }

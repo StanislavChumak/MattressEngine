@@ -34,6 +34,7 @@ struct Label : public Component<Label>
     Label(COMPONENT_ARGS);
 
     static constexpr const char *get_type_name_imp() noexcept { return "Label"; }
+    static uint32_t get_prs_size_imp() noexcept;
 };
 
 }

@@ -5,7 +5,7 @@
 #include "util/fun/msg/mtrs_message.hpp"
 #include "util/type/prs/comp/StateAnimator.hpp"
 
-#include <fstream>
+#include <cstring>
 #include <vector>
 
 namespace mtrs::comp
@@ -14,15 +14,15 @@ namespace mtrs::comp
 StateAnimator::StateAnimator(COMPONENT_ARGS)
 {
     prs::StateAnimator state_anim;
-    file.read(reinterpret_cast<char*>(&state_anim), sizeof(state_anim));
+    std::memcpy(&state_anim, file_data, sizeof(state_anim));
 
-    size_t count = state_anim.states_size / sizeof(prs::StateAnimator::State);
+    size_t count = (reinterpret_cast<uint32_t*>(&state_anim.states))[1]/sizeof(prs::StateAnimator::State);
     states.reserve(count);
 
     current_state = 0;
 
     std::vector<prs::StateAnimator::State> buffer;
-    prs::set_mtrs_to_var(file, buffer, DEFERRED_ARGS(state_anim, states));
+    prs::set_mtrs_to_var(file_ddata[state_anim.states], buffer);
 
     for(auto &state : buffer)
     {
@@ -46,6 +46,11 @@ void StateAnimator::set_state(std::string state)
     current_state = math::hash32(state);
 #endif
     dirty = true;
+}
+
+uint32_t StateAnimator::get_prs_size_imp() noexcept
+{
+    return sizeof(prs::StateAnimator);
 }
 
 }

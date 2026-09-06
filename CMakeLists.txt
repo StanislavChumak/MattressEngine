@@ -74,6 +74,7 @@ src/comp/single/Listener.cpp
 
 src/comp/core/ScriptUpdate.cpp
 src/comp/core/ScriptCallback.cpp
+src/comp/core/StoredData.cpp
 src/comp/core/Transform.cpp
 
 src/comp/rendering/Sprite.cpp

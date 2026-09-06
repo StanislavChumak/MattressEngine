@@ -9,7 +9,8 @@
 #include "util/fun/str/utf8_to_utf32.hpp"
 #include "util/type/prs/res/Font.hpp"
 
-#include <fstream>
+#include <string>
+#include <cstring>
 
 namespace mtrs::res
 {
@@ -17,17 +18,17 @@ namespace mtrs::res
 Font::Font(RESOURCE_ARGS)
 {
     prs::Font font;
-    file.read(reinterpret_cast<char*>(&font), sizeof(font));
+    std::memcpy(&font, file_data, sizeof(font));
 
     std::string str_buffer;
 
-    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(font, texture));
+    prs::set_mtrs_to_var(file_ddata[font.texture], str_buffer);
     texture = resources.get_resource<Texture>(dir_pack + pack, std::move(str_buffer));
 
-    prs::set_mtrs_to_var(file, str_buffer, DEFERRED_ARGS(font, symbols));
+    prs::set_mtrs_to_var(file_ddata[font.symbols], str_buffer);
     _symbols = str::utf8_to_utf32(std::move(str_buffer));
 
-    prs::set_mtrs_to_var(file, _symbol_widths, DEFERRED_ARGS(font, symbol_widths));
+    prs::set_mtrs_to_var(file_ddata[font.symbol_widths], _symbol_widths);
 
     _symbol_height = font.symbol_height;
 }
@@ -52,12 +53,7 @@ Font &Font::operator=(Font &&other) noexcept
     return *this;
 }
 
-const char *Font::get_type_name_imp() noexcept
-{
-    return "fonts";
-}
-
-uint32_t Font::get_type_size_imp() noexcept
+uint32_t Font::get_prs_size_imp() noexcept
 {
     return sizeof(prs::Font);
 }

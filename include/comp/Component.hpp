@@ -1,7 +1,7 @@
 #ifndef COMPONENT_HPP
 #define COMPONENT_HPP
 
-#include <iosfwd>
+#include <unordered_map>
 #include <cstdint>
 
 namespace mtrs::res
@@ -15,6 +15,11 @@ namespace mtrs::comp
     class ECSWorld;
 }
 
+namespace mtrs::prs
+{
+    struct DeferredData;
+}
+
 template<typename Derived>
 class Component
 {
@@ -23,9 +28,15 @@ public:
     {
         return Derived::get_type_name_imp();
     }
+
+    static uint32_t get_prs_size() noexcept
+    {
+        return Derived::get_prs_size_imp();
+    }
 };
 
-#define COMPONENT_ARGS mtrs::comp::EntityID entity, const char* scene,\
-    std::ifstream &file, mtrs::comp::ECSWorld& world, mtrs::res::ResourceManager& resource    
+#define COMPONENT_ARGS mtrs::comp::EntityID entity, const char* scene, \
+    char *file_data, std::unordered_map<uint64_t, mtrs::prs::DeferredData> &file_ddata, \
+    mtrs::comp::ECSWorld& world, mtrs::res::ResourceManager& resource    
 
 #endif

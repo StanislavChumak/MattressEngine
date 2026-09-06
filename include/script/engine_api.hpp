@@ -53,19 +53,21 @@ namespace mtrs
     {
         comp::ECSWorld *world;
         res::ResourceManager *resource;
-        const char *scene;
+        const char *scene = nullptr;
 
         // util
         void (*message)(mtrs::msg::TypeMessage, const char *) = nullptr;
 
         // ECSWorld
-        void *(*world_single_comp)(comp::ECSWorld*, const char *) = nullptr;
-        void *(*world_component)(comp::ECSWorld*, const char *, comp::EntityID) = nullptr;
-        comp::EntityID (*world_get_entity)(comp::ECSWorld*, const char *, uint64_t) = nullptr;
         void (*world_load_scene)(comp::ECSWorld*, res::ResourceManager*, const char *, bool) = nullptr;
         void (*world_remove_scene)(comp::ECSWorld*, const char*) = nullptr;
         void (*world_turn_on_scene)(comp::ECSWorld*, const char*) = nullptr;
         void (*world_turn_off_scene)(comp::ECSWorld*, const char*) = nullptr;
+        void *(*world_single_comp)(comp::ECSWorld*, uint64_t) = nullptr;
+        void *(*world_component)(comp::ECSWorld*, uint64_t, comp::EntityID) = nullptr;
+        comp::EntityID (*world_get_entity)(comp::ECSWorld*, const char *, uint64_t) = nullptr;
+        bool (*world_save_static)(comp::ECSWorld*, const char *, uint64_t, uint64_t, uint64_t, void*, uint64_t) = nullptr;
+        bool (*world_save_dynamic)(comp::ECSWorld*, const char *, uint64_t, uint64_t, uint64_t, void*, uint64_t) = nullptr;
 
         // Window
         void (*window_set_icon)(comp::Window*, const char *const *, uint64_t) = nullptr;
@@ -108,31 +110,14 @@ namespace mtrs
 
 #ifdef SCRIPT
 
-inline mtrs::EngineAPI *api;
+static mtrs::EngineAPI *api;
 
 typedef mtrs::comp::EntityID EntityID;
 
+#include "util/fun/math/hash.hpp"
+
 namespace mtrs
 {
-    template<typename Component>
-    Component *get_single_comp()
-    {
-        return reinterpret_cast<Component*>(api->world_single_comp(api->world,
-            Component::get_type_name()));
-    }
-
-    template<typename Component>
-    Component *get_comp(comp::EntityID entity)
-    {
-        return reinterpret_cast<Component*>(api->world_component(api->world,
-            Component::get_type_name(), entity));
-    }
-
-    comp::EntityID get_entity(const char *scene, uint64_t hash_entity)
-    {
-        return api->world_get_entity(api->world, scene, hash_entity);
-    }
-
     void load_scene(const char *scene, bool is_turn_on = true)
     {
         api->world_load_scene(api->world, api->resource, scene, is_turn_on);
@@ -151,6 +136,41 @@ namespace mtrs
     void turn_off_scene(const char *scene)
     {
         api->world_turn_off_scene(api->world, scene);
+    }
+
+    template<typename Component, uint64_t Hash = math::hash64(Component::get_type_name())>
+    Component *get_single_comp()
+    {
+        return reinterpret_cast<Component*>(api->world_single_comp(api->world, Hash));
+    }
+
+    template<typename Component, uint64_t Hash = math::hash64(Component::get_type_name())>
+    Component *get_comp(comp::EntityID entity)
+    {
+        return reinterpret_cast<Component*>(api->world_component(api->world, Hash, entity));
+    }
+
+    comp::EntityID get_entity(const char *scene, uint64_t hash_entity)
+    {
+        return api->world_get_entity(api->world, scene, hash_entity);
+    }
+
+    template<typename Component, typename T, uint64_t Hash = math::hash64(Component::get_type_name())>
+    bool save_static_to_file(const char *scene, uint64_t hash_entity,
+        uint64_t field_offset, T value)
+    {
+        T *data = new T{value};
+        return api->world_save_static(api->world, scene, hash_entity, Hash,
+            field_offset, data, sizeof(T));
+        delete data;
+    }
+
+    template<typename Component, uint64_t Hash = math::hash64(Component::get_type_name())>
+    bool save_dynamic_to_file(const char *scene, uint64_t hash_entity,
+        size_t field_offset, void *data, size_t size)
+    {
+        return api->world_save_dynamic(api->world, scene, hash_entity, Hash,
+            field_offset, data, size);
     }
 }
 

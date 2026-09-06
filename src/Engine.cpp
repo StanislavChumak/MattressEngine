@@ -29,8 +29,8 @@ namespace mtrs::engine
 {
 
 Core::Core(const Config& config)
-: resources(config.executable_path, config.resurce_path)
-, world(config.executable_path, config.scenes_path)
+: resources(config.executable_path, config.resurce_path, config.packs_cache_limit)
+, world(config.executable_path, config.scenes_path, config.scenes_cache_limit)
 {
 #ifndef FLAG_RELEASE
     if(!config.fixed_horizontal && !config.fixed_vertical)
@@ -160,12 +160,6 @@ Core::Core(const Config& config)
     _is_init = true;
 }
 
-void Core::garbage_collection()
-{
-    world.remove_marked();
-    resources.garbage_collector();
-}
-
 void Core::pre_update()
 {
     const glm::uvec2 &window_size = _window->size.get();
@@ -184,7 +178,8 @@ void Core::update()
 
     systems.update(world, _delta.count());
 
-    world.remove_marked();
+    resources.update(_delta.count());
+    world.update(_delta.count());
 
     glfwSwapBuffers(_window->poiter);
 
@@ -201,7 +196,7 @@ void Core::update()
 void Core::shutdown()
 {
     world.clear_all();
-    resources.garbage_collector();
+    resources.clear_all();
     glfwTerminate();
 }
 

@@ -24,6 +24,7 @@ struct ScriptCallback : public Component<ScriptCallback>
     Fun get_fun_script(const char *name);
 
     static constexpr const char *get_type_name_imp() noexcept { return "ScriptCallback"; }
+    static uint32_t get_prs_size_imp() noexcept;
 };
 
 }

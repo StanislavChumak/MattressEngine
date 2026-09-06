@@ -8,7 +8,6 @@
 #include "util/fun/prs/mtrs_file.hpp"
 #include "util/type/prs/comp/Sprite.hpp"
 
-#include <fstream>
 #include <cstring>
 
 #ifndef FLAG_RELEASE
@@ -29,17 +28,17 @@ namespace mtrs::comp
 Sprite::Sprite(COMPONENT_ARGS)
 {
     prs::Sprite sprite;
-    file.read(reinterpret_cast<char*>(&sprite), sizeof(sprite));
+    std::memcpy(&sprite, file_data, sizeof(sprite));
 
     std::string path_buffer;
 
-    prs::set_mtrs_to_var(file, path_buffer, DEFERRED_ARGS(sprite, shader));
+    prs::set_mtrs_to_var(file_ddata[sprite.shader], path_buffer);
     SET_RESOURCE(shader, res::ShaderProgram, resource, scene, path_buffer)
 
-    prs::set_mtrs_to_var(file, path_buffer, DEFERRED_ARGS(sprite, texture));
+    prs::set_mtrs_to_var(file_ddata[sprite.texture], path_buffer);
     SET_RESOURCE(texture, res::Texture, resource, scene, path_buffer)
 
-    prs::set_mtrs_to_var(file, path_buffer, DEFERRED_ARGS(sprite, atlas));
+    prs::set_mtrs_to_var(file_ddata[sprite.atlas], path_buffer);
     if(path_buffer != "")
     {
         SET_RESOURCE(atlas, res::TextureAtlas, resource, scene, path_buffer)
@@ -59,6 +58,11 @@ Sprite::Sprite(COMPONENT_ARGS)
     std::memcpy(&color, &sprite.color, 4);
 
     visibility = sprite.visibility;
+}
+
+uint32_t Sprite::get_prs_size_imp() noexcept
+{
+    return sizeof(prs::Sprite);
 }
 
 }

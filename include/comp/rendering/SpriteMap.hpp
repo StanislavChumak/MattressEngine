@@ -43,6 +43,7 @@ struct SpriteMap : public Component<SpriteMap>
     SpriteMap(COMPONENT_ARGS);
 
     static constexpr const char *get_type_name_imp() noexcept { return "SpriteMap"; }
+    static uint32_t get_prs_size_imp() noexcept;
 };
 
 }

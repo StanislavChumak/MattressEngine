@@ -4,6 +4,7 @@
 
 #include "comp/core/ScriptUpdate.hpp"
 #include "comp/core/ScriptCallback.hpp"
+#include "comp/core/StoredData.hpp"
 #include "comp/core/Transform.hpp"
 
 #include "comp/rendering/Sprite.hpp"
@@ -19,6 +20,7 @@
 #include "comp/single/Window.hpp"
 #include "comp/single/Camera.hpp"
 #include "comp/single/States.hpp"
+#include "comp/single/Render.hpp"
 #include "comp/single/GlyphDecoder.hpp"
 #include "comp/single/Audio.hpp"
 #include "comp/single/Listener.hpp"
@@ -30,6 +32,7 @@
 #include "util/fun/fs/get_folder.hpp"
 #include "util/fun/msg/mtrs_message.hpp"
 #include "util/fun/math/hash.hpp"
+#include "util/fun/prs/read.hpp"
 
 #include "util/type/prs/comp/comp_types.hpp"
 
@@ -37,6 +40,7 @@
 X(Window)\
 X(Camera)\
 X(States)\
+X(Render)\
 X(GlyphDecoder)\
 X(Audio)\
 X(Listener)\
@@ -45,115 +49,113 @@ X(KeyButtons)\
 X(MouseButtons)\
 X(MouseScroll)
 
-#define FILE_READ(file, date) file.read(reinterpret_cast<char*>(&date), sizeof(date))
-
 namespace mtrs::comp
 {
 
-ECSWorld::ECSWorld(const std::string &executable_path,const std::string &scenes_path)
-: _scenes_path(scenes_path)
+ECSWorld::ECSWorld(const std::string &executable_path,const std::string &scenes_path,
+    std::unordered_set<std::string> paths, uint64_t limit_size_cache)
+: _file_manager(paths, limit_size_cache), _executable_path(executable_path), _scenes_dir(scenes_path)
 {
-    auto files = fs::get_files_from_folder(scenes_path, ".mtscn");
-    _scenes.reserve(files.size());
+    _scenes.reserve(paths.size());
     std::string name;
-    for(auto &file : files)
+    for(auto &path : paths)
     {
-        name = file.substr(scenes_path.size(), (file.size() - scenes_path.size() - 6));
-        _scenes.emplace(name, Scene{{}, std::ifstream(), false});
+        name = path.substr(scenes_path.length(), (path.length() - scenes_path.length() - 6));
+        _scenes.emplace(name, Scene{{}, false, false});
     }
 }
 
-ECSWorld::ECSWorld(ECSWorld &&other) noexcept
+ECSWorld::ECSWorld(const std::string &executable_path, const std::string &scenes_path,
+    uint64_t limit_size_cache)
+: ECSWorld(executable_path, scenes_path, fs::get_files_from_folder(scenes_path, ".mtscn"), limit_size_cache)
 {
-    _executable_path = std::move(other._executable_path);
+}
+
+ECSWorld::ECSWorld(ECSWorld &&other) noexcept
+: _file_manager(std::move(other._file_manager))
+{
     _scenes = std::move(other._scenes);
-    _destroy_queue = std::move(other._destroy_queue);
+    _executable_path = std::move(other._executable_path);
+    _scenes_dir = std::move(other._scenes_dir);
+    _components = std::move(other._components);
+    _destroy_ids = std::move(other._destroy_ids);
+    _freed_ids = std::move(other._freed_ids);
 }
 
 ECSWorld &ECSWorld::operator=(ECSWorld &&other) noexcept
 {
     if(this != &other)
     {
-        _executable_path = std::move(other._executable_path);
         _scenes = std::move(other._scenes);
-        _destroy_queue = std::move(other._destroy_queue);
+        _executable_path = std::move(other._executable_path);
+        _scenes_dir = std::move(other._scenes_dir);
+        _components = std::move(other._components);
+        _file_manager = std::move(other._file_manager);
+        _destroy_ids = std::move(other._destroy_ids);
+        _freed_ids = std::move(other._freed_ids);
     }
     return *this;
 }
 
 ECSWorld::~ECSWorld()
 {
-    for(auto &scene : _scenes)
+    
+}
+
+prs::MtrsFileManager::MtrsFile *ECSWorld::open_scene(decltype(_scenes)::iterator scene)
+{
+#ifndef FLAG_RELEASE
+    if(scene == _scenes.end())
     {
-        if(scene.second.file.is_open())
-        {
-            scene.second.file.close();
-        }
+        msg::mtrs_error("Failed to load scene,"," there is no such scene in the list");
+        return nullptr;
     }
+#endif
+
+    auto file = _file_manager.get_file(_scenes_dir + scene->first + ".mtscn");
+
+#ifndef FLAG_RELEASE
+    std::string_view magic(file ? file->data.data() : "", 7);
+    if(!file || magic != "mtrsscn")
+    {
+        msg::mtrs_error("Failed to load scene,",
+            " scene \"", scene->first ,"\" does not have the magic mtrsscn ", magic);
+        return nullptr;
+    }
+#endif
+
+    return file;
 }
 
 void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resource, bool is_turn_on)
 {
-    auto iter = _scenes.find(scene);
+    auto scene_iter = _scenes.find(scene);
+    if(scene_iter->second.init)
+    {
 #ifndef FLAG_RELEASE
-    if(iter == _scenes.end())
-    {
-        msg::mtrs_error("Failed to load scene,",
-            " there is no scene named \"", scene,"\" in the list");
-        return;
-    }
-
-    if(iter->second.init)
-    {
         msg::mtrs_warning("Attempting to load already loaded scene: ", scene);
+#endif
         return;
     }
-#endif
+    auto file = open_scene(scene_iter);
+    if(!file) return;
 
-    auto &file = iter->second.file;
-    std::string file_name = _scenes_path + scene + ".mtscn";
-    if(file.is_open())
-    {
-        file.seekg(0, std::ios::beg);
-    }
-    else
-    {
-        file.open(file_name, std::ios::binary);
-    }
-
-    char magic[8];
-    file.read(magic, 8);
-#ifndef FLAG_RELEASE
-
-    const char *true_magic = "mtrsscn";
-    for(uint8_t i{}; i < 8; i++)
-    {
-        if(magic[i] != true_magic[i])
-        {
-            msg::mtrs_error("Failed to load scene,",
-                " scene \"",scene,"\" does not have the magic mtrsscn ", magic);
-            file.close();
-            return;
-        }
-    }
-#endif
+    char *data = file->data.data();
+    size_t cur = 16;
 
     uint32_t entity_count = 0;
     uint32_t data_offset;
-    uint32_t free_date_offset;
     uint32_t dynamic_date_offset;
     
-    FILE_READ(file, entity_count);
-    FILE_READ(file, data_offset);
-    FILE_READ(file, free_date_offset);
-    FILE_READ(file, dynamic_date_offset);
+    read(entity_count, data, cur);
+    read(data_offset, data, cur);
+    read(dynamic_date_offset, data, cur);
 
 #ifndef FLAG_RELEASE
-    if(file.tellg() != data_offset)
+    if(cur != data_offset)
     {
         msg::mtrs_error("Failed to load scene,",
             " data_offset does not match the value ", data_offset);
-        file.close();
         return;
     }
 #endif
@@ -162,10 +164,18 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
     {
         uint64_t id, offset;
         EntityID entity;
-        FILE_READ(file, id);
-        FILE_READ(file, offset);
-        entity = _components.create_entity();
-        iter->second.local_entities.emplace(id, entity);
+        read(id, data, cur);
+        read(offset, data, cur);
+        if(_freed_ids.empty())
+        {
+            entity = _components.create_entity();
+        }
+        else
+        {
+            entity = _freed_ids.top();
+            _freed_ids.pop();
+        }
+        scene_iter->second.local_entities.emplace(id, entity);
 
         if(!is_turn_on)
         {
@@ -173,39 +183,27 @@ void ECSWorld::load_scene(std::string scene, mtrs::res::ResourceManager& resourc
         }
 
         uint64_t id_comp;
-        while(file.tellg() < offset)
+        while(cur < offset)
         {
-            FILE_READ(file, id_comp);
+            read(id_comp, data, cur);
             switch (id_comp)
             {
 #define X(Comp) case math::hash64(#Comp): \
-_components.add_comp<Comp>(entity, entity, scene.c_str(), file, *this, resource); \
-break;
+{ _components.add_comp<Comp>(entity, entity, scene.c_str(), data + cur, file->deferred_data, *this, resource); \
+cur += Comp::get_prs_size(); } break;
             COMPONENT_TYPES
 #undef X
 #ifndef FLAG_RELEASE
             default:
-                msg::mtrs_error("unknown component by id ", id_comp);
-                file.close();
+                msg::mtrs_error("Unknown component by id ", id_comp, ", in entity with id ", id);
                 return;
 #endif
             }
         }
     }
 
-#ifndef FLAG_RELEASE
-    if(file.tellg() != std::streampos(free_date_offset))
-    {
-        msg::mtrs_error("the cursor is at position ", free_date_offset,
-            " for the name \"free_date_offset\",",
-            "but the document indicates position ", file.tellg());
-        file.close();
-        return;
-    }
-#endif
-    iter->second.init = true;
-    iter->second.turn_on = is_turn_on;
-    file.close();
+    scene_iter->second.init = true;
+    scene_iter->second.turn_on = is_turn_on;
 }
 
 void ECSWorld::remove_scene(std::string scene)
@@ -219,9 +217,10 @@ void ECSWorld::remove_scene(std::string scene)
         return;
     }
 #endif
+
     for(auto &entity : iter->second.local_entities)
     {
-        _components.remove_entity(entity.second);
+        mark_destroy(entity.second);
     }
     iter->second.local_entities.clear();
     iter->second.init = false;
@@ -264,39 +263,43 @@ void ECSWorld::turn_off_scene(std::string scene)
     iter->second.turn_on = false;
 }
 
-void ECSWorld::mark_destroy(std::string name)
+void ECSWorld::mark_destroy(EntityID entity)
 {
-    _destroy_queue.push_back(math::hash64(name));
+    _destroy_ids.push_back(entity);
 }
 
-void ECSWorld::remove_marked()
+void ECSWorld::update(const double &delta)
 {
-    for(auto hash : _destroy_queue)
+    for(auto &entity : _destroy_ids)
     {
-        _components.remove_entity(hash);
+#define X(Comp) _components.remove_comp<Comp>(entity);
+        COMPONENT_TYPES
+#undef X
+        _freed_ids.push(entity);
     }
 
-    _destroy_queue.clear();
+    _destroy_ids.clear();
+
+    _file_manager.update(delta);
 }
 
 void ECSWorld::clear_all()
 {
-    _components.clear_sets();
-    _components.clear_singletons();
+#define X(Comp) _components.clear_set<Comp>();
+    COMPONENT_TYPES
+#undef X
+#define X(Comp) _components.remove_single_comp<Comp>();
+    SINGLE_COMPONENT_TYPES
+#undef X
 
-    for(auto &scene : _scenes)
-    {
-        if(scene.second.file.is_open())
-        {
-            scene.second.file.close();
-        }
-    }
     _scenes.clear();
+
+    _file_manager.clear();
 }
 
-void *ECSWorld::single_comp(const char *comp)
+void *ECSWorld::single_comp(uint64_t hash_comp)
 {
-    switch(math::hash64(comp))
+    switch(hash_comp)
     {
 #define X(Comp) case math::hash64(#Comp): \
 return single_comp<Comp>();
@@ -306,9 +309,9 @@ return single_comp<Comp>();
     return nullptr;
 }
 
-void *ECSWorld::component(const char *comp, EntityID entity)
+void *ECSWorld::component(uint64_t hash_comp, EntityID entity)
 {
-    switch(math::hash64(comp))
+    switch(hash_comp)
     {
 #define X(Comp) case math::hash64(#Comp): \
 return component<Comp>(entity);
@@ -335,12 +338,187 @@ EntityID ECSWorld::get_entity(const char *scene, uint64_t hash_entity)
     if(entity_iter == scene_iter->second.local_entities.end())
     {
         msg::mtrs_error("Failed to find entity,",
-            " there is no entity with hash ",hash_entity," in the scene ",scene);
+            " there is no entity with hash <", hash_entity,"> in the scene \"", scene, "\"");
         return NULL_ENTITY;
     }
 #endif
 
     return entity_iter->second;
+}
+
+bool ECSWorld::save_static_to_file(const char *scene, uint64_t hash_entity,
+    uint64_t hash_comp, size_t field, void *new_data, size_t size)
+{
+    auto scene_iter = _scenes.find(scene);
+    if(scene_iter == _scenes.end())
+    {
+#ifndef FLAG_RELEASE
+        msg::mtrs_warning("Unable to save the static data field to file\n",
+            "\tArgs: scene{", scene, "}, hash_entity{", hash_entity, "}");
+#endif
+        return false;
+    }
+    auto file = open_scene(scene_iter);
+    if(!file) return false;
+
+    char *data = file->data.data();
+    size_t cur = 16;
+
+    uint32_t entity_count = 0;
+    uint32_t data_offset;
+    uint32_t dynamic_offset;
+
+    read(entity_count, data, cur);
+    read(data_offset, data, cur);
+    read(dynamic_offset, data, cur);
+
+    for(int i = 0; i < entity_count && cur < dynamic_offset; i++)
+    {
+        uint64_t id, offset;
+        read(id, data, cur);
+        read(offset, data, cur);
+
+        if(id != hash_entity)
+        {
+            cur = offset;
+        }
+        else
+        {
+            while(cur < offset)
+            {
+                uint64_t id_comp;
+                read(id_comp, data, cur);
+
+                if(id_comp == hash_comp)
+                {
+                    cur += field;
+                    std::memcpy(data + cur, new_data, size);
+                    file->dirty = true;
+                    return true;
+                }
+
+                switch(id_comp)
+                {
+#define X(Comp) case math::hash64(#Comp): cur += Comp::get_prs_size(); break;
+                    COMPONENT_TYPES
+#undef X
+                default:
+#ifndef FLAG_RELEASE
+                    msg::mtrs_warning("Unable to save the static data field to file\n",
+                        "\tArgs: scene{", scene, "}, hash_entity{", hash_entity,
+                        "}, unknown component id ", id_comp);
+#endif
+                    return false;
+                }
+            }
+            break;
+        }
+    }
+
+#ifndef FLAG_RELEASE
+    msg::mtrs_warning("Unable to find and save the static data field to file\n",
+        "\tArgs: scene{", scene, "}, hash_entity{", hash_entity, "}");
+#endif
+
+    return false;
+}
+
+bool ECSWorld::save_dynamic_to_file(const char *scene, uint64_t hash_entity,
+    uint64_t hash_comp, size_t field, void *new_data, size_t size)
+{
+    auto scene_iter = _scenes.find(scene);
+    if(scene_iter == _scenes.end())
+    {
+#ifndef FLAG_RELEASE
+        msg::mtrs_warning("Unable to save the deferred data field to file\n",
+            "\tArgs: scene{", scene, "}, hash_entity{", hash_entity, "}");
+#endif
+        return false;
+    }
+    auto file = open_scene(scene_iter);
+    if(!file) return false;
+
+    char *data = file->data.data();
+    size_t cur = 16;
+
+    uint32_t entity_count = 0;
+    uint32_t data_offset;
+    uint32_t dynamic_offset;
+
+    read(entity_count, data, cur);
+    read(data_offset, data, cur);
+    read(dynamic_offset, data, cur);
+
+    for(int i = 0; i < entity_count && cur < dynamic_offset; i++)
+    {
+        uint64_t id, offset;
+        read(id, data, cur);
+        read(offset, data, cur);
+
+        if(id != hash_entity)
+        {
+            cur = offset;
+        }
+        else
+        {
+            while(cur < offset)
+            {
+                uint64_t id_comp;
+                read(id_comp, data, cur);
+
+                if(id_comp != hash_comp)
+                {
+                    switch(id_comp)
+                    {
+#define X(Comp) case math::hash64(#Comp): cur += Comp::get_prs_size(); break;
+                        COMPONENT_TYPES
+#undef X
+                    default:
+#ifndef FLAG_RELEASE
+                        msg::mtrs_warning("Unable to save the deferred data field to file\n",
+                            "\tArgs: scene{", scene, "}, hash_entity{", hash_entity,
+                            "}, unknown component id ", id_comp);
+#endif
+                        return false;
+                    }
+                }
+                else
+                {
+                    cur += field;
+                    uint64_t *field_ptr = reinterpret_cast<uint64_t*>(data + cur);
+                    auto iter = file->deferred_data.find(*field_ptr);
+                    if(iter == file->deferred_data.end())
+                    {
+#ifndef FLAG_RELEASE
+                        msg::mtrs_warning("Unable to find the deferred data field to save in file\n",
+                            "\tArgs: scene{", scene, "}, hash_entity{", hash_entity, "}");
+#endif
+                        return false;
+                    }
+
+                    prs::DeferredData &ddata = iter->second;
+
+                    delete[] ddata.data;
+                    ddata.data = new char[size];
+                    std::memcpy(ddata.data, new_data, size);
+
+                    file->data_size += size - ddata.field[1];
+                    ddata.field[1] = size;
+
+                    file->dirty = true;
+                    return true;
+                }
+            }
+            break;
+        }
+    }
+
+#ifndef FLAG_RELEASE
+    msg::mtrs_warning("Unable to find and save the deferred data field to file\n",
+        "\tArgs: scene{", scene, "}, hash_entity{", hash_entity, "}");
+#endif
+
+    return false;
 }
 
 }

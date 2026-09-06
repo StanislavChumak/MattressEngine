@@ -4,7 +4,7 @@
 
 #include "util/type/prs/comp/Transform.hpp"
 
-#include <fstream>
+#include <cstring>
 
 namespace mtrs::comp
 {
@@ -19,7 +19,7 @@ Transform::Transform(COMPONENT_ARGS)
     }, &position, &scale_size, &rotation, nullptr)
 {
     prs::Transform transform;
-    file.read(reinterpret_cast<char*>(&transform), sizeof(transform));
+    std::memcpy(&transform, file_data, sizeof(transform));
     position.set({transform.pos_x, transform.pos_y});
     scale_size.set({transform.scale_size_x, transform.scale_size_y});
     rotation.set(transform.rotation);
@@ -29,6 +29,11 @@ Transform::Transform(COMPONENT_ARGS)
     rotation.add_observer(&matrix);
 
     matrix.update();
+}
+
+uint32_t Transform::get_prs_size_imp() noexcept
+{
+    return sizeof(prs::Transform);
 }
 
 }

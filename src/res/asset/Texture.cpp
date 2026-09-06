@@ -11,7 +11,7 @@
 #include "util/type/prs/res/Texture.hpp"
 #include "util/fun/msg/mtrs_message.hpp"
 
-#include <fstream>
+#include <string>
 
 namespace mtrs::res
 {
@@ -19,10 +19,10 @@ namespace mtrs::res
 Texture::Texture(RESOURCE_ARGS)
 {
     prs::Texture texture;
-    file.read(reinterpret_cast<char*>(&texture), sizeof(texture));
+    std::memcpy(&texture, file_data, sizeof(texture));
     
     std::string path;
-    prs::set_mtrs_to_var(file, path, DEFERRED_ARGS(texture, path));
+    prs::set_mtrs_to_var(file_ddata[texture.path], path);
     path = dir_pack + path;
 
     _max_instances = texture.max_instances;
@@ -99,12 +99,7 @@ Texture::~Texture()
     glDeleteTextures(1, &_ID);
 }
 
-const char *Texture::get_type_name_imp() noexcept
-{
-    return "textures";
-}
-
-uint32_t Texture::get_type_size_imp() noexcept
+uint32_t Texture::get_prs_size_imp() noexcept
 {
     return sizeof(prs::Texture);
 }

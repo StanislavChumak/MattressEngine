@@ -22,8 +22,8 @@ public:
     ShaderProgram &operator=(ShaderProgram &&other) noexcept;
     ~ShaderProgram();
 
-    static const char *get_type_name_imp() noexcept;
-    static uint32_t get_type_size_imp() noexcept;
+    static constexpr const char *get_type_name_imp() noexcept { return "ShaderProgram"; }
+    static uint32_t get_prs_size_imp() noexcept;
 
     bool is_compiled() const noexcept;
     void use() const;

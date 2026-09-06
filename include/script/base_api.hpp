@@ -2,14 +2,16 @@
 #define BASE_API_HPP
 
 #include "engine_api.hpp"
-#include "comp/core/Transform.hpp"
+#include "res/asset/ScriptFile.hpp"
 #include "comp/core/ScriptUpdate.hpp"
 #include "comp/core/ScriptCallback.hpp"
-#include "res/asset/ScriptFile.hpp"
+#include "comp/core/StoredData.hpp"
+#include "comp/core/Transform.hpp"
 
-typedef mtrs::comp::Transform Transform;
 typedef mtrs::comp::ScriptUpdate ScriptUpdate;
 typedef mtrs::comp::ScriptCallback ScriptCallback;
+typedef mtrs::comp::StoredData StoredData;
+typedef mtrs::comp::Transform Transform;
 
 extern mtrs::EngineAPI *api;
 

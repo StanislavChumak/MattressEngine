@@ -17,16 +17,18 @@
 
 #include "util/type/prs/res/ScriptFile.hpp"
 
+#include <cstring>
+
 namespace mtrs::res
 {
 
 ScriptFile::ScriptFile(RESOURCE_ARGS)
 {
     prs::ScriptFile script_file;
-    file.read(reinterpret_cast<char*>(&script_file), sizeof(script_file));
+    std::memcpy(&script_file, file_data, sizeof(script_file));
 
     std::string path;
-    prs::set_mtrs_to_var(file, path, DEFERRED_ARGS(script_file, path));
+    prs::set_mtrs_to_var(file_ddata[script_file.path], path);
     path = path.substr(0, path.rfind('.'));
 
     _handle = fs::load_library(dir_pack + path + fs::lib_extension());
@@ -81,14 +83,14 @@ ScriptFile::~ScriptFile()
         fs::free_library(_handle);
         _handle = nullptr;
     }
+
+    if(_api.scene)
+    {
+        delete[] _api.scene;
+    }
 }
 
-const char *ScriptFile::get_type_name_imp() noexcept
-{
-    return "scripts";
-}
-
-uint32_t ScriptFile::get_type_size_imp() noexcept
+uint32_t ScriptFile::get_prs_size_imp() noexcept
 {
     return sizeof(prs::ScriptFile);
 }
@@ -99,7 +101,9 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
     // base
     _api.world = &world;
     _api.resource = &resource;
-    _api.scene = scene;
+    char *copy = new char[strlen(scene)+1];
+    strcpy(copy, scene);
+    _api.scene = copy;
 
     // util
 #ifndef FLAG_RELEASE
@@ -110,12 +114,6 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
 #endif
 
     // ECSWorld
-    _api.world_single_comp = [](comp::ECSWorld*w, const char *c)
-        { return w->single_comp(c); };
-    _api.world_component = [](comp::ECSWorld*w, const char *c, comp::EntityID e)
-        { return w->component(c, e); };
-    _api.world_get_entity = [](comp::ECSWorld*w, const char *s, uint64_t h)
-        { return w->get_entity(s,h); };
     _api.world_load_scene = [](comp::ECSWorld*w, res::ResourceManager*r, const char*s, bool is)
         { w->load_scene(s, *r, is); };
     _api.world_remove_scene = [](comp::ECSWorld*w, const char*s)
@@ -124,7 +122,16 @@ void ScriptFile::load(const char *scene, comp::EntityID entity,
         { w->turn_on_scene(s); };
     _api.world_turn_off_scene = [](comp::ECSWorld*w, const char*s)
         { w->turn_off_scene(s); };
-
+    _api.world_single_comp = [](comp::ECSWorld*w, uint64_t c)
+        { return w->single_comp(c); };
+    _api.world_component = [](comp::ECSWorld*w, uint64_t c, comp::EntityID e)
+        { return w->component(c, e); };
+    _api.world_get_entity = [](comp::ECSWorld*w, const char *s, uint64_t h)
+        { return w->get_entity(s, h); };
+    _api.world_save_static = [](comp::ECSWorld*w, const char*s, uint64_t e, uint64_t c, uint64_t f, void*d, uint64_t sz)
+        { return w->save_static_to_file(s, e, c, f, d, sz); };
+    _api.world_save_dynamic = [](comp::ECSWorld*w, const char*s, uint64_t e, uint64_t c, uint64_t f, void*d, uint64_t sz)
+        { return w->save_dynamic_to_file(s, e, c, f, d, sz); };
 
     // window
     _api.window_set_icon = [](comp::Window*w, const char *const *p, uint64_t c){ w->set_icon(p, c); };

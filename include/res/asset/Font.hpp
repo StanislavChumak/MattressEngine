@@ -33,8 +33,8 @@ public:
     Font &operator=(Font &&other) noexcept;
     ~Font() = default;
 
-    static const char *get_type_name_imp() noexcept;
-    static uint32_t get_type_size_imp() noexcept;
+    static constexpr const char *get_type_name_imp() noexcept { return "Font"; }
+    static uint32_t get_prs_size_imp() noexcept;
 
     class Iterator
     {

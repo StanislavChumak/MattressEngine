@@ -29,8 +29,8 @@ public:
     Sound &operator=(Sound &&other) noexcept;
     ~Sound();
 
-    static const char *get_type_name_imp() noexcept;
-    static uint32_t get_type_size_imp() noexcept;
+    static constexpr const char *get_type_name_imp() noexcept  { return "Sound"; }
+    static uint32_t get_prs_size_imp() noexcept;
 
     bool init(void *audio_engine);
 

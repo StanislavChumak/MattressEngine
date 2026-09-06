@@ -19,9 +19,9 @@ struct Impl
 Sound::Sound(RESOURCE_ARGS)
 {
     prs::Sound sound;
-    file.read(reinterpret_cast<char*>(&sound), sizeof(sound));
+    std::memcpy(&sound, file_data, sizeof(sound));
 
-    prs::set_mtrs_to_var(file, _path, DEFERRED_ARGS(sound, path));
+    prs::set_mtrs_to_var(file_ddata[sound.path], _path);
     _path = dir_pack + _path;
 
     _impl = new Impl();
@@ -77,12 +77,7 @@ Sound::~Sound()
     delete _impl;
 }
 
-const char *Sound::get_type_name_imp() noexcept
-{
-    return "sounds";
-}
-
-uint32_t Sound::get_type_size_imp() noexcept
+uint32_t Sound::get_prs_size_imp() noexcept
 {
     return sizeof(prs::Sound);
 }

@@ -23,6 +23,7 @@ struct SoundPlayer : public Component<SoundPlayer>
     SoundPlayer(COMPONENT_ARGS);
 
     static constexpr const char *get_type_name_imp() { return "SoundPlayer"; }
+    static uint32_t get_prs_size_imp() noexcept;
 };
 
 }
